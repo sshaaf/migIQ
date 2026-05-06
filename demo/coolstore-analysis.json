@@ -1,0 +1,36 @@
+{
+  "path": "/Users/sshaaf/git/java/app-mod-demo/demo/git/sshaaf/coolstore",
+  "migrationType": "framework",
+  "scope": "full",
+  "structure": {
+    "totalFiles": 1035,
+    "filesByType": {
+      ".java": 30,
+      ".py": 1,
+      ".js": 1001,
+      ".ts": 1,
+      ".rb": 2
+    },
+    "directories": [],
+    "linesOfCode": 447773
+  },
+  "dependencies": [
+    {
+      "name": "maven-dependencies",
+      "version": "detected",
+      "source": "pom.xml"
+    }
+  ],
+  "antiPatterns": [],
+  "complexity": {
+    "cyclomaticComplexity": 0,
+    "cognitiveComplexity": 0,
+    "maintainabilityIndex": 45,
+    "technicalDebt": "high"
+  },
+  "migrationScore": 50,
+  "recommendations": [
+    "Refactor high-complexity modules before migration",
+    "Codebase is suitable for automated migration"
+  ]
+}

@@ -1,0 +1,384 @@
+# Migration Tasks
+
+This file tracks the migration backlog, task breakdown, priorities, and progress. It is updated by agents and humans throughout the migration process.
+
+## Backlog Overview
+
+| Status | Count | % |
+|--------|-------|---|
+| Backlog | 0 | 0% |
+| In Progress | 0 | 0% |
+| Done | 0 | 0% |
+| **Total** | **0** | **100%** |
+
+**Last Updated**: 2026-05-04
+
+---
+
+## Priority Levels
+
+- **P0 - Critical**: Blocking production deployment or critical security issues
+- **P1 - High**: Major functionality, significant technical debt
+- **P2 - Medium**: Standard features, moderate improvements
+- **P3 - Low**: Nice-to-have, minor improvements
+
+---
+
+## User Stories
+
+### Template
+```markdown
+### [US-XXX] Story Title
+
+**Priority**: P1
+**Status**: Backlog
+**Story Points**: 5
+**Assigned To**: Agent/Human
+
+**Description**:
+As a [role], I want [feature] so that [benefit].
+
+**Acceptance Criteria**:
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] All tests pass
+- [ ] Quality gates pass
+
+**Technical Details**:
+- Affected modules: [list]
+- Dependencies: [list]
+- Migration type: [framework/language/architecture]
+
+**Tasks**:
+1. [ ] Analyze code
+2. [ ] Generate tests
+3. [ ] Refactor code
+4. [ ] Run benchmarks
+5. [ ] Validate quality
+6. [ ] Create MR
+
+**Notes**:
+- Additional context
+- Known issues
+- Decisions made
+
+**Links**:
+- Kanban: [link]
+- MR: [link]
+- CI Pipeline: [link]
+```
+
+---
+
+## Active Stories
+
+### [US-001] Migrate Authentication Service to Spring Boot 3.x
+
+**Priority**: P0
+**Status**: In Progress
+**Story Points**: 8
+**Assigned To**: story-orchestrator-agent
+
+**Description**:
+As a developer, I want to migrate the authentication service from Spring Boot 2.7 to 3.0 so that we can use the latest security features and Jakarta EE APIs.
+
+**Acceptance Criteria**:
+- [ ] All Spring Boot dependencies updated to 3.x
+- [ ] javax.* imports replaced with jakarta.*
+- [ ] Security configuration updated
+- [ ] All unit tests pass
+- [ ] Integration tests pass
+- [ ] Performance benchmarks maintained
+- [ ] Zero security vulnerabilities
+
+**Technical Details**:
+- Affected modules: auth-service, auth-client
+- Dependencies: US-002 (update shared libraries)
+- Migration type: Framework upgrade
+
+**Tasks**:
+1. [x] Analyze authentication service code
+2. [x] Generate characterization tests
+3. [ ] Generate functional tests for new APIs
+4. [ ] Apply refactoring rules using opencode agent for Spring Boot 3
+5. [ ] Update security configurations manually
+6. [ ] Run benchmark tests
+7. [ ] Validate quality metrics
+8. [ ] Create merge request
+
+**Progress**:
+- Analysis complete (opencode agent): 45 classes, 12k LOC
+- Characterization tests generated (opencode agent): 87% coverage
+- Next: Functional tests generation (opencode agent)
+
+**Notes**:
+- Security configuration changes require human review
+- Some deprecated APIs have no direct replacement (flagged by opencode agent)
+- Performance baseline established (opencode agent): 50ms avg response
+
+**Links**:
+- Kanban: PROJ-001
+- MR: (pending)
+- CI Pipeline: (pending)
+
+---
+
+### [US-002] Update Shared Library Dependencies
+
+**Priority**: P1
+**Status**: Backlog
+**Story Points**: 3
+**Assigned To**: Unassigned
+
+**Description**:
+As a developer, I want to update shared library dependencies to Jakarta EE compatible versions so that all services can migrate to Spring Boot 3.
+
+**Acceptance Criteria**:
+- [ ] All shared libraries updated
+- [ ] Transitive dependencies resolved
+- [ ] All consumer services tested
+- [ ] No breaking changes to public APIs
+
+**Technical Details**:
+- Affected modules: common-lib, utils-lib, security-lib
+- Dependencies: None (prerequisite for other stories)
+- Migration type: Dependency update
+
+**Tasks**:
+1. [ ] Analyze dependency tree
+2. [ ] Identify Jakarta EE compatible versions
+3. [ ] Update pom.xml files
+4. [ ] Run consumer service tests
+5. [ ] Validate compatibility
+
+**Notes**:
+- This is a prerequisite for US-001 and US-003
+- Need to maintain backward compatibility
+
+**Links**:
+- Kanban: PROJ-002
+
+---
+
+## Completed Stories
+
+### [US-000] Set Up Migration Infrastructure
+
+**Priority**: P0
+**Status**: Done
+**Story Points**: 5
+**Assigned To**: Human
+**Completed**: 2026-05-04
+
+**Description**:
+Set up the agent mesh infrastructure, skills, and agents for code migration.
+
+**Acceptance Criteria**:
+- [x] Agent mesh architecture defined
+- [x] All skills documented
+- [x] All agents documented
+- [x] Templates created
+
+**Notes**:
+- Initial setup complete
+- Ready to begin migrations
+
+---
+
+## Failed/Blocked Stories
+
+### Template for Failed Stories
+When a story fails, move it here with root cause analysis:
+
+```markdown
+### [US-XXX] Story Title (FAILED)
+
+**Failure Date**: YYYY-MM-DD
+**Attempt Count**: N
+**Last Status**: Failed at [stage]
+
+**Root Cause**:
+[Detailed analysis of why it failed]
+
+**Remediation Plan**:
+1. Action 1
+2. Action 2
+
+**Decision**:
+- [ ] Retry with fixes
+- [ ] Split into smaller stories
+- [ ] Escalate to human
+- [ ] Skip/defer
+```
+
+---
+
+## Story Dependencies
+
+```
+US-002 (Shared Libs)
+  ├─> US-001 (Auth Service)
+  ├─> US-003 (User Service)
+  └─> US-004 (Order Service)
+
+US-005 (Database Schema)
+  └─> US-006 (Data Migration)
+```
+
+---
+
+## Sprint Planning
+
+### Sprint 1 (Week 1-2)
+**Goal**: Migrate authentication and authorization services
+
+**Stories**:
+- [x] US-000: Infrastructure setup
+- [ ] US-002: Shared libraries
+- [ ] US-001: Auth service
+
+**Capacity**: 16 story points
+**Committed**: 16 story points
+
+---
+
+### Sprint 2 (Week 3-4)
+**Goal**: Migrate core user and order services
+
+**Stories**:
+- [ ] US-003: User service
+- [ ] US-004: Order service
+- [ ] US-005: Database schema
+
+**Capacity**: 20 story points
+**Committed**: TBD
+
+---
+
+## Metrics
+
+### Velocity
+- Sprint 1: TBD
+- Sprint 2: TBD
+- Average: TBD
+
+### Quality Metrics
+- Average test coverage: TBD
+- Average quality score: TBD
+- Failure rate: TBD
+- Retry rate: TBD
+
+### Cycle Time
+- Average time from backlog to done: TBD
+- Average time in each phase:
+  - Analysis: TBD
+  - Testing: TBD
+  - Coding: TBD
+  - Evaluation: TBD
+  - CI: TBD
+
+### Automation Metrics
+- Stories completed without human intervention: TBD
+- Human intervention rate: TBD
+- Agent success rate: TBD
+
+---
+
+## Risk Register
+
+| Risk ID | Description | Impact | Probability | Mitigation |
+|---------|-------------|--------|-------------|------------|
+| R-001 | Breaking API changes | High | Medium | Extensive testing, backward compatibility |
+| R-002 | Performance regression | High | Low | Benchmark tests, monitoring |
+| R-003 | Security vulnerabilities | Critical | Low | Security scans, manual review |
+| R-004 | Data migration issues | Critical | Medium | Comprehensive testing, rollback plan |
+
+---
+
+## Change Log
+
+| Date | Story | Change | By |
+|------|-------|--------|-----|
+| 2026-05-04 | US-000 | Created infrastructure | Human |
+| 2026-05-04 | US-001 | Started auth service migration | story-orchestrator-agent |
+
+---
+
+## Notes for Agents
+
+### When to Update This File
+
+**Add new stories**:
+- When analysis identifies new migration needs
+- When stories are split for complexity
+- When dependencies are discovered
+
+**Update story status**:
+- When starting work on a story (Backlog → In Progress)
+- When completing phases (update task checklist)
+- When completing story (In Progress → Done)
+- When story fails (In Progress → Blocked/Failed)
+
+**Update metrics**:
+- After completing each story
+- At end of each sprint
+- When generating KPI reports
+
+### How to Parse This File
+
+1. **Read backlog section** to find next story
+2. **Check dependencies** before starting
+3. **Follow task checklist** for workflow
+4. **Update progress** as tasks complete
+5. **Document failures** with root cause
+6. **Update metrics** on completion
+
+### Template Usage
+
+Use the story template for consistency:
+1. Copy template
+2. Fill in all sections
+3. Update status as progressing
+4. Complete all acceptance criteria
+5. Document outcomes and learnings
+
+---
+
+## Human Review Queue
+
+Stories requiring human review:
+
+1. **US-001**: Security configuration changes need approval
+2. (Add more as needed)
+
+---
+
+## Questions and Decisions
+
+**Q: How to handle breaking API changes?**
+A: Maintain backward compatibility layer, deprecate old APIs, provide migration guide
+
+**Q: What to do when tests fail repeatedly?**
+A: After 3 failures, escalate to human with root cause analysis
+
+**Q: How to prioritize stories?**
+A: Follow priority levels, consider dependencies, business value, and risk
+
+---
+
+## Next Actions
+
+**Immediate**:
+1. Complete US-001 functional tests
+2. Start US-002 analysis
+3. Review US-001 security configurations
+
+**This Week**:
+1. Complete US-001
+2. Complete US-002
+3. Start US-003
+
+**This Sprint**:
+1. Complete all P0 stories
+2. Make progress on P1 stories
+3. Update metrics and learnings

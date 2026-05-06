@@ -1,0 +1,26 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Update dependencies",
+      "priority": "high",
+      "tasks": [
+        "Analyze dependencies",
+        "Update versions",
+        "Test compatibility"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Refactor anti-patterns",
+      "priority": "medium",
+      "tasks": [
+        "Identify patterns",
+        "Apply refactoring",
+        "Validate"
+      ]
+    }
+  ],
+  "totalStories": 2,
+  "strategy": "risk"
+}

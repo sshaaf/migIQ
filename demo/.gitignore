@@ -1,0 +1,48 @@
+# Environment and secrets
+.env
+.env.local
+
+# Logs and state
+logs/
+.claude/state/
+
+# Build artifacts
+target/
+build/
+dist/
+*.jar
+*.war
+*.ear
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+
+# Benchmark results
+benchmarks/results/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Local configuration (keep templates)
+rule.md
+tasks.md
+CLAUDE.md
