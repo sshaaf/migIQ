@@ -1,16 +1,14 @@
-# Code Migration System - Agent Mesh Implementation
+# Agent Mesh for Code Migration
 
-An AI-driven code migration system using Claude Code's Agent Mesh architecture to automate the analyze-plan-implement-validate workflow.
-
-> **📁 Demo Implementation**: A complete, working implementation is being built in the [`demo/`](./demo/) directory. See [demo/README.md](./demo/README.md) for setup and usage instructions.
+A reusable Agent Mesh package providing specialized agents and skills for AI-driven code migration using Claude Code's Agent Mesh architecture.
 
 ## Overview
 
-This project implements a comprehensive code migration system that leverages:
-- **Agent Mesh Architecture** - Distributed, collaborative AI agents
-- **Claude Code Harnesses** - Skills and agents for autonomous execution
-- **CI/CD Integration** - Automated testing and deployment
-- **Human-in-the-Loop** - Supervised automation with escalation
+This package provides a complete set of mesh components for code migration:
+- **10 Specialized Agents** - Collaborative AI agents for migration workflows
+- **26 Skills** - Reusable, focused commands across all migration phases
+- **Agent Mesh Architecture** - Distributed, autonomous execution patterns
+- **OpenSpec Tracking** - Structured proposals and specifications
 
 ## Architecture
 
@@ -24,21 +22,47 @@ The system uses a recursive workflow: **Analyze → Plan → Implement → Valid
 4. **Kanban Boards** - Visual project tracking
 5. **Human Supervisor** - Oversight and intervention
 
+## Package Structure
+
+```
+/agents/              # 10 specialized mesh agents
+/skills/              # 26 migration skills
+/openspec/            # Proposals and specifications
+/docs/                # Core mesh documentation
+  ├─ agent-mesh-infrastructure.md
+  ├─ testing-guide.md
+  ├─ distributed-tracing.md
+  ├─ failure-recovery.md
+  └─ kpi-tracking.md
+README.md             # This file
+```
+
 ## Documentation
 
-### Core Documents
+### Implementation
+- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - Complete implementation guide for project-tracker-agent
+- **[Migration Flow](./docs/migration-flow.md)** - Detailed workflow and task structure
 
-- **[SPECIFICATION.md](./SPECIFICATION.md)** - Complete implementation specification
-- **[AGENT-MESH.md](./AGENT-MESH.md)** - Agent Mesh architecture details
-- **[skills.md](./skills.md)** - All skill definitions and usage
-- **[agents.md](./agents.md)** - All agent definitions and workflows
-- **[vision.md](./vision.md)** - Original vision and workflow description
+### Architecture
+- **[Agent Mesh Infrastructure](./docs/agent-mesh-infrastructure.md)** - Core architecture and patterns
+- **[Testing Guide](./docs/testing-guide.md)** - How to test the mesh
+- **[Distributed Tracing](./docs/distributed-tracing.md)** - Mesh observability
+- **[Failure Recovery](./docs/failure-recovery.md)** - Error handling and recovery
+- **[KPI Tracking](./docs/kpi-tracking.md)** - Metrics and reporting
 
-### Configuration Files (To Be Created)
+## Getting Started - Quick Command
 
-- **rule.md** - Migration rules, patterns, and constraints
-- **tasks.md** - Task definitions and backlog
-- **CLAUDE.md** - Project-specific instructions for Claude Code
+To start a migration, use the main `/migration` command:
+
+```bash
+/migration --project-path ./my-app --migration-type framework
+```
+
+This command:
+1. Validates inputs and initializes the migration context
+2. Creates `rule.md` and `tasks.md` if they don't exist
+3. Delegates to `project-tracker-agent` which creates and executes tasks
+4. Returns a session ID and trace ID for monitoring
 
 ## Workflow Phases
 
@@ -49,6 +73,7 @@ The system uses a recursive workflow: **Analyze → Plan → Implement → Valid
 - Loop through each story
 
 **Agent**: `project-tracker-agent`
+**Triggered by**: `/migration` skill
 
 ### 2. Test HARNESS
 - Generate characterization tests (capture current behavior)
@@ -118,7 +143,10 @@ See [AGENT-MESH.md](./AGENT-MESH.md) for detailed architecture.
 
 ## Skills Overview
 
-The system provides **19 specialized skills** across all harness phases:
+The system provides **27 specialized skills** across all harness phases:
+
+### Main Orchestration (1 skill)
+- `/migration` - Main entry point to start migration workflow
 
 ### Project Tracking (3 skills)
 - `/analyze-codebase` - Analyze codebase for migration needs
@@ -181,156 +209,119 @@ CI Platform → KPI Metrics → Root Cause Analysis → Backlog → Retry
 ### Prerequisites
 
 - Claude Code CLI or Desktop App
-- CI Platform (GitLab or GitHub)
-- Kanban Board (Jira, Linear, or GitHub Projects)
-- **opencode agent** (all code operations)
+- Target project using this mesh for code migration
 
-### Installation
+### Using This Mesh
 
-1. **Clone Repository**
+This is a **reusable mesh package** meant to be integrated into your migration project:
+
+1. **Clone or Install the Mesh**
    ```bash
    git clone <repository-url>
-   cd app-mod-demo
+   cd mig-agent-mesh
    ```
 
-2. **Verify Directory Structure**
+2. **Review Agents**
 
-   The following directories should already exist:
-   ```
-   .claude/
-   ├── agents/          # Agent definitions
-   └── skills/          # Skill implementations
-   templates/           # Configuration templates
-   specs/              # Specifications
-   rules/              # Refactoring rules
-   benchmarks/         # Performance benchmarks
-   docs/
-   └── adr/            # Architecture Decision Records
-   ```
+   Explore the 10 specialized agents in `/agents/`:
+   - `project-tracker-agent` - Main coordination loop
+   - `story-orchestrator-agent` - Per-story orchestration
+   - `test-generator-agent` - Test creation harness
+   - `code-refactor-agent` - Code transformation harness
+   - `benchmark-builder-agent` - Performance benchmarking
+   - `quality-evaluator-agent` - Quality validation
+   - `ci-integration-agent` - CI/CD integration
+   - `failure-analyzer-agent` - Root cause analysis
+   - `documentation-manager-agent` - Knowledge management
+   - `kpi-tracker-agent` - Metrics and reporting
 
-3. **Configure Environment Variables**
-   ```bash
-   # Copy the example environment file
-   cp .env.example .env
+3. **Review Skills**
 
-   # Edit .env and fill in your actual values
-   # At minimum, configure:
-   # - CI_PLATFORM_TYPE and credentials (GitLab or GitHub)
-   # - KANBAN_PLATFORM and credentials (Jira, Linear, or GitHub Projects)
-   # - OPENCODE_AGENT_API and API key
-   ```
+   Browse the 26 skills in `/skills/` organized by phase:
+   - Project Tracking: analyze, plan, generate backlog
+   - Testing: characterization tests, functional tests, coverage
+   - Code: refactoring, spec-driven generation, validation
+   - Benchmarking: build suite, baseline, run benchmarks
+   - Evaluation: metrics, scoring, quality validation
+   - CI Integration: MR preparation, pipeline monitoring
+   - Cross-Cutting: KPI metrics, documentation, root cause
 
-4. **Initialize Configuration Files**
-   ```bash
-   # Copy configuration templates to your project
-   cp templates/CLAUDE.md ./CLAUDE.md
-   cp templates/rule.md ./rule.md
-   cp templates/tasks.md ./tasks.md
+4. **Review OpenSpec Proposals**
 
-   # Customize these files for your specific migration project
-   ```
+   Check `/openspec/` for structured specifications and proposals
 
-5. **Set Up Agents**
-   ```bash
-   # Agent definitions will be created in .claude/agents/
-   # Each agent gets its own subdirectory with:
-   # - agent.md (agent definition)
-   # - config.yaml (agent configuration)
-   # - workflows/ (agent workflows)
-   ```
+5. **Integration**
 
-6. **Set Up Skills**
-   ```bash
-   # Skill implementations will be created in .claude/skills/
-   # Each skill gets its own subdirectory with implementation
-   ```
+   Copy or reference agents and skills from your migration project's `.claude/` directory
 
-7. **Configure External Integrations**
+### Using the Migration System
 
-   Ensure the following services are accessible:
-
-   - **OpenCode Agent**: Running at configured endpoint (default: http://localhost:8080)
-   - **CI Platform**: GitLab or GitHub with API access
-   - **Kanban Board**: Jira, Linear, or GitHub Projects with API access
-
-8. **Verify Installation**
-   ```bash
-   # Test environment configuration
-   source .env && env | grep -E "CI_PLATFORM|KANBAN|OPENCODE"
-
-   # Verify Claude Code is available
-   claude-code --version
-
-   # Test connectivity (once agents are implemented)
-   # claude-code agent list
-   ```
-
-### Running the System
-
-#### Start the Agent Mesh
-
+**Start a Migration (Recommended):**
 ```bash
-# Start the project tracker agent (main loop)
-claude-code agent run project-tracker-agent
+# Basic migration
+/migration --project-path ./my-app --migration-type framework
+
+# With full configuration
+/migration \
+  --project-path ./my-app \
+  --migration-type framework \
+  --kanban-platform jira \
+  --kanban-project PROJ-123 \
+  --ci-platform gitlab
+
+# Autonomous mode (no prompts)
+/migration --project-path ./my-app --migration-type framework --mode autonomous
 ```
 
-#### Process a Single User Story
-
+**Advanced: Run Agents Directly:**
 ```bash
-# Run story orchestrator for specific story
-claude-code agent run story-orchestrator-agent --story US-123
-```
+# Start project tracker manually
+claude-code agent run project-tracker-agent --context '{"sessionId":"...","traceId":"..."}'
 
-#### Execute Individual Harness
-
-```bash
-# Run test harness
+# Run specific harness
 claude-code agent run test-generator-agent --story US-123
-
-# Run code harness
-claude-code agent run code-refactor-agent --story US-123
-
-# Run evaluation harness
-claude-code agent run quality-evaluator-agent --story US-123
 ```
 
-#### Invoke Skills Directly
-
+**Invoke Individual Skills:**
 ```bash
 # Analyze codebase
-claude-code skill /analyze-codebase --path ./src --migration-type framework
+/analyze-codebase --path ./src --migration-type framework
 
 # Generate tests
-claude-code skill /generate-characterization-tests --source-path ./src/main
+/generate-characterization-tests --source-path ./src/main
 
-# Apply refactoring using opencode agent
-claude-code skill /apply-refactor-rules --source-path ./src --rules-path ./refactor-rules.yml
+# Apply refactoring
+/apply-refactor-rules --source-path ./src --rules-path ./rules.yml
 ```
 
-## Configuration
+## Configuration for Your Project
 
-### rule.md
-Defines migration rules, patterns, and constraints:
+When using this mesh in your migration project, you'll need:
+
+**rule.md** - Migration rules, patterns, and constraints:
 - Code transformation rules
 - Architectural patterns
 - Anti-patterns to avoid
 - Quality thresholds
 - Security requirements
 
-### tasks.md
-Defines task backlog and priorities:
+**tasks.md** - Task backlog and priorities:
 - User stories
 - Task breakdown
 - Dependencies
 - Priority ordering
 - Assignment and status
 
-### CLAUDE.md
-Project-specific instructions for Claude Code:
+**CLAUDE.md** - Project-specific instructions for Claude Code:
 - Coding standards
 - Testing requirements
 - CI/CD workflows
 - Review processes
+
+**.env** - Environment configuration:
+- CI platform credentials (GitLab/GitHub)
+- Kanban board credentials (Jira/Linear/GitHub Projects)
+- External tool configurations
 
 ## Monitoring and Observability
 
@@ -365,44 +356,23 @@ All agents produce:
 - **Traces** - OpenTelemetry compatible
 - **Events** - Event stream for real-time monitoring
 
-## Integration Points
+## Supported Integrations
 
-### CI/CD Platforms
+The mesh agents and skills are designed to integrate with:
 
-Supported platforms:
-- **GitLab** - Full integration via API and webhooks
-- **GitHub** - Full integration via API and webhooks
+**CI/CD Platforms:**
+- GitLab - MR creation, pipeline monitoring
+- GitHub - PR creation, workflow monitoring
 
-Features:
-- Automatic MR/PR creation
-- Pipeline triggering and monitoring
-- Status checks and quality gates
-- Artifact management
+**Kanban Boards:**
+- Jira - REST API integration
+- Linear - GraphQL API integration
+- GitHub Projects - API integration
 
-### Kanban Boards
+**Code Operations:**
+- opencode agent - All code analysis, refactoring, testing, and evaluation
 
-Supported platforms:
-- **Jira** - REST API integration
-- **Linear** - GraphQL API integration
-- **GitHub Projects** - GitHub API integration
-
-Features:
-- Automatic ticket creation
-- Status synchronization
-- Linking and dependencies
-- Progress tracking
-
-### Migration Tool
-
-**opencode agent**:
-- Code analysis and understanding
-- Automated refactoring
-- Code generation
-- Test generation (characterization and functional)
-- Specification validation
-- Quality metrics and evaluation
-- KPI tracking and reporting
-- Multi-language support
+Your project must configure these integrations for the mesh to function.
 
 ## Success Criteria
 
@@ -420,37 +390,45 @@ Features:
 - **CI/CD** - GitLab, GitHub
 - **Tracking** - Jira, Linear, GitHub Projects
 
-## Project Status
+## Package Status
 
-**Current Phase**: Specification and Design
+**Current State**: Core mesh components with working implementation
 
-**Completed**:
-- ✅ Vision and requirements
-- ✅ Agent Mesh architecture design
-- ✅ Skills definition (19 skills)
-- ✅ Agents definition (7 agents)
-- ✅ Specification document
+**Included**:
+- ✅ 10 Specialized agents (1 implemented: project-tracker-agent)
+- ✅ 27 Migration skills (1 implemented: /migration)
+- ✅ Agent Mesh architecture documentation
+- ✅ OpenSpec proposal tracking
+- ✅ Core operational docs
+- ✅ Tasks.md template for tracking
+- ✅ Working migration orchestration flow
 
-**Next Steps**:
-1. ✅ Create directory structure and templates
-2. ✅ Set up environment configuration
-3. Implement skills in `.claude/skills/` (19 skills)
-4. Implement agents in `.claude/agents/` (7+ agents)
-5. Set up CI platform integration (GitLab/GitHub)
-6. Configure Kanban board automation (Jira/Linear/GitHub Projects)
-7. Build monitoring and observability (distributed tracing, KPI dashboards)
-8. Create example migration project
-9. End-to-end testing
-10. Production deployment
+**Implemented & Ready**:
+- ✅ `/migration` command - Main entry point
+- ✅ `project-tracker-agent` - Full Python implementation
+  - Executes initial tasks (analyze, plan, generate-backlog)
+  - Parses and updates tasks.md
+  - Processes user stories
+  - Integrates with Kanban (simulated)
+- ✅ TasksFileManager - tasks.md parsing and updates
+- ✅ Session and trace ID generation
+- ✅ Error handling and status tracking
+
+**Usage**:
+This is a **reusable mesh package**. To use it:
+1. Clone this repository
+2. Run: `/migration --project-path ./your-app --migration-type framework`
+3. The system creates rule.md, tasks.md and executes the migration workflow
+4. Monitor progress in tasks.md or your Kanban board
 
 ## Contributing
 
-This project is in the design and specification phase. Contributions welcome for:
-- Skill implementations
-- Agent implementations
-- Integration connectors
-- Documentation improvements
-- Example migrations
+Contributions welcome for:
+- New or improved agents
+- New or improved skills
+- Documentation enhancements
+- OpenSpec proposals
+- Integration examples
 
 ## References
 
@@ -463,13 +441,12 @@ This project is in the design and specification phase. Contributions welcome for
 
 ## Authors
 
-- Vision and Architecture: Based on Red Hat Agent Mesh approach
-- Implementation: Claude Code harness architecture
+- Architecture: Based on Red Hat Agent Mesh approach
+- Implementation: Claude Code Agent Mesh architecture
 
 ## Support
 
 For questions and support:
 - Open an issue in the repository
-- Review the documentation in `docs/`
-- Check the vision document: `vision.md`
-- Review the Agent Mesh architecture: `AGENT-MESH.md`
+- Review the documentation in `/docs/`
+- Check OpenSpec proposals in `/openspec/`

@@ -11,6 +11,8 @@ description: Manages migration backlog and orchestrates story processing
 
 Coordinates the entire migration workflow by managing the backlog and orchestrating story processing through the Agent Mesh.
 
+**Typically invoked by**: `/migration` skill (main entry point)
+
 ## Responsibilities
 
 1. **Backlog Management**: Maintain and prioritize user story backlog
@@ -19,33 +21,56 @@ Coordinates the entire migration workflow by managing the backlog and orchestrat
 4. **Progress Tracking**: Monitor overall migration progress
 5. **Reporting**: Generate status reports and KPIs
 
+## Invocation
+
+Receives context from `/migration` skill containing:
+- `sessionId` - Unique migration session identifier
+- `traceId` - Distributed tracing ID
+- `projectPath` - Path to project being migrated
+- `migrationType` - Type of migration (framework, language, platform, custom)
+- `rulesPath` - Path to rule.md file
+- `tasksPath` - Path to tasks.md file
+- `mode` - Execution mode (interactive or autonomous)
+- `kanban` (optional) - Kanban platform configuration
+- `ci` (optional) - CI platform configuration
+
 ## Workflow
 
 ```
 ┌─────────────────────────────────────┐
-│  1. Load tasks.md backlog          │
+│  0. Receive context from /migration│
 ├─────────────────────────────────────┤
-│  2. Select next high-priority story│
+│  1. Execute initial tasks:          │
+│     - TASK-001: Analyze codebase   │
+│     - TASK-002: Create plan        │
+│     - TASK-003: Generate backlog   │
 ├─────────────────────────────────────┤
-│  3. Invoke story-orchestrator-agent│
+│  2. Load user stories from tasks.md│
 ├─────────────────────────────────────┤
-│  4. Monitor story progress          │
+│  3. Select next high-priority story│
 ├─────────────────────────────────────┤
-│  5. Handle completion/failure       │
+│  4. Invoke story-orchestrator-agent│
 ├─────────────────────────────────────┤
-│  6. Update tasks.md and Kanban     │
+│  5. Monitor story progress          │
 ├─────────────────────────────────────┤
-│  7. Loop to next story              │
+│  6. Handle completion/failure       │
+├─────────────────────────────────────┤
+│  7. Update tasks.md and Kanban     │
+├─────────────────────────────────────┤
+│  8. Loop to next story              │
 └─────────────────────────────────────┘
 ```
 
 ## Skills Used
 
-- `/analyze-codebase` - Initial analysis
-- `/plan-migration` - Create migration plan
-- `/generate-backlog` - Sync with Kanban
-- `/update-documentation` - Update tasks.md
-- `/generate-kpi-metrics` - Progress tracking
+### Initial Tasks (executed first)
+- `/analyze-codebase` - TASK-001: Analyze codebase → analysis-report.json
+- `/plan-migration` - TASK-002: Create migration plan → migration-plan.json
+- `/generate-backlog` - TASK-003: Generate backlog → tasks.md + Kanban sync
+
+### Ongoing Tasks
+- `/update-documentation` - Update tasks.md and rule.md
+- `/generate-kpi-metrics` - Progress tracking and reporting
 
 ## Agents Invoked
 
