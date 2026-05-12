@@ -89,10 +89,11 @@ Agents use [graphify](https://github.com/safishamsi/graphify) for fast code anal
 
 **Requirements:**
 - Python 3.10 or higher
+- **REQUIRED**: graphify skill must be installed for migration agents to work
 
-**Setup:**
+**Setup (Required for Production):**
 ```bash
-# 1. Install graphify (Python package)
+# 1. Install graphify (Python package) - REQUIRED
 # Option A: Using uv (recommended)
 uv tool install graphifyy && graphify install
 
@@ -103,15 +104,41 @@ pipx install graphifyy && graphify install
 pip install graphifyy && graphify install
 
 # Note: Package name is 'graphifyy' (double-y), CLI command is 'graphify'
+# The 'graphify install' step creates /Users/<user>/.claude/skills/graphify skill
 
-# 2. Build initial graph
+# 2. Build initial graph (in Claude Code)
 /graphify .
-# Or in CLI context: graphify extract .
+# Uses Claude session for semantic extraction (annotations, imports)
+# Critical for Java EE migration: detects @Stateless, @MessageDriven, javax.* imports
+# No API keys needed - uses your IDE's model automatically
 
 # 3. Agents automatically use graph (via PreAgentExecution hook)
+# Hook runs /graphify . before any agent execution to ensure graph exists
 ```
 
+**API Key Requirements:**
+
+| Context | API Keys Needed | Notes |
+|---------|-----------------|-------|
+| **Skill usage** (`/graphify`) | None | Uses your Claude Code session automatically |
+| **CLI usage** (`graphify extract`) | Required | Set `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or others |
+
+For production use with agents, the skill (`/graphify`) is recommended as it requires no additional API configuration.
+
 **Query examples:**
+
+Using the skill (in Claude Code/IDE):
+```bash
+# Natural language queries
+/graphify query "Find all service classes"
+/graphify query "Find classes with @Stateless annotation"
+/graphify query "Find files importing javax.*"
+
+# Find dependency paths
+/graphify path "ClassA" "ClassB"
+```
+
+Using the CLI (in terminal/scripts):
 ```bash
 # Natural language queries
 graphify query "Find all service classes"
@@ -121,14 +148,17 @@ graphify query "Find files importing javax.*"
 # Find dependency paths
 graphify path "ClassA" "ClassB"
 
-# View architecture summary
-cat graphify-out/GRAPH_REPORT.md
-
-# View interactive visualization
-open graphify-out/graph.html
-
 # Incremental updates after code changes
 graphify extract . --update
+```
+
+View outputs:
+```bash
+# Architecture summary
+cat graphify-out/GRAPH_REPORT.md
+
+# Interactive visualization
+open graphify-out/graph.html
 ```
 
 **Output files:**
@@ -405,13 +435,25 @@ CI Platform → KPI Metrics → Root Cause Analysis → Backlog → Retry
 ### Prerequisites
 
 - Claude Code CLI or Desktop App
+- **graphify skill installed** (required for agents to work)
+  ```bash
+  uv tool install graphifyy && graphify install
+  ```
 - Target project using this mesh for code migration
 
 ### Using This Mesh
 
 This is a **reusable mesh package** meant to be integrated into your migration project:
 
-1. **Clone or Install the Mesh**
+1. **Install Prerequisites (REQUIRED)**
+   ```bash
+   # Install graphify - agents depend on this for code analysis
+   uv tool install graphifyy && graphify install
+   # Verify installation
+   /graphify --help
+   ```
+
+2. **Clone or Install the Mesh**
    ```bash
    git clone <repository-url>
    cd mig-agent-mesh
