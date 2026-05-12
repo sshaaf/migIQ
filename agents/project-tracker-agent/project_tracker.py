@@ -8,6 +8,7 @@ executes initial tasks, and orchestrates user stories through the mesh.
 
 import argparse
 import json
+import logging
 import os
 import re
 import subprocess
@@ -15,6 +16,23 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+from dotenv import load_dotenv
+
+from trackers import create_tracker
+from trackers.interface import TrackerError
+from trackers.config import load_tracker_config_from_env, merge_configs
+
+# Load .env file if present (also loads .env.local for overrides)
+load_dotenv()  # Load .env first
+load_dotenv('.env.local', override=True)  # Then load .env.local with override
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 class TasksFileManager:
@@ -220,7 +238,68 @@ class ProjectTrackerAgent:
         self.tasks_path = context['tasksPath']
         self.mode = context.get('mode', 'interactive')
 
+        # Keep TasksFileManager for internal task tracking (TASK-001, TASK-002, etc.)
+        # These are different from user stories and handled separately
         self.tasks_manager = TasksFileManager(self.tasks_path)
+
+        # Load tracker configuration with priority:
+        # 1. Context (explicit in command-line)
+        # 2. Environment (.env file)
+        # 3. Default (local tracker)
+        context_tracker_config = context.get('tracker')
+        env_tracker_config = load_tracker_config_from_env()
+
+        # Check for .env.example and provide helpful message
+        if os.path.exists('.env.example') and not os.path.exists('.env'):
+            print("\n" + "!"*60)
+            print("NOTICE: .env.example found but .env is missing")
+            print("To use environment-based configuration:")
+            print("  1. Copy .env.example to .env")
+            print("  2. Edit .env with your configuration")
+            print("  3. Re-run the agent")
+            print("Using context or default configuration for now.")
+            print("!"*60 + "\n")
+
+        # Merge configurations with priority
+        tracker_config = merge_configs(env_tracker_config, context_tracker_config)
+
+        # Log configuration source
+        if context_tracker_config:
+            config_source = "context (explicit)"
+        elif env_tracker_config:
+            config_source = "environment (.env)"
+        else:
+            config_source = "defaults"
+        logger.info(f"Tracker configuration loaded from: {config_source}")
+
+        # Default to local tracker if no config
+        if not tracker_config:
+            tracker_config = {
+                'type': 'local',
+                'config': {'tasks_path': self.tasks_path}
+            }
+
+        try:
+            self.tracker = create_tracker(tracker_config)
+            logger.info(f"Tracker initialized: {type(self.tracker).__name__}")
+        except Exception as e:
+            logger.error(f"Failed to initialize tracker: {e}")
+            logger.warning("Falling back to LocalTracker")
+            # Fallback to local tracker
+            self.tracker = create_tracker({
+                'type': 'local',
+                'config': {'tasks_path': self.tasks_path}
+            })
+
+        # Track sync statistics
+        self.sync_stats = {
+            'successful': 0,
+            'failed': 0,
+            'urls': []
+        }
+
+        # Store config source for reporting
+        self.config_source = config_source
 
         print(f"\n{'='*60}")
         print(f"PROJECT TRACKER AGENT INITIALIZED")
@@ -230,6 +309,8 @@ class ProjectTrackerAgent:
         print(f"Project: {self.project_path}")
         print(f"Migration Type: {self.migration_type}")
         print(f"Mode: {self.mode}")
+        print(f"Tracker: {type(self.tracker).__name__}")
+        print(f"Config Source: {self.config_source}")
 
     def execute_skill(self, skill_name: str, args: Dict) -> Dict:
         """Execute a skill and return result"""
@@ -368,29 +449,52 @@ class ProjectTrackerAgent:
         }
 
     def _simulate_generate_backlog(self, args: Dict) -> Dict:
-        """Simulate backlog generation"""
+        """Generate backlog and sync stories to tracker"""
         # Read migration plan
         with open(args['plan'], 'r') as f:
             plan = json.load(f)
 
-        # Add stories to tasks.md
-        num_stories = self.tasks_manager.add_user_stories_from_plan(plan, self.session_id)
+        # Sync each story to the tracker
+        num_stories = len(plan.get('user_stories', []))
+        synced_urls = []
 
-        # Simulate Kanban sync
-        kanban_tickets = []
-        if 'kanban' in self.context:
-            platform = self.context['kanban']['platform']
-            print(f"  → Syncing with {platform} board...")
-            for story in plan['user_stories']:
-                ticket_id = f"{platform.upper()}-{story['id'].split('-')[1]}"
-                kanban_tickets.append(ticket_id)
-                print(f"    ✓ Created ticket: {ticket_id} - {story['title']}")
+        print(f"  → Syncing {num_stories} stories to {type(self.tracker).__name__}...")
 
-        print(f"  ✓ Backlog generated: {num_stories} stories added to {self.tasks_path}")
+        for story in plan['user_stories']:
+            try:
+                # Add session_id to story data
+                story['session_id'] = self.session_id
+                story['status'] = 'Backlog'  # Set initial status
+
+                # Sync story to tracker
+                result = self.tracker.sync_story(story)
+
+                if result['status'] == 'success':
+                    self.sync_stats['successful'] += 1
+                    logger.info(f"✓ Synced story {story['id']} (issue: {result['issue_id']})")
+                    print(f"    ✓ Synced story: {story['id']} - {story['title']}")
+
+                    if result.get('url'):
+                        synced_urls.append(result['url'])
+                        self.sync_stats['urls'].append(result['url'])
+                else:
+                    self.sync_stats['failed'] += 1
+                    logger.warning(f"✗ Failed to sync story {story['id']}: {result.get('error', 'unknown error')}")
+                    print(f"    ✗ Failed to sync story {story['id']}")
+
+            except Exception as e:
+                self.sync_stats['failed'] += 1
+                logger.error(f"Error syncing story {story['id']}: {e}", exc_info=True)
+                print(f"    ✗ Error syncing story {story['id']}: {e}")
+
+        print(f"  ✓ Backlog generated: {self.sync_stats['successful']}/{num_stories} stories synced successfully")
+
         return {
             'status': 'success',
             'stories_added': num_stories,
-            'kanban_tickets': kanban_tickets
+            'synced': self.sync_stats['successful'],
+            'failed': self.sync_stats['failed'],
+            'urls': list(set(synced_urls))  # Deduplicate URLs
         }
 
     def execute_initial_tasks(self):
@@ -475,9 +579,13 @@ class ProjectTrackerAgent:
         print("PROCESSING USER STORIES")
         print(f"{'='*60}")
 
-        # Read current tasks.md
-        content = self.tasks_manager.read_tasks()
-        stories = self.tasks_manager.parse_user_stories(content)
+        # List stories from tracker
+        try:
+            stories = self.tracker.list_issues()
+        except TrackerError as e:
+            logger.error(f"Failed to list stories from tracker: {e}")
+            print(f"✗ Failed to list stories: {e}")
+            return
 
         # Filter to backlog stories, sorted by priority
         priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
@@ -487,23 +595,37 @@ class ProjectTrackerAgent:
         print(f"\nFound {len(backlog_stories)} stories in backlog")
 
         for story in backlog_stories:
+            story_id = story['id']
             print(f"\n{'─'*60}")
-            print(f"Story: [{story['id']}] {story['title']}")
+            print(f"Story: [{story_id}] {story['title']}")
             print(f"Priority: {story['priority']}, Points: {story['story_points']}")
             print(f"{'─'*60}")
 
             # Update story status to in progress
-            self.tasks_manager.update_story_status(story['id'], 'In Progress')
+            try:
+                self.tracker.update_issue(story_id, {'status': 'In Progress'})
+                logger.info(f"Updated story {story_id} status to In Progress")
+            except TrackerError as e:
+                logger.warning(f"Failed to update story {story_id} status: {e}")
 
             # Invoke story-orchestrator-agent
             story_result = self.invoke_story_orchestrator(story)
 
+            # Update final status based on result
             if story_result['status'] == 'success':
-                self.tasks_manager.update_story_status(story['id'], 'Done')
-                print(f"  ✓ Story {story['id']} completed successfully")
+                try:
+                    self.tracker.update_issue(story_id, {'status': 'Done'})
+                    logger.info(f"Updated story {story_id} status to Done")
+                    print(f"  ✓ Story {story_id} completed successfully")
+                except TrackerError as e:
+                    logger.warning(f"Failed to update story {story_id} status: {e}")
             else:
-                self.tasks_manager.update_story_status(story['id'], 'Failed')
-                print(f"  ✗ Story {story['id']} failed: {story_result.get('message')}")
+                try:
+                    self.tracker.update_issue(story_id, {'status': 'Failed'})
+                    logger.info(f"Updated story {story_id} status to Failed")
+                    print(f"  ✗ Story {story_id} failed: {story_result.get('message')}")
+                except TrackerError as e:
+                    logger.warning(f"Failed to update story {story_id} status: {e}")
 
                 # Invoke failure analyzer if configured
                 if self.mode == 'autonomous':
@@ -546,17 +668,40 @@ class ProjectTrackerAgent:
             # Process user stories
             self.process_user_stories()
 
+            # Print sync summary
+            self._print_sync_summary()
+
             print(f"\n{'='*60}")
             print("MIGRATION WORKFLOW COMPLETE")
             print(f"{'='*60}")
 
-            return {'status': 'success'}
+            return {
+                'status': 'success',
+                'sync_stats': self.sync_stats
+            }
 
         except Exception as e:
             print(f"\n✗ Error: {e}")
             import traceback
             traceback.print_exc()
             return {'status': 'error', 'message': str(e)}
+
+    def _print_sync_summary(self):
+        """Print tracker sync summary"""
+        print(f"\n{'='*60}")
+        print("TRACKER SYNC SUMMARY")
+        print(f"{'='*60}")
+        print(f"Tracker Type: {type(self.tracker).__name__}")
+        print(f"Successfully Synced: {self.sync_stats['successful']}")
+        print(f"Failed: {self.sync_stats['failed']}")
+
+        if self.sync_stats['urls']:
+            print(f"\nTracker URLs:")
+            for url in set(self.sync_stats['urls']):
+                print(f"  - {url}")
+        else:
+            print("\nNo external tracker URLs (using local tracker)")
+        print(f"{'='*60}")
 
 
 def main():

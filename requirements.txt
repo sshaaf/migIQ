@@ -1,0 +1,11 @@
+# Python dependencies for Agent Mesh Migration System
+
+# .env file loading and configuration
+python-dotenv>=1.0.0
+
+# HTTP requests for GitHub API
+requests>=2.31.0
+
+# Testing framework
+pytest>=7.4.0
+pytest-mock>=3.12.0

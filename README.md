@@ -18,9 +18,56 @@ The system uses a recursive workflow: **Analyze → Plan → Implement → Valid
 
 1. **Harness Agents** - Specialized AI agents for each phase
 2. **Skills** - Reusable, focused commands
-3. **CI Platform** - DevOps infrastructure (GitLab/GitHub)
-4. **Kanban Boards** - Visual project tracking
-5. **Human Supervisor** - Oversight and intervention
+3. **Tracker Integration** - Pluggable project tracking (Local, GitHub Projects, GitLab, Jira)
+4. **CI Platform** - DevOps infrastructure (GitLab/GitHub)
+5. **Kanban Boards** - Visual project tracking
+6. **Human Supervisor** - Oversight and intervention
+
+### Tracker Integration
+
+The agent mesh supports multiple tracker backends for managing migration user stories:
+
+- **Local Tracker** (default) - tasks.md file-based tracking, no external dependencies
+- **GitHub Projects** - Sync stories to GitHub Projects v2 via GraphQL API with auto-creation
+- **GitLab Issues** (planned) - GitLab Issues integration
+- **Jira** (planned) - Jira Cloud/Server integration
+
+#### GitHub Projects Auto-Creation
+
+The `project_number` field is now **optional**. If not specified, the tracker will automatically create a new GitHub Project:
+
+```json
+{
+  "tracker": {
+    "type": "github",
+    "config": {
+      "token": "$GITHUB_TOKEN",
+      "organization": "my-org"
+    }
+  }
+}
+```
+
+The agent will:
+1. Create a new project: `Migration Agent - {org} - {timestamp}`
+2. Print the project number to console
+3. Suggest adding `TRACKER_GITHUB_PROJECT_NUMBER` to your .env file
+
+Alternatively, specify an existing project:
+```json
+{
+  "tracker": {
+    "type": "github",
+    "config": {
+      "token": "$GITHUB_TOKEN",
+      "organization": "my-org",
+      "project_number": 5
+    }
+  }
+}
+```
+
+See [agents/project-tracker-agent/README.md](./agents/project-tracker-agent/README.md) for detailed configuration.
 
 ## Package Structure
 
@@ -50,6 +97,18 @@ README.md             # This file
 - **[Failure Recovery](./docs/failure-recovery.md)** - Error handling and recovery
 - **[KPI Tracking](./docs/kpi-tracking.md)** - Metrics and reporting
 
+## Installation
+
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+Required packages:
+- `python-dotenv` - .env file loading for configuration
+- `requests` - HTTP client for GitHub API integration
+- `pytest` - Testing framework
+
 ## Getting Started - Quick Command
 
 To start a migration, use the main `/migration` command:
@@ -63,6 +122,66 @@ This command:
 2. Creates `rule.md` and `tasks.md` if they don't exist
 3. Delegates to `project-tracker-agent` which creates and executes tasks
 4. Returns a session ID and trace ID for monitoring
+
+## Configuration
+
+The agent mesh supports flexible configuration via .env files (recommended) or JSON context.
+
+### Quick Start with .env
+
+1. **Copy the example file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit .env with your settings:**
+   ```bash
+   # Tracker Configuration
+   TRACKER_TYPE=github
+   TRACKER_GITHUB_TOKEN=$GITHUB_TOKEN
+   TRACKER_GITHUB_ORGANIZATION=my-org
+   TRACKER_GITHUB_PROJECT_NUMBER=5
+   ```
+
+3. **Set your GitHub token:**
+   ```bash
+   export GITHUB_TOKEN="ghp_your_token_here"
+   ```
+
+4. **Run the migration:**
+   ```bash
+   /migration --project-path ./my-app --migration-type framework
+   ```
+
+### Environment Variable Naming Convention
+
+Environment variables use `UPPERCASE_WITH_UNDERSCORES` and map to nested configuration:
+
+| Environment Variable | Maps To | Example |
+|---------------------|---------|---------|
+| `TRACKER_TYPE` | `tracker.type` | `github` |
+| `TRACKER_GITHUB_TOKEN` | `tracker.config.token` | `$GITHUB_TOKEN` |
+| `TRACKER_GITHUB_ORGANIZATION` | `tracker.config.organization` | `my-org` |
+| `TRACKER_GITHUB_PROJECT_NUMBER` | `tracker.config.project_number` | `5` |
+
+### Configuration Priority
+
+Configuration is loaded in this priority order (highest first):
+
+1. **Explicit JSON context** (via `--context` argument)
+2. **Environment variables** (from .env file)
+3. **System environment variables**
+4. **Default values**
+
+### Migrating from JSON Context
+
+If you have existing JSON context configuration, convert it to .env:
+
+```bash
+python scripts/context_to_env.py --context '{"tracker":{"type":"github",...}}' --output .env
+```
+
+See `.env.example` for all available configuration options.
 
 ## Workflow Phases
 
