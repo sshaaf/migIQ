@@ -101,7 +101,7 @@ class TestValidateTrackerConfig:
             validate_tracker_config(config)
 
     def test_validate_github_config_missing_project_number(self):
-        """Raises error if GitHub project_number is missing"""
+        """GitHub config without project_number is valid (auto-create)"""
         config = {
             'type': 'github',
             'config': {
@@ -109,8 +109,8 @@ class TestValidateTrackerConfig:
                 'organization': 'test-org'
             }
         }
-        with pytest.raises(ConfigurationError, match="missing required fields"):
-            validate_tracker_config(config)
+        # Should not raise - project_number is optional
+        assert validate_tracker_config(config) is True
 
     def test_validate_github_config_with_labels(self):
         """GitHub config with optional labels is valid"""

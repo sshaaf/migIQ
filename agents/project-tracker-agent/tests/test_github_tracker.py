@@ -123,6 +123,7 @@ class TestGitHubTrackerGraphQL:
         """_execute_graphql executes successful request"""
         mock_response = Mock()
         mock_response.status_code = 200
+        mock_response.text = 'success'
         mock_response.json.return_value = {
             'data': {'test': 'result'}
         }
@@ -136,6 +137,7 @@ class TestGitHubTrackerGraphQL:
         """_execute_graphql raises TrackerError on 401"""
         mock_response = Mock()
         mock_response.status_code = 401
+        mock_response.text = 'Unauthorized'
         mock_post.return_value = mock_response
 
         with pytest.raises(TrackerError, match="authentication failed"):
@@ -165,6 +167,7 @@ class TestGitHubTrackerGraphQL:
         """_execute_graphql handles GraphQL errors"""
         mock_response = Mock()
         mock_response.status_code = 200
+        mock_response.text = 'error response'
         mock_response.json.return_value = {
             'errors': [{'message': 'GraphQL error'}]
         }
@@ -254,10 +257,15 @@ class TestGitHubTrackerRetryLogic:
     def test_retry_on_network_error(self, mock_sleep, mock_post, tracker):
         """Retries on network errors with exponential backoff"""
         # Fail twice, succeed on third attempt
+        success_response = Mock()
+        success_response.status_code = 200
+        success_response.text = 'success'
+        success_response.json.return_value = {'data': {'success': True}}
+
         mock_post.side_effect = [
             Exception("Network error 1"),
             Exception("Network error 2"),
-            Mock(status_code=200, json=lambda: {'data': {'success': True}})
+            success_response
         ]
 
         result = tracker._execute_graphql("query { test }", {})

@@ -33,12 +33,17 @@ class TestDotenvLoading:
             f.write('TEST_VAR=test_value\n')
             f.write('TRACKER_TYPE=github\n')
 
-        # Load it
-        load_dotenv(temp_env_file)
+        try:
+            # Load it
+            load_dotenv(temp_env_file)
 
-        # Verify loaded
-        assert os.environ.get('TEST_VAR') == 'test_value'
-        assert os.environ.get('TRACKER_TYPE') == 'github'
+            # Verify loaded
+            assert os.environ.get('TEST_VAR') == 'test_value'
+            assert os.environ.get('TRACKER_TYPE') == 'github'
+        finally:
+            # Cleanup
+            os.environ.pop('TEST_VAR', None)
+            os.environ.pop('TRACKER_TYPE', None)
 
     def test_missing_env_file(self):
         """No error when .env file missing"""
@@ -52,10 +57,15 @@ class TestDotenvLoading:
             f.write('VAR1=value1\n')
             f.write('VAR2=value2  # Inline comment\n')
 
-        load_dotenv(temp_env_file)
+        try:
+            load_dotenv(temp_env_file)
 
-        assert os.environ.get('VAR1') == 'value1'
-        assert os.environ.get('VAR2') == 'value2'
+            assert os.environ.get('VAR1') == 'value1'
+            assert os.environ.get('VAR2') == 'value2'
+        finally:
+            # Cleanup
+            os.environ.pop('VAR1', None)
+            os.environ.pop('VAR2', None)
 
 
 class TestConfigurationPriority:
@@ -94,6 +104,10 @@ class TestDotenvLocalOverride:
 
     def test_env_local_overrides(self):
         """".env.local overrides .env"""
+        # Save current environment state
+        original_var1 = os.environ.get('VAR1')
+        original_var2 = os.environ.get('VAR2')
+
         # Create temporary files
         with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f1:
             f1.write('VAR1=from_env\n')
@@ -115,6 +129,17 @@ class TestDotenvLocalOverride:
             assert os.environ.get('VAR2') == 'only_in_env'
 
         finally:
+            # Clean up environment variables
+            if original_var1 is None:
+                os.environ.pop('VAR1', None)
+            else:
+                os.environ['VAR1'] = original_var1
+
+            if original_var2 is None:
+                os.environ.pop('VAR2', None)
+            else:
+                os.environ['VAR2'] = original_var2
+
             os.unlink(env_file)
             os.unlink(local_file)
 
