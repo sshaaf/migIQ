@@ -68,6 +68,8 @@ echo ""
 # Create .claude directory structure
 mkdir -p "$TARGET_CLAUDE_DIR/agents"
 mkdir -p "$TARGET_CLAUDE_DIR/scripts"
+mkdir -p "$TARGET_CLAUDE_DIR/skills"
+mkdir -p "$TARGET_CLAUDE_DIR/commands"
 
 # Copy agents
 echo "Copying agents..."
@@ -85,6 +87,19 @@ done
 echo "Copying scripts..."
 if [ -d "$SCRIPT_DIR/scripts" ]; then
   cp -r "$SCRIPT_DIR/scripts"/* "$TARGET_CLAUDE_DIR/scripts/" 2>/dev/null || true
+fi
+
+# Copy skills
+echo "Copying skills..."
+if [ -d "$SCRIPT_DIR/.claude/skills" ]; then
+  cp -r "$SCRIPT_DIR/.claude/skills"/* "$TARGET_CLAUDE_DIR/skills/" 2>/dev/null || true
+  cp -r "$SCRIPT_DIR/skills"/* "$TARGET_CLAUDE_DIR/skills/" 2>/dev/null || true
+fi
+
+# Copy commands
+echo "Copying commands..."
+if [ -d "$SCRIPT_DIR/.claude/commands" ]; then
+  cp -r "$SCRIPT_DIR/.claude/commands"/* "$TARGET_CLAUDE_DIR/commands/" 2>/dev/null || true
 fi
 
 # Copy .env example files
