@@ -63,7 +63,7 @@ def load_test_config() -> Dict:
     # Load .env.test
     load_dotenv(dotenv_path=env_test_path)
 
-    return {
+    config = {
         'token': os.getenv('TRACKER_GITHUB_TOKEN'),
         'organization': os.getenv('TRACKER_GITHUB_ORGANIZATION'),
         'project_number': os.getenv('TRACKER_GITHUB_PROJECT_NUMBER'),
@@ -72,6 +72,11 @@ def load_test_config() -> Dict:
         'keep_project': os.getenv('TEST_KEEP_PROJECT', 'false').lower() == 'true',
         'min_rate_limit': int(os.getenv('TEST_MIN_RATE_LIMIT', '20'))
     }
+
+    # Validate required configuration (runs before any GitHub API calls)
+    validate_project_name(config)
+
+    return config
 
 
 def validate_test_config(config: Dict) -> None:
@@ -95,6 +100,32 @@ def validate_test_config(config: Dict) -> None:
             f"Missing required test configuration fields: {', '.join(missing_fields)}\n\n"
             "Please set these in your .env.test file:\n" +
             "\n".join(f"  TRACKER_GITHUB_{field.upper()}=..." for field in missing_fields)
+        )
+
+
+def validate_project_name(config: Dict) -> None:
+    """
+    Validate that project_name is configured.
+
+    Args:
+        config: Test configuration dictionary
+
+    Raises:
+        IntegrationTestError: If project_name is missing or empty
+    """
+    project_name = config.get('project_name')
+
+    if not project_name:
+        raise IntegrationTestError(
+            "TRACKER_GITHUB_PROJECT_NAME is required in .env.test\n\n"
+            "Integration tests require an explicit project name to be set.\n\n"
+            "To fix:\n"
+            "1. Edit .env.test\n"
+            "2. Set: TRACKER_GITHUB_PROJECT_NAME=My Test Project Name\n"
+            "3. Re-run tests\n\n"
+            "Example:\n"
+            "  TRACKER_GITHUB_PROJECT_NAME=Integration Test Environment\n\n"
+            "See SETUP_TESTING.md for complete setup guide."
         )
 
 
@@ -148,6 +179,10 @@ def check_rate_limit(tracker: GitHubProjectsTracker, min_limit: int = 20) -> Dic
 def generate_test_project_name(organization: str) -> str:
     """
     Generate unique test project name with timestamp.
+
+    NOTE: This function is no longer used by default integration tests.
+    Tests now require TRACKER_GITHUB_PROJECT_NAME to be explicitly configured.
+    This function is kept for potential future use in other test utilities.
 
     Args:
         organization: Organization name
@@ -207,8 +242,9 @@ def test_create_project(tracker: GitHubProjectsTracker, config: Dict) -> str:
         owner_id = tracker._get_owner_id(config['organization'])
         logger.info(f"✓ Resolved owner ID: {owner_id}")
 
-        # Generate project name
-        project_name = config.get('project_name') or generate_test_project_name(config['organization'])
+        # Use configured project name (required - validated in load_test_config())
+        project_name = config['project_name']
+        logger.info(f"Using project name from TRACKER_GITHUB_PROJECT_NAME: {project_name}")
 
         # Create project
         project_number = tracker._create_project_v2(owner_id, project_name)

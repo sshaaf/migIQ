@@ -39,13 +39,22 @@ help: ## Show this help message
 	@echo "$(CYAN)Project Tracker Agent - Makefile Commands$(NC)"
 	@echo ""
 	@echo "$(GREEN)Available targets:$(NC)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(CYAN)%-23s$(NC) %s\n", $$1, $$2}'
 	@echo ""
-	@echo "$(YELLOW)Quick Start:$(NC)"
-	@echo "  1. make setup          # Install dependencies"
-	@echo "  2. make env-setup      # Create .env.test from template"
+	@echo "$(YELLOW)Quick Start (First Time Setup):$(NC)"
+	@echo "  1. make setup               # Install dependencies"
+	@echo "  2. make env-setup           # Create .env.test from template"
 	@echo "  3. Edit .env.test with your GitHub credentials"
-	@echo "  4. make test-integration  # Run integration tests"
+	@echo "     $(YELLOW)Need help? See SETUP_TESTING.md for step-by-step guide$(NC)"
+	@echo "  4. make test-setup-verify   # Verify your setup is correct"
+	@echo "  5. make test-integration    # Run integration tests"
+	@echo ""
+	@echo "$(YELLOW)GitHub Test Environment Required:$(NC)"
+	@echo "  Integration tests need a GitHub organization/account to test against."
+	@echo "  Options:"
+	@echo "    - Use your personal GitHub account (fast, easy)"
+	@echo "    - Create a test organization (recommended, isolated)"
+	@echo "  See SETUP_TESTING.md for detailed setup instructions."
 
 setup: ## Install Python dependencies
 	@echo "$(CYAN)Installing dependencies...$(NC)"
@@ -82,6 +91,18 @@ env-check: ## Check if .env.test exists and is configured
 	@if ! grep -q "^TRACKER_GITHUB_ORGANIZATION=" $(ENV_TEST) || grep -q "^TRACKER_GITHUB_ORGANIZATION=your-org-or-username" $(ENV_TEST); then \
 		echo "$(YELLOW)⚠ Warning: TRACKER_GITHUB_ORGANIZATION not configured in .env.test$(NC)"; \
 		echo "$(YELLOW)  Please edit .env.test and set your organization$(NC)"; \
+		exit 1; \
+	fi
+	@if ! grep -q "^TRACKER_GITHUB_PROJECT_NAME=" $(ENV_TEST); then \
+		echo "$(RED)✗ Error: TRACKER_GITHUB_PROJECT_NAME is required in .env.test$(NC)"; \
+		echo "$(YELLOW)  Integration tests require an explicit project name.$(NC)"; \
+		echo "$(YELLOW)  Please edit .env.test and set:$(NC)"; \
+		echo "$(YELLOW)    TRACKER_GITHUB_PROJECT_NAME=My Test Project Name$(NC)"; \
+		exit 1; \
+	fi
+	@if grep -q "^TRACKER_GITHUB_PROJECT_NAME=$$" $(ENV_TEST) || grep -q "^TRACKER_GITHUB_PROJECT_NAME=\"\"" $(ENV_TEST) || grep -q "^TRACKER_GITHUB_PROJECT_NAME=''$$" $(ENV_TEST); then \
+		echo "$(RED)✗ Error: TRACKER_GITHUB_PROJECT_NAME cannot be empty$(NC)"; \
+		echo "$(YELLOW)  Please set a project name in .env.test$(NC)"; \
 		exit 1; \
 	fi
 	@echo "$(GREEN)✓ .env.test is configured$(NC)"
@@ -157,11 +178,23 @@ rate-limit: env-check ## Check GitHub API rate limit
 validate-token: env-check ## Validate GitHub token has required permissions
 	@echo "$(CYAN)Validating GitHub token...$(NC)"
 	@. ./$(ENV_TEST) && \
-		response=$$(curl -s -H "Authorization: Bearer $$TRACKER_GITHUB_TOKEN" https://api.github.com/user); \
-		echo "$$response" | $(PYTHON) -c 'import sys, json; data=json.load(sys.stdin); print("✓ Token valid for user:", data.get("login", "unknown"))' || \
-		echo "$(RED)✗ Token validation failed$(NC)"
+		$(PYTHON) scripts/validate_github_token.py "$$TRACKER_GITHUB_TOKEN" || exit 1
 	@echo "$(YELLOW)Note: Check token scopes at https://github.com/settings/tokens$(NC)"
 	@echo "$(YELLOW)Required scopes: repo, project$(NC)"
+
+verify-org: env-check ## Verify GitHub organization exists and is accessible
+	@echo "$(CYAN)Verifying GitHub organization access...$(NC)"
+	@. ./$(ENV_TEST) && \
+		$(PYTHON) scripts/verify_github_org.py "$$TRACKER_GITHUB_TOKEN" "$$TRACKER_GITHUB_ORGANIZATION" || exit 1
+
+test-setup-verify: env-check validate-token verify-org rate-limit ## Verify complete test environment setup
+	@echo ""
+	@echo "$(GREEN)✓ Test environment setup verified!$(NC)"
+	@echo "$(GREEN)  Ready to run integration tests$(NC)"
+	@echo ""
+	@echo "$(CYAN)Next steps:$(NC)"
+	@echo "  make test-integration      # Run integration tests"
+	@echo "  make test-integration-keep # Keep test project for debugging"
 
 ci: ## Run tests in CI mode (for CI/CD pipelines)
 	@echo "$(CYAN)Running CI test suite...$(NC)"

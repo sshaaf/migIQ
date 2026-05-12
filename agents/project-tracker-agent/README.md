@@ -696,31 +696,70 @@ python3 project_tracker.py --context "$(cat test-context.json)"
 
 Integration tests validate the GitHub tracker functionality with real API calls.
 
-**Setup:**
-1. Create `.env.test` from template:
-   ```bash
-   cp .env.test.example .env.test
-   ```
+**⚠️ Important:** Integration tests require a GitHub organization/account to test against.
 
-2. Edit `.env.test` with your credentials:
-   ```bash
-   # Required
-   TRACKER_GITHUB_TOKEN=ghp_your_token_here
-   TRACKER_GITHUB_ORGANIZATION=your-org-or-username
+#### Quick Setup (5 minutes)
 
-   # Optional - will auto-create project if not specified
-   # TRACKER_GITHUB_PROJECT_NUMBER=5
+Follow the [**Step-by-Step Setup Guide**](./SETUP_TESTING.md) for complete instructions.
 
-   # Optional - customize test behavior
-   # TEST_KEEP_PROJECT=false
-   # TEST_MIN_RATE_LIMIT=20
-   ```
+**TL;DR:**
+```bash
+# 1. Install dependencies
+make setup
 
-3. Get a GitHub token with 'project' scope:
-   - Visit: https://github.com/settings/tokens
-   - Click "Generate new token (classic)"
-   - Select scopes: `project`, `repo`
-   - Copy token to `.env.test`
+# 2. Create .env.test
+make env-setup
+
+# 3. Edit .env.test with your credentials:
+#    - Get token at: https://github.com/settings/tokens (scopes: repo, project)
+#    - Use your GitHub username OR create test org at: https://github.com/organizations/new
+
+# 4. Verify setup
+make test-setup-verify
+
+# 5. Run tests
+make test-integration
+```
+
+#### GitHub Test Environment Options
+
+**Option 1: Personal Account** (Fastest)
+- Use your GitHub username
+- Tests create/delete projects in your account
+- Good for quick testing
+
+**Option 2: Test Organization** (Recommended)
+- Create organization at: https://github.com/organizations/new
+- Name it `your-username-testing`
+- Isolated test environment
+- Good for teams and CI/CD
+
+See [SETUP_TESTING.md](./SETUP_TESTING.md) for detailed instructions.
+
+#### Configuration
+
+Edit `.env.test` with your credentials:
+```bash
+# Required
+TRACKER_GITHUB_TOKEN=ghp_your_token_here          # From https://github.com/settings/tokens
+TRACKER_GITHUB_ORGANIZATION=your-org-or-username  # Your username or test org name
+TRACKER_GITHUB_PROJECT_NAME=My Integration Test Project  # Required for integration tests
+
+# Optional - will auto-create project if not specified
+# TRACKER_GITHUB_PROJECT_NUMBER=5
+
+# Optional - customize test behavior
+# TEST_KEEP_PROJECT=false
+# TEST_MIN_RATE_LIMIT=20
+```
+
+**Project Naming (Required):**
+
+Integration tests **require** `TRACKER_GITHUB_PROJECT_NAME` to be set in `.env.test`. Tests will fail with a validation error if this field is missing or empty.
+
+- Set your project name explicitly for clear test identification
+  - Example: `TRACKER_GITHUB_PROJECT_NAME=My Integration Test Project`
+  - Good for: Consistent test runs, easier recognition in GitHub UI
 
 **Run tests:**
 

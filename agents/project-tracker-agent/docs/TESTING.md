@@ -18,6 +18,141 @@ make env-setup       # Create .env.test from template
 make test-integration
 ```
 
+## GitHub Test Environment Setup
+
+Integration tests require a real GitHub account/organization to test against. Choose one of these options:
+
+### Option 1: Use Your Personal Account (Quick Start)
+
+**Pros:**
+- ✅ No setup required
+- ✅ Start testing immediately
+- ✅ Works with free GitHub account
+
+**Cons:**
+- ⚠️ Creates test projects in your personal account
+- ⚠️ Projects visible in your profile (until deleted)
+
+**Setup:**
+
+1. **Get your GitHub username:**
+   ```bash
+   # Visit https://github.com/YOUR_USERNAME
+   # Your username is in the URL
+   ```
+
+2. **Create a Personal Access Token:**
+   - Visit: https://github.com/settings/tokens
+   - Click "Generate new token (classic)"
+   - Token name: `migration-agent-testing`
+   - Select scopes:
+     - ✅ `repo` (Full control of private repositories)
+     - ✅ `project` (Full control of projects)
+   - Click "Generate token"
+   - Copy the token (starts with `ghp_`)
+
+3. **Configure .env.test:**
+   ```bash
+   TRACKER_GITHUB_TOKEN=ghp_YOUR_TOKEN_HERE
+   TRACKER_GITHUB_ORGANIZATION=YOUR_USERNAME
+   ```
+
+4. **Run tests:**
+   ```bash
+   make test-integration
+   ```
+
+**What happens:**
+- Tests create project: `Migration Agent Test - YOUR_USERNAME - 20260512-143022`
+- Tests automatically delete the project after completion
+- If test fails, you may need to manually delete orphaned projects
+
+### Option 2: Create a Test Organization (Recommended)
+
+**Pros:**
+- ✅ Isolated testing environment
+- ✅ Clean separation from personal/work projects
+- ✅ Multiple team members can share test org
+- ✅ Professional setup for CI/CD
+
+**Cons:**
+- ⚠️ Requires creating a GitHub organization
+- ⚠️ Slightly more setup time
+
+**Setup:**
+
+1. **Create a test organization:**
+   - Visit: https://github.com/organizations/new
+   - Organization account name: `your-username-testing` (or similar)
+   - Contact email: Your email
+   - Plan: **Free** (sufficient for testing)
+   - Click "Create organization"
+
+2. **Enable GitHub Projects:**
+   - Go to: `https://github.com/organizations/YOUR_ORG/settings`
+   - Scroll to "Features"
+   - Ensure "Projects" is enabled
+
+3. **Create a Personal Access Token:**
+   - Visit: https://github.com/settings/tokens
+   - Click "Generate new token (classic)"
+   - Token name: `migration-agent-testing`
+   - Select scopes:
+     - ✅ `repo` (Full control of private repositories)
+     - ✅ `project` (Full control of projects)
+   - Click "Generate token"
+   - Copy the token (starts with `ghp_`)
+
+4. **Configure .env.test:**
+   ```bash
+   TRACKER_GITHUB_TOKEN=ghp_YOUR_TOKEN_HERE
+   TRACKER_GITHUB_ORGANIZATION=your-username-testing
+   ```
+
+5. **Run tests:**
+   ```bash
+   make test-integration
+   ```
+
+**What happens:**
+- Tests create project in test organization
+- Tests automatically delete the project after completion
+- Organization keeps history of test runs
+
+### Option 3: Use Existing Organization (Advanced)
+
+**For teams with existing test infrastructure:**
+
+1. **Get organization name:**
+   - Use your existing test organization
+   - Ensure you have admin permissions
+
+2. **Verify permissions:**
+   ```bash
+   # Check if you can create projects
+   make validate-token
+   ```
+
+3. **Configure .env.test:**
+   ```bash
+   TRACKER_GITHUB_TOKEN=ghp_YOUR_EXISTING_TOKEN
+   TRACKER_GITHUB_ORGANIZATION=your-existing-test-org
+   ```
+
+### Recommended: Test Organization
+
+**Suggested naming:**
+- Personal: `myusername-testing`
+- Team: `company-migration-testing`
+- Temporary: `temp-integration-tests`
+
+**Example test organization setup:**
+```bash
+# Create organization at: https://github.com/organizations/new
+Organization name: myusername-testing
+Plan: Free
+```
+
 ## Available Test Commands
 
 ### Integration Tests
@@ -91,7 +226,13 @@ TRACKER_GITHUB_TOKEN=ghp_your_token_here
 
 # GitHub organization or username
 TRACKER_GITHUB_ORGANIZATION=your-org-or-username
+
+# REQUIRED: Project name for integration tests
+# This must be set explicitly - tests will fail if not configured
+TRACKER_GITHUB_PROJECT_NAME=My Integration Test Project
 ```
+
+**Note:** Tests will fail with a clear error message if `TRACKER_GITHUB_PROJECT_NAME` is not set.
 
 ### Optional Variables
 
@@ -99,10 +240,10 @@ TRACKER_GITHUB_ORGANIZATION=your-org-or-username
 # Use existing project (WARNING: will modify it!)
 TRACKER_GITHUB_PROJECT_NUMBER=5
 
-# Custom project name for test projects
-TRACKER_GITHUB_PROJECT_NAME=My Test Project
+# Project description (only used when creating new projects)
+TRACKER_GITHUB_PROJECT_DESCRIPTION=Integration test project
 
-# Keep test project after tests complete
+# Keep test project after tests complete (for debugging)
 TEST_KEEP_PROJECT=false
 
 # Minimum API rate limit to run tests
