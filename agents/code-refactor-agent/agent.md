@@ -28,13 +28,13 @@ BEFORE using Grep/Read/Edit, ALWAYS:
 
 2. **For dependency questions:**
    ```bash
-   graphify path "ClassA" "ClassB"
+   /graphify path "ClassA" "ClassB"
    # Returns: Shortest dependency path
    ```
 
 3. **For code search:**
    ```bash
-   graphify query "Find all @MessageDriven classes"
+   /graphify query "Find all @MessageDriven classes"
    # Returns: All matching nodes with file locations
    ```
 
@@ -46,14 +46,14 @@ BEFORE using Grep/Read/Edit, ALWAYS:
 
 5. **For class context:**
    ```bash
-   graphify query "What does OrderServiceMDB do?"
+   /graphify query "What does OrderServiceMDB do?"
    # Returns: Class purpose and connections
    ```
 
 6. **After making code changes:**
    ```bash
-   graphify extract . --update
-   # Updates graph (incremental, only changed files, ~10-30s)
+   /graphify .
+   # Rebuilds graph (incremental if unchanged files, ~10-30s)
    ```
 
 **Use Grep/Read only if:**
