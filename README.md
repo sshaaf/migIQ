@@ -69,6 +69,83 @@ Alternatively, specify an existing project:
 
 See [agents/project-tracker-agent/README.md](./agents/project-tracker-agent/README.md) for detailed configuration.
 
+### Code Analysis with Graphify
+
+Agents use [graphify](https://github.com/safishamsi/graphify) for fast code analysis via knowledge graphs. This reduces analysis time by 50-70% compared to traditional Grep/Read approaches.
+
+**How it works:**
+1. Pre-execution hook builds knowledge graph (one-time, ~30s)
+2. Agents query graph for dependencies, services, and architecture
+3. Graphify extracts Java annotations and imports via tree-sitter AST (local, no API calls for code)
+4. Migration-specific queries detect EJB patterns and javax imports
+5. Fall back to Grep/Read only when graph can't answer the question
+
+**Performance impact:**
+- 50-70% faster agent execution
+- 96% reduction in file reads per task
+- Complete dependency understanding
+- Zero infrastructure cost (AST-only, no external services)
+- Local code analysis (tree-sitter AST parsing, no API calls)
+
+**Requirements:**
+- Python 3.10 or higher
+
+**Setup:**
+```bash
+# 1. Install graphify (Python package)
+# Option A: Using uv (recommended)
+uv tool install graphifyy && graphify install
+
+# Option B: Using pipx
+pipx install graphifyy && graphify install
+
+# Option C: Using pip
+pip install graphifyy && graphify install
+
+# Note: Package name is 'graphifyy' (double-y), CLI command is 'graphify'
+
+# 2. Build initial graph
+/graphify .
+# Or in CLI context: graphify extract .
+
+# 3. Agents automatically use graph (via PreAgentExecution hook)
+```
+
+**Query examples:**
+```bash
+# Natural language queries
+graphify query "Find all service classes"
+graphify query "Find classes with @Stateless annotation"
+graphify query "Find files importing javax.*"
+
+# Find dependency paths
+graphify path "ClassA" "ClassB"
+
+# View architecture summary
+cat graphify-out/GRAPH_REPORT.md
+
+# View interactive visualization
+open graphify-out/graph.html
+
+# Incremental updates after code changes
+graphify extract . --update
+```
+
+**Output files:**
+- `graphify-out/graph.html` - Interactive visualization
+- `graphify-out/GRAPH_REPORT.md` - Architecture summary with god nodes and key connections
+- `graphify-out/graph.json` - Complete graph data for programmatic queries
+
+**Benchmarking:**
+```bash
+# Measure performance improvement
+./scripts/benchmark-without-graph.sh test-generator-agent US-001
+./scripts/benchmark-with-graph.sh test-generator-agent US-001
+python3 scripts/compare-benchmarks.py
+```
+
+See agent `agent.md` files for graph-first analysis strategies.
+
 ## Package Structure
 
 ```
