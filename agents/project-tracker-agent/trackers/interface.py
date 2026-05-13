@@ -118,6 +118,44 @@ class TrackerInterface(ABC):
         """
         pass
 
+    @abstractmethod
+    def add_comment(self, issue_id: str, comment: str) -> bool:
+        """
+        Add a comment to an existing issue.
+
+        Args:
+            issue_id: Tracker-specific issue identifier
+            comment: Comment text (markdown supported)
+
+        Returns:
+            True if comment added successfully, False otherwise
+
+        Raises:
+            TrackerError: If adding comment fails
+        """
+        pass
+
+    @abstractmethod
+    def attach_output(self, issue_id: str, output_path: str, description: str = None) -> bool:
+        """
+        Attach output file/content to an issue.
+
+        For GitHub: Adds content as a formatted comment
+        For Local: Embeds content or links to file
+
+        Args:
+            issue_id: Tracker-specific issue identifier
+            output_path: Path to output file (JSON, MD, etc.)
+            description: Optional description of the output
+
+        Returns:
+            True if attachment succeeded, False otherwise
+
+        Raises:
+            TrackerError: If attachment fails
+        """
+        pass
+
 
 class TrackerError(Exception):
     """Exception raised for tracker operation failures"""

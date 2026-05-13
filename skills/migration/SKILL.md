@@ -113,12 +113,17 @@ Each task includes:
 **Interactive Mode (default):**
 - Pauses for human intervention when user stories fail
 - Allows manual review and remediation
-- Continues to next story after manual fix
+- Stops processing to prevent cascading failures
 
-**Autonomous Mode:**
-- Automatically invokes failure-analyzer-agent when stories fail
-- Attempts automatic remediation and retry
-- Continues processing without human intervention
+**Autonomous Mode (fully automated):**
+- Processes all user stories without stopping
+- When a story fails:
+  - Marks story as Failed in tracker
+  - Adds failure details as comment to GitHub issue
+  - Continues with remaining stories
+  - Does NOT block on failures
+- All failures are documented in GitHub issues for review
+- Suitable for overnight runs or CI/CD pipelines
 - Set via `--mode autonomous` or `MODE=autonomous` in .env
 
 **How to enable:**

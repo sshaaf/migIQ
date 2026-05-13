@@ -328,3 +328,111 @@ class LocalTracker(TrackerInterface):
                 'error': str(e),
                 'created': False
             }
+
+    def add_comment(self, issue_id: str, comment: str) -> bool:
+        """
+        Add a comment to a story in tasks.md.
+
+        Args:
+            issue_id: Story ID (e.g., "US-001")
+            comment: Comment text
+
+        Returns:
+            True if comment added successfully
+        """
+        try:
+            content = self.read_tasks()
+
+            # Find the story section
+            story_marker = f"### [{issue_id}]"
+            if story_marker not in content:
+                logger.warning(f"Story {issue_id} not found in tasks.md")
+                return False
+
+            # Find the next story marker or end of file
+            story_start = content.find(story_marker)
+            next_story = content.find("\n###", story_start + len(story_marker))
+
+            if next_story == -1:
+                # Last story - append at end
+                updated_content = content + f"\n\n**Comment ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}):**\n{comment}\n"
+            else:
+                # Insert before next story
+                before = content[:next_story]
+                after = content[next_story:]
+                updated_content = before + f"\n\n**Comment ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}):**\n{comment}\n" + after
+
+            self.write_tasks(updated_content)
+            logger.info(f"Added comment to story {issue_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to add comment to {issue_id}: {e}")
+            return False
+
+    def attach_output(self, issue_id: str, output_path: str, description: str = None) -> bool:
+        """
+        Attach output file reference to story in tasks.md.
+
+        Args:
+            issue_id: Story ID (e.g., "TASK-001")
+            output_path: Path to output file
+            description: Optional description
+
+        Returns:
+            True if attachment succeeded
+        """
+        try:
+            import os
+
+            if not os.path.exists(output_path):
+                logger.warning(f"Output file not found: {output_path}")
+                return False
+
+            # Create attachment text
+            attachment_text = f"\n\n**Output Attached ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}):**\n"
+            if description:
+                attachment_text += f"- {description}\n"
+            attachment_text += f"- File: `{output_path}`\n"
+
+            # For JSON files, embed a summary
+            if output_path.endswith('.json'):
+                try:
+                    import json
+                    with open(output_path, 'r') as f:
+                        data = json.load(f)
+
+                    # Add summary stats
+                    if isinstance(data, dict):
+                        attachment_text += f"- Keys: {', '.join(list(data.keys())[:10])}\n"
+                        if 'total_stories' in data:
+                            attachment_text += f"- Total Stories: {data['total_stories']}\n"
+                        if 'total_story_points' in data:
+                            attachment_text += f"- Total Story Points: {data['total_story_points']}\n"
+                except:
+                    pass
+
+            # Add to story section (same as add_comment)
+            content = self.read_tasks()
+            story_marker = f"### [{issue_id}]"
+            if story_marker not in content:
+                logger.warning(f"Story {issue_id} not found in tasks.md")
+                return False
+
+            story_start = content.find(story_marker)
+            next_story = content.find("\n###", story_start + len(story_marker))
+
+            if next_story == -1:
+                updated_content = content + attachment_text
+            else:
+                before = content[:next_story]
+                after = content[next_story:]
+                updated_content = before + attachment_text + after
+
+            self.write_tasks(updated_content)
+            logger.info(f"Attached output {output_path} to story {issue_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to attach output to {issue_id}: {e}")
+            return False

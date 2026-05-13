@@ -917,3 +917,147 @@ class GitHubProjectsTracker(TrackerInterface):
                 'error': str(e),
                 'created': False
             }
+
+    def add_comment(self, issue_id: str, comment: str) -> bool:
+        """
+        Add a comment to a GitHub issue.
+
+        Note: Only works for repository issues (created with TRACKER_GITHUB_REPOSITORY).
+        Draft issues (project-only) do not support comments via API.
+
+        Args:
+            issue_id: GitHub issue node ID (starts with 'I_' for issues, 'DI_' for draft issues)
+            comment: Comment text (markdown supported)
+
+        Returns:
+            True if comment added successfully, False otherwise
+
+        Raises:
+            TrackerError: If adding comment fails
+        """
+        # Check if this is a draft issue (they don't support comments)
+        if issue_id.startswith('DI_') or issue_id.startswith('PVTI_'):
+            logger.warning(
+                f"Cannot add comments to draft issues (ID: {issue_id}). "
+                "Configure TRACKER_GITHUB_REPOSITORY to create real issues with comment support."
+            )
+            return False
+
+        try:
+            mutation = """
+            mutation($subjectId: ID!, $body: String!) {
+              addComment(input: {
+                subjectId: $subjectId
+                body: $body
+              }) {
+                commentEdge {
+                  node {
+                    id
+                    createdAt
+                  }
+                }
+              }
+            }
+            """
+
+            variables = {
+                'subjectId': issue_id,
+                'body': comment
+            }
+
+            result = self._execute_graphql(mutation, variables)
+            comment_data = result.get('data', {}).get('addComment', {}).get('commentEdge', {}).get('node', {})
+
+            if not comment_data:
+                raise TrackerError("Failed to add comment - no response data")
+
+            logger.info(f"Added comment to issue {issue_id}")
+            return True
+
+        except TrackerError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to add comment to issue {issue_id}: {e}")
+            raise TrackerError(f"Failed to add comment: {e}")
+
+    def attach_output(self, issue_id: str, output_path: str, description: str = None) -> bool:
+        """
+        Attach output file content to GitHub issue as a formatted comment.
+
+        Args:
+            issue_id: GitHub issue node ID
+            output_path: Path to output file
+            description: Optional description
+
+        Returns:
+            True if attachment succeeded
+        """
+        try:
+            import os
+            import json
+
+            if not os.path.exists(output_path):
+                logger.warning(f"Output file not found: {output_path}")
+                return False
+
+            # Read file content
+            with open(output_path, 'r') as f:
+                content = f.read()
+
+            # Determine file type for syntax highlighting
+            file_ext = os.path.splitext(output_path)[1].lower()
+            if file_ext == '.json':
+                syntax = 'json'
+                # Pretty print JSON
+                try:
+                    parsed = json.loads(content)
+                    content = json.dumps(parsed, indent=2)
+                except:
+                    pass
+            elif file_ext == '.md':
+                syntax = 'markdown'
+            else:
+                syntax = ''
+
+            # Format comment with file content
+            comment = f"""## 📎 Output Attached
+
+**File:** `{os.path.basename(output_path)}`
+"""
+
+            if description:
+                comment += f"**Description:** {description}\n\n"
+
+            # Truncate very large files
+            max_size = 50000  # ~50KB
+            if len(content) > max_size:
+                comment += f"""
+<details>
+<summary>View Output (truncated - showing first {max_size} characters)</summary>
+
+```{syntax}
+{content[:max_size]}
+...
+(truncated)
+```
+</details>
+"""
+            else:
+                comment += f"""
+<details>
+<summary>View Output</summary>
+
+```{syntax}
+{content}
+```
+</details>
+"""
+
+            comment += f"\n---\n*Attached automatically by migration agent*"
+
+            # Add as comment
+            return self.add_comment(issue_id, comment)
+
+        except Exception as e:
+            logger.error(f"Failed to attach output {output_path} to issue {issue_id}: {e}")
+            return False

@@ -317,6 +317,9 @@ class ProjectTrackerAgent:
             'urls': []
         }
 
+        # Map story IDs to tracker issue IDs for commenting
+        self.story_to_issue_map: Dict[str, str] = {}
+
         # Store config source for reporting
         self.config_source = config_source
 
@@ -330,6 +333,80 @@ class ProjectTrackerAgent:
         print(f"Mode: {self.mode}")
         print(f"Tracker: {type(self.tracker).__name__}")
         print(f"Config Source: {self.config_source}")
+
+    def _create_initial_task_issues(self) -> Dict[str, str]:
+        """
+        Create tracker issues for initial tasks before execution.
+
+        Returns:
+            Dictionary mapping task IDs to tracker issue IDs
+        """
+        task_ids = {}
+
+        # TASK-001: Analyze Codebase
+        print("  → Creating TASK-001: Analyze Codebase")
+        task_001_data = {
+            'id': 'TASK-001',
+            'title': 'Analyze Codebase',
+            'description': f'Analyze {self.project_path} for migration planning',
+            'status': 'Backlog',
+            'priority': 'P0',
+            'story_points': 2,
+            'session_id': self.session_id
+        }
+        try:
+            result = self.tracker.sync_story(task_001_data)
+            if result['status'] == 'success':
+                task_ids['TASK-001'] = result['issue_id']
+                print(f"    ✓ Created: {result['issue_id']}")
+            else:
+                logger.warning(f"Failed to create TASK-001: {result.get('error')}")
+        except Exception as e:
+            logger.warning(f"Failed to create TASK-001 tracker issue: {e}")
+
+        # TASK-002: Create Migration Plan
+        print("  → Creating TASK-002: Create Migration Plan")
+        task_002_data = {
+            'id': 'TASK-002',
+            'title': 'Create Migration Plan',
+            'description': f'Generate migration plan for {self.migration_type}',
+            'status': 'Backlog',
+            'priority': 'P0',
+            'story_points': 3,
+            'session_id': self.session_id
+        }
+        try:
+            result = self.tracker.sync_story(task_002_data)
+            if result['status'] == 'success':
+                task_ids['TASK-002'] = result['issue_id']
+                print(f"    ✓ Created: {result['issue_id']}")
+            else:
+                logger.warning(f"Failed to create TASK-002: {result.get('error')}")
+        except Exception as e:
+            logger.warning(f"Failed to create TASK-002 tracker issue: {e}")
+
+        # TASK-003: Generate Backlog
+        print("  → Creating TASK-003: Generate Backlog")
+        task_003_data = {
+            'id': 'TASK-003',
+            'title': 'Generate Backlog',
+            'description': 'Generate user stories and sync to tracker',
+            'status': 'Backlog',
+            'priority': 'P0',
+            'story_points': 2,
+            'session_id': self.session_id
+        }
+        try:
+            result = self.tracker.sync_story(task_003_data)
+            if result['status'] == 'success':
+                task_ids['TASK-003'] = result['issue_id']
+                print(f"    ✓ Created: {result['issue_id']}")
+            else:
+                logger.warning(f"Failed to create TASK-003: {result.get('error')}")
+        except Exception as e:
+            logger.warning(f"Failed to create TASK-003 tracker issue: {e}")
+
+        return task_ids
 
     def execute_skill(self, skill_name: str, args: Dict) -> Dict:
         """Execute a skill and return result"""
@@ -493,6 +570,9 @@ class ProjectTrackerAgent:
                     logger.info(f"✓ Synced story {story['id']} (issue: {result['issue_id']})")
                     print(f"    ✓ Synced story: {story['id']} - {story['title']}")
 
+                    # Store story ID to tracker issue ID mapping for commenting
+                    self.story_to_issue_map[story['id']] = result['issue_id']
+
                     if result.get('url'):
                         synced_urls.append(result['url'])
                         self.sync_stats['urls'].append(result['url'])
@@ -517,13 +597,26 @@ class ProjectTrackerAgent:
         }
 
     def execute_initial_tasks(self):
-        """Execute the three initial tasks"""
+        """Execute the three initial tasks and track them in the tracker"""
         print(f"\n{'='*60}")
         print("EXECUTING INITIAL TASKS")
         print(f"{'='*60}")
 
+        # Create tracker issues for initial tasks FIRST
+        print("\n→ Creating tracker issues for initial tasks...")
+        initial_task_ids = self._create_initial_task_issues()
+
         # TASK-001: Analyze codebase
         print("\n[TASK-001] Analyze Codebase")
+        task_001_id = initial_task_ids.get('TASK-001')
+
+        # Update tracker status to In Progress
+        if task_001_id:
+            try:
+                self.tracker.update_issue(task_001_id, {'status': 'In Progress'})
+            except:
+                pass
+
         self.tasks_manager.update_task_status('TASK-001', 'in_progress')
 
         result = self.execute_skill('analyze-codebase', {
@@ -533,6 +626,7 @@ class ProjectTrackerAgent:
         })
 
         if result['status'] == 'success':
+            # Update local tasks.md
             self.tasks_manager.update_task_status(
                 'TASK-001',
                 'completed',
@@ -540,12 +634,40 @@ class ProjectTrackerAgent:
                 f"{result['summary']['total_lines']} lines"
             )
             print("  Status: ✓ Completed")
+
+            # Attach output to tracker issue
+            if task_001_id:
+                try:
+                    self.tracker.attach_output(
+                        task_001_id,
+                        './analysis-report.json',
+                        f"Codebase analysis results: {result['summary']['total_files']} files analyzed"
+                    )
+                    self.tracker.update_issue(task_001_id, {'status': 'Done'})
+                    print("  ✓ Output attached to tracker issue")
+                except Exception as e:
+                    logger.warning(f"Failed to attach output to tracker: {e}")
         else:
             self.tasks_manager.update_task_status('TASK-001', 'failed', result.get('message'))
+            if task_001_id:
+                try:
+                    self.tracker.update_issue(task_001_id, {'status': 'Failed'})
+                    self.tracker.add_comment(task_001_id, f"❌ Analysis failed: {result.get('message')}")
+                except:
+                    pass
             return False
 
         # TASK-002: Create migration plan
         print("\n[TASK-002] Create Migration Plan")
+        task_002_id = initial_task_ids.get('TASK-002')
+
+        # Update tracker status to In Progress
+        if task_002_id:
+            try:
+                self.tracker.update_issue(task_002_id, {'status': 'In Progress'})
+            except:
+                pass
+
         self.tasks_manager.update_task_status('TASK-002', 'in_progress')
 
         result = self.execute_skill('plan-migration', {
@@ -555,6 +677,7 @@ class ProjectTrackerAgent:
         })
 
         if result['status'] == 'success':
+            # Update local tasks.md
             self.tasks_manager.update_task_status(
                 'TASK-002',
                 'completed',
@@ -562,12 +685,40 @@ class ProjectTrackerAgent:
                 f"{result['total_story_points']} story points"
             )
             print("  Status: ✓ Completed")
+
+            # Attach output to tracker issue
+            if task_002_id:
+                try:
+                    self.tracker.attach_output(
+                        task_002_id,
+                        './migration-plan.json',
+                        f"Migration plan: {result['total_stories']} stories, {result['total_story_points']} story points"
+                    )
+                    self.tracker.update_issue(task_002_id, {'status': 'Done'})
+                    print("  ✓ Output attached to tracker issue")
+                except Exception as e:
+                    logger.warning(f"Failed to attach output to tracker: {e}")
         else:
             self.tasks_manager.update_task_status('TASK-002', 'failed', result.get('message'))
+            if task_002_id:
+                try:
+                    self.tracker.update_issue(task_002_id, {'status': 'Failed'})
+                    self.tracker.add_comment(task_002_id, f"❌ Planning failed: {result.get('message')}")
+                except:
+                    pass
             return False
 
         # TASK-003: Generate backlog
         print("\n[TASK-003] Generate Backlog")
+        task_003_id = initial_task_ids.get('TASK-003')
+
+        # Update tracker status to In Progress
+        if task_003_id:
+            try:
+                self.tracker.update_issue(task_003_id, {'status': 'In Progress'})
+            except:
+                pass
+
         self.tasks_manager.update_task_status('TASK-003', 'in_progress')
 
         result = self.execute_skill('generate-backlog', {
@@ -580,14 +731,43 @@ class ProjectTrackerAgent:
             if result.get('kanban_tickets'):
                 kanban_info = f", {len(result['kanban_tickets'])} Kanban tickets created"
 
+            # Update local tasks.md
             self.tasks_manager.update_task_status(
                 'TASK-003',
                 'completed',
                 f"✓ Backlog generated: {result['stories_added']} stories{kanban_info}"
             )
             print("  Status: ✓ Completed")
+
+            # Attach summary to tracker issue
+            if task_003_id:
+                try:
+                    # Create a summary comment instead of attaching the plan file again
+                    summary = f"""## Backlog Generation Complete
+
+**Stories Created:** {result['stories_added']}
+**Successfully Synced:** {result['synced']}
+**Failed:** {result['failed']}
+
+"""
+                    if result.get('urls'):
+                        summary += "**Tracker URLs:**\n"
+                        for url in result['urls']:
+                            summary += f"- {url}\n"
+
+                    self.tracker.add_comment(task_003_id, summary)
+                    self.tracker.update_issue(task_003_id, {'status': 'Done'})
+                    print("  ✓ Summary added to tracker issue")
+                except Exception as e:
+                    logger.warning(f"Failed to update tracker: {e}")
         else:
             self.tasks_manager.update_task_status('TASK-003', 'failed', result.get('message'))
+            if task_003_id:
+                try:
+                    self.tracker.update_issue(task_003_id, {'status': 'Failed'})
+                    self.tracker.add_comment(task_003_id, f"❌ Backlog generation failed: {result.get('message')}")
+                except:
+                    pass
             return False
 
         return True
@@ -633,25 +813,90 @@ class ProjectTrackerAgent:
             # Update final status based on result
             if story_result['status'] == 'success':
                 try:
-                    self.tracker.update_issue(story_id, {'status': 'Done'})
+                    tracker_issue_id = self.story_to_issue_map.get(story_id)
+                    self.tracker.update_issue(tracker_issue_id or story_id, {'status': 'Done'})
                     logger.info(f"Updated story {story_id} status to Done")
                     print(f"  ✓ Story {story_id} completed successfully")
                 except TrackerError as e:
                     logger.warning(f"Failed to update story {story_id} status: {e}")
             else:
+                # Story failed
                 try:
-                    self.tracker.update_issue(story_id, {'status': 'Failed'})
+                    tracker_issue_id = self.story_to_issue_map.get(story_id)
+                    self.tracker.update_issue(tracker_issue_id or story_id, {'status': 'Failed'})
                     logger.info(f"Updated story {story_id} status to Failed")
                     print(f"  ✗ Story {story_id} failed: {story_result.get('message')}")
                 except TrackerError as e:
                     logger.warning(f"Failed to update story {story_id} status: {e}")
 
-                # Invoke failure analyzer if configured
+                # Handle failure based on mode
                 if self.mode == 'autonomous':
+                    print("  → Autonomous mode: Adding failure details to issue and continuing...")
+
+                    # Add failure comment to GitHub issue
+                    failure_comment = self._format_failure_comment(story, story_result)
+                    try:
+                        tracker_issue_id = self.story_to_issue_map.get(story_id)
+                        if tracker_issue_id:
+                            self.tracker.add_comment(tracker_issue_id, failure_comment)
+                            print(f"  ✓ Added failure comment to issue")
+                        else:
+                            logger.warning(f"No tracker issue ID found for {story_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to add comment to issue: {e}")
+
+                    # Invoke failure analyzer
                     print("  → Invoking failure-analyzer-agent...")
+                    # TODO: Implement failure-analyzer-agent invocation
+                    # For now, just continue to next story
+
+                    # Continue processing other stories
+                    print(f"  → Continuing with remaining stories...")
                 else:
-                    print("  → Pausing for human intervention")
+                    print("  → Interactive mode: Pausing for human intervention")
                     break
+
+    def _format_failure_comment(self, story: Dict, failure_result: Dict) -> str:
+        """Format a failure comment for GitHub issue"""
+        story_id = story.get('id', 'unknown')
+        message = failure_result.get('message', 'No error message provided')
+        error_details = failure_result.get('error_details', '')
+
+        comment = f"""## ⚠️ Migration Failed - {story_id}
+
+**Status:** Failed during automated migration
+
+**Error:**
+```
+{message}
+```
+"""
+
+        if error_details:
+            comment += f"""
+**Details:**
+```
+{error_details}
+```
+"""
+
+        comment += f"""
+**Autonomous Mode Action:**
+- Story marked as Failed
+- Continuing with remaining stories
+- Manual intervention required to resolve
+
+**Next Steps:**
+1. Review the error details above
+2. Fix the underlying issue
+3. Update story status to re-trigger migration
+4. Or manually complete this story
+
+---
+*This comment was added automatically by the migration agent in autonomous mode.*
+"""
+
+        return comment
 
     def invoke_story_orchestrator(self, story: Dict) -> Dict:
         """Invoke story-orchestrator-agent for a user story"""

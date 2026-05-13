@@ -288,6 +288,22 @@ The migration automatically loads configuration from your **project's .env file*
 4. Environment variables
 5. Defaults (lowest)
 
+**Autonomous mode:**
+Set `MODE=autonomous` in your project's .env to run the migration fully automated:
+```bash
+# In ./my-app/.env
+MODE=autonomous
+TRACKER_TYPE=github
+TRACKER_GITHUB_TOKEN=ghp_xxx
+TRACKER_GITHUB_ORGANIZATION=my-org
+```
+
+In autonomous mode:
+- All user stories are processed without human intervention
+- Failures are documented as comments in GitHub issues
+- Migration continues with remaining stories even if some fail
+- Perfect for overnight runs or CI/CD pipelines
+
 ### Environment Variable Naming Convention
 
 Environment variables use `UPPERCASE_WITH_UNDERSCORES` and map to nested configuration:
