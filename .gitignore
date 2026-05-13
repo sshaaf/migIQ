@@ -55,3 +55,6 @@ Thumbs.db
 *.tmp
 *.bak
 .cache/
+
+# Claude Code configuration (local development settings)
+.claude/
