@@ -1,5 +1,6 @@
 ---
 name: validate-refactoring
+trigger: /validate-refactoring
 description: Validate refactoring preserves behavior. Use when the user wants to verify refactoring correctness, ensure behavior preservation, validate transformation accuracy, or confirm refactoring doesn't break functionality.
 ---
 

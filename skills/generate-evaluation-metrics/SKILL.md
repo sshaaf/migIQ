@@ -1,5 +1,6 @@
 ---
 name: generate-evaluation-metrics
+trigger: /generate-evaluation-metrics
 description: Generate evaluation metrics for migration quality. Use when the user wants to define success criteria, create quality metrics, establish evaluation standards, or measure migration outcomes.
 ---
 

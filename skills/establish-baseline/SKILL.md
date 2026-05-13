@@ -1,5 +1,6 @@
 ---
 name: establish-baseline
+trigger: /establish-baseline
 description: Establish baseline metrics before migration. Use when the user wants to capture current state metrics, create performance baselines, measure pre-migration benchmarks, or document starting conditions.
 ---
 

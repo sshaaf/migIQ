@@ -1,5 +1,6 @@
 ---
 name: analyze-codebase
+trigger: /analyze-codebase
 description: Analyze target codebase to identify migration requirements, dependencies, and complexity. Use when the user wants to analyze code, understand codebase structure, assess migration readiness, or identify dependencies and anti-patterns before migration.
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: build-benchmark-suite
+trigger: /build-benchmark-suite
 description: Build performance benchmark suite for migration validation. Use when the user wants to create benchmarks, measure performance, validate migration performance, or establish performance baselines.
 ---
 

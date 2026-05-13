@@ -1,5 +1,6 @@
 ---
 name: plan-migration
+trigger: /plan-migration
 description: Create migration plan from analysis report by applying rules. Use when the user wants to plan a migration, create migration strategy, prioritize migration work, generate user stories from analysis, or develop a migration roadmap.
 ---
 

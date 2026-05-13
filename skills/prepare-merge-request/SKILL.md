@@ -1,5 +1,6 @@
 ---
 name: prepare-merge-request
+trigger: /prepare-merge-request
 description: Prepare merge request for migrated code. Use when the user wants to create a merge request, prepare code for review, package migration changes, or submit code for approval.
 ---
 

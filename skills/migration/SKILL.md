@@ -1,5 +1,6 @@
 ---
 name: migration
+trigger: /migration
 description: Main orchestrator command to initiate and manage the complete code migration workflow. Use when the user wants to start a migration, migrate a codebase, run a full migration project, or coordinate end-to-end migration work. This is the primary entry point for all migration tasks.
 ---
 

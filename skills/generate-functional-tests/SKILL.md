@@ -1,5 +1,6 @@
 ---
 name: generate-functional-tests
+trigger: /generate-functional-tests
 description: Generate functional tests for migrated code. Use when the user wants to create functional tests, validate migrated functionality, test business logic, or verify feature correctness after migration.
 ---
 

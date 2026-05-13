@@ -1,5 +1,6 @@
 ---
 name: validate-coverage
+trigger: /validate-coverage
 description: Validate test coverage meets requirements. Use when the user wants to check test coverage, ensure coverage thresholds, validate testing completeness, or verify coverage requirements are met.
 ---
 

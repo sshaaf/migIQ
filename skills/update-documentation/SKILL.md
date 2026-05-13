@@ -1,5 +1,6 @@
 ---
 name: update-documentation
+trigger: /update-documentation
 description: Update documentation after migration changes. Use when the user wants to update docs, document migration changes, refresh documentation, or maintain documentation in sync with code changes.
 ---
 

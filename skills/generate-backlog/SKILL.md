@@ -1,5 +1,6 @@
 ---
 name: generate-backlog
+trigger: /generate-backlog
 description: Generate migration backlog from migration plan. Use when the user wants to create user stories, generate task backlog, populate kanban boards, or break down migration work into trackable items.
 ---
 

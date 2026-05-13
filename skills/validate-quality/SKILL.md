@@ -1,5 +1,6 @@
 ---
 name: validate-quality
+trigger: /validate-quality
 description: Validate code quality meets standards. Use when the user wants to check code quality, enforce quality gates, validate quality standards, or ensure code meets quality requirements.
 ---
 

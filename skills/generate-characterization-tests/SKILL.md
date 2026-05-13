@@ -1,5 +1,6 @@
 ---
 name: generate-characterization-tests
+trigger: /generate-characterization-tests
 description: Generate characterization tests to capture current behavior. Use when the user wants to create safety net tests, capture existing behavior, establish regression detection, or document current functionality through tests.
 ---
 

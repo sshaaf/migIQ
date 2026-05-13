@@ -1,5 +1,6 @@
 ---
 name: apply-refactor-rules
+trigger: /apply-refactor-rules
 description: Apply refactoring rules from rule.md to transform code. Use when the user wants to refactor code, apply transformation rules, modernize code patterns, or implement code changes based on migration rules.
 ---
 
