@@ -13,6 +13,8 @@ Coordinates the entire migration workflow by managing the backlog and orchestrat
 
 **Typically invoked by**: `/migration` skill (main entry point)
 
+**IMPORTANT:** Expects Graphify knowledge graph to exist at `graphify-out/graph.json`. The `/migration` skill builds this graph before invoking this agent. All downstream harness agents depend on this graph for fast code analysis.
+
 ## Responsibilities
 
 1. **Backlog Management**: Maintain and prioritize user story backlog

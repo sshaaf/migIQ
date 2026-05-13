@@ -21,16 +21,56 @@ Analyzes the target codebase and generates a structured report containing:
 - Complexity metrics
 - Migration readiness score
 
-The skill delegates to opencode agent for deep code analysis.
+Uses Graphify knowledge graph for fast, comprehensive analysis.
+
+## Code Analysis Strategy
+
+**ALWAYS use Graphify for code analysis:**
+
+1. **Check if graph exists (should exist from /migration trigger):**
+   ```bash
+   [ -f graphify-out/graph.json ] && echo "Graph available" || /graphify <path>
+   ```
+
+2. **Extract codebase structure:**
+   ```bash
+   cat graphify-out/GRAPH_REPORT.md
+   # Shows: Community structure, god nodes, architecture overview
+   ```
+
+3. **Find dependencies:**
+   ```bash
+   /graphify query "Find all dependencies and their versions"
+   ```
+
+4. **Identify anti-patterns:**
+   ```bash
+   /graphify query "Find all classes with @Stateless annotation"
+   /graphify query "Find all classes with @MessageDriven annotation"
+   /graphify query "Find classes importing javax.ejb"
+   ```
+
+5. **Calculate complexity:**
+   ```bash
+   jq '.metrics' graphify-out/graph.json
+   # Contains: node count, edge count, community metrics
+   ```
+
+**Use Grep/Read only for:**
+- Reading specific file contents
+- Extracting version numbers from pom.xml/build files
+- Reading rule.md for anti-pattern definitions
 
 ## Actions
 
 1. Validate input parameters
-2. Invoke opencode agent for codebase analysis
-3. Collect metrics (LOC, complexity, dependencies)
-4. Identify anti-patterns from rule.md
-5. Generate structured analysis report
-6. Calculate migration complexity score
+2. Ensure Graphify graph exists (build if missing)
+3. Extract structure from GRAPH_REPORT.md
+4. Query graph for dependencies and patterns
+5. Collect metrics from graph.json
+6. Identify anti-patterns using graph queries
+7. Generate structured analysis report
+8. Calculate migration complexity score
 
 ## Outputs
 
@@ -44,9 +84,10 @@ Returns JSON analysis report with:
 
 ## Tools Used
 
-- opencode agent (code analysis)
-- Language-specific analyzers (optional)
-- Dependency scanners
+- **graphify** (REQUIRED) - Knowledge graph for fast code analysis
+- Graph queries for dependencies and patterns
+- GRAPH_REPORT.md for architecture overview
+- Language-specific analyzers (optional, for metrics not in graph)
 
 ## Example Usage
 
