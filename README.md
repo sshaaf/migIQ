@@ -6,7 +6,7 @@ A reusable Agent Mesh package providing specialized agents and skills for AI-dri
 
 This package provides a complete set of mesh components for code migration:
 - **10 Specialized Agents** - Collaborative AI agents for migration workflows
-- **24 Skills** - Reusable, focused commands across all migration phases (includes bundled graphify skill)
+- **24 Skills** - Reusable, focused commands across all migration phases
 - **Agent Mesh Architecture** - Distributed, autonomous execution patterns
 - **OpenSpec Tracking** - Structured proposals and specifications
 
@@ -89,13 +89,11 @@ Agents use [graphify](https://github.com/safishamsi/graphify) for fast code anal
 
 **Requirements:**
 - Python 3.10 or higher
-- **REQUIRED**: graphify tool must be installed for migration agents to work
-- **INCLUDED**: graphify skill is bundled with this package (no separate installation needed)
+- **REQUIRED**: graphify CLI tool must be installed for migration agents to work
 
 **Setup (Required for Production):**
 ```bash
-# 1. Install graphify tool (Python package) - REQUIRED
-# The graphify skill is already bundled in this package
+# 1. Install graphify CLI tool (Python package) - REQUIRED
 # Option A: Using uv (recommended)
 uv tool install graphifyy
 
@@ -105,13 +103,16 @@ pipx install graphifyy
 # Option C: Using pip
 pip install graphifyy
 
+# Verify installation
+graphify --version
+
 # Note: Package name is 'graphifyy' (double-y), CLI command is 'graphify'
 
 # 2. Build initial graph (in Claude Code)
-/graphify .
-# Uses Claude session for semantic extraction (annotations, imports)
+/mig-graphify .
+# Uses graphify CLI for AST parsing and graph building
 # Critical for Java EE migration: detects @Stateless, @MessageDriven, javax.* imports
-# No API keys needed - uses your IDE's model automatically
+# All analysis is local via tree-sitter - no API calls for code
 
 # 3. Agents automatically use graph (via PreAgentExecution hook)
 # Hook runs /graphify . before any agent execution to ensure graph exists
@@ -131,15 +132,18 @@ For production use with agents, the skill (`/graphify`) is recommended as it req
 Using the skill (in Claude Code/IDE):
 ```bash
 # Natural language queries
-/graphify query "Find all service classes"
-/graphify query "Find classes with @Stateless annotation"
-/graphify query "Find files importing javax.*"
+/mig-graphify query "Find all service classes"
+/mig-graphify query "Find classes with @Stateless annotation"
+/mig-graphify query "Find files importing javax.*"
 
 # Find dependency paths
-/graphify path "ClassA" "ClassB"
+/mig-graphify path "ClassA" "ClassB"
+
+# Incremental updates
+/mig-graphify --update
 ```
 
-Using the CLI (in terminal/scripts):
+Using the CLI directly (in terminal/scripts):
 ```bash
 # Natural language queries
 graphify query "Find all service classes"
@@ -150,7 +154,7 @@ graphify query "Find files importing javax.*"
 graphify path "ClassA" "ClassB"
 
 # Incremental updates after code changes
-graphify extract . --update
+graphify . --update
 ```
 
 View outputs:
@@ -181,7 +185,7 @@ See agent `agent.md` files for graph-first analysis strategies.
 
 ```
 /agents/              # 10 specialized mesh agents
-/skills/              # 24 migration skills (includes bundled graphify)
+/skills/              # 24 migration skills
 /openspec/            # Proposals and specifications
 /docs/                # Core mesh documentation
   ├─ agent-mesh-infrastructure.md
@@ -370,7 +374,7 @@ See [AGENT-MESH.md](./AGENT-MESH.md) for detailed architecture.
 
 ## Skills Overview
 
-The system provides **24 specialized skills** across all harness phases (includes bundled graphify skill):
+The system provides **24 specialized skills** across all harness phases:
 
 ### Main Orchestration (1 skill)
 - `/migration` - Main entry point to start migration workflow
@@ -448,8 +452,7 @@ This is a **reusable mesh package** meant to be integrated into your migration p
 
 1. **Install Prerequisites (REQUIRED)**
    ```bash
-   # Install graphify tool - agents depend on this for code analysis
-   # Note: The graphify skill is already bundled in this package
+   # Install graphify CLI tool - agents depend on this for code analysis
    uv tool install graphifyy
    # Verify installation
    graphify --version
@@ -636,7 +639,7 @@ Your project must configure these integrations for the mesh to function.
 
 **Included**:
 - ✅ 10 Specialized agents (1 implemented: project-tracker-agent)
-- ✅ 24 Migration skills (includes bundled graphify skill)
+- ✅ 24 Migration skills
 - ✅ Agent Mesh architecture documentation
 - ✅ OpenSpec proposal tracking
 - ✅ Core operational docs

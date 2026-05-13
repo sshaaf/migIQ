@@ -22,31 +22,30 @@ Applies refactoring rules to transform code based on migration requirements. Use
 **BEFORE refactoring, use Graphify to understand the code:**
 
 1. **Check graph exists:**
-   ```bash
-   [ -f graphify-out/graph.json ] && echo "Graph available"
-   ```
+   - Ensure `graphify-out/graph.json` exists (should be built by migration workflow)
+   - If missing, invoke `/mig-graphify <path>` first
 
 2. **Find files to refactor:**
    ```bash
-   /graphify query "Find all classes matching pattern X"
+   /mig-graphify query "Find all classes matching pattern X"
    # Returns: All matching files with locations
    ```
 
 3. **Check dependencies before refactoring:**
    ```bash
-   /graphify path "SourceClass" "DependentClass"
+   /mig-graphify path "SourceClass" "DependentClass"
    # Returns: Dependency path - critical for understanding impact
    ```
 
 4. **Understand class relationships:**
    ```bash
-   /graphify query "What does ClassX depend on?"
-   /graphify query "What depends on ClassX?"
+   /mig-graphify query "What does ClassX depend on?"
+   /mig-graphify query "What depends on ClassX?"
    ```
 
 5. **After making changes:**
    ```bash
-   /graphify .
+   /mig-graphify .
    # Rebuilds graph to reflect refactored code (~10-30s)
    ```
 

@@ -29,8 +29,8 @@ Calculates comprehensive test quality scores by analyzing test coverage, test ef
 
 2. **Find public APIs (must be tested):**
    ```bash
-   /graphify query "Find all public classes"
-   /graphify query "Find all @RestController classes"
+   /mig-graphify query "Find all public classes"
+   /mig-graphify query "Find all @RestController classes"
    # Public surface area needs 100% coverage
    ```
 
@@ -42,7 +42,7 @@ Calculates comprehensive test quality scores by analyzing test coverage, test ef
 
 4. **Find tested vs untested classes:**
    ```bash
-   /graphify query "Find all classes in package X"
+   /mig-graphify query "Find all classes in package X"
    # Cross-reference with coverage report
    ```
 

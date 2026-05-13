@@ -23,26 +23,26 @@ Generates functional tests based on specifications to validate that migrated cod
 
 1. **Find classes that implement the spec:**
    ```bash
-   /graphify query "Find all classes with @RestController annotation"
-   /graphify query "Find all classes with @Service annotation"
+   /mig-graphify query "Find all classes with @RestController annotation"
+   /mig-graphify query "Find all classes with @Service annotation"
    # Match spec requirements to actual implementation classes
    ```
 
 2. **Understand end-to-end flows:**
    ```bash
-   /graphify path "UserController" "UserRepository"
+   /mig-graphify path "UserController" "UserRepository"
    # Map entire flow from API to data layer
    ```
 
 3. **Identify dependencies for test setup:**
    ```bash
-   /graphify query "What does UserService depend on?"
+   /mig-graphify query "What does UserService depend on?"
    # Know what mocks/stubs are needed
    ```
 
 4. **Find similar existing tests:**
    ```bash
-   /graphify query "Find all test classes"
+   /mig-graphify query "Find all test classes"
    # Learn patterns from existing tests
    ```
 

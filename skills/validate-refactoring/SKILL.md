@@ -35,13 +35,13 @@ Validates that refactoring preserves behavior by comparing:
 
 2. **Check for broken dependencies:**
    ```bash
-   /graphify query "Find all classes that depend on RefactoredClass"
+   /mig-graphify query "Find all classes that depend on RefactoredClass"
    # Ensure dependents still work
    ```
 
 3. **Validate public API preservation:**
    ```bash
-   /graphify query "Show public methods of RefactoredClass"
+   /mig-graphify query "Show public methods of RefactoredClass"
    # Compare with baseline - public API should be unchanged
    ```
 

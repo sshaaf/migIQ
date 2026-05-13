@@ -29,9 +29,8 @@ Uses Graphify knowledge graph for fast, comprehensive analysis.
 **ALWAYS use Graphify for code analysis:**
 
 1. **Check if graph exists (should exist from /migration trigger):**
-   ```bash
-   [ -f graphify-out/graph.json ] && echo "Graph available" || /graphify <path>
-   ```
+   - If `graphify-out/graph.json` doesn't exist, invoke `/mig-graphify <path>` first
+   - The migration workflow builds the graph automatically, so this is usually already available
 
 2. **Extract codebase structure:**
    ```bash
@@ -41,14 +40,14 @@ Uses Graphify knowledge graph for fast, comprehensive analysis.
 
 3. **Find dependencies:**
    ```bash
-   /graphify query "Find all dependencies and their versions"
+   /mig-graphify query "Find all dependencies and their versions"
    ```
 
 4. **Identify anti-patterns:**
    ```bash
-   /graphify query "Find all classes with @Stateless annotation"
-   /graphify query "Find all classes with @MessageDriven annotation"
-   /graphify query "Find classes importing javax.ejb"
+   /mig-graphify query "Find all classes with @Stateless annotation"
+   /mig-graphify query "Find all classes with @MessageDriven annotation"
+   /mig-graphify query "Find classes importing javax.ejb"
    ```
 
 5. **Calculate complexity:**

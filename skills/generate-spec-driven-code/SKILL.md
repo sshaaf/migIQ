@@ -23,14 +23,14 @@ Generates implementation code from specifications. Uses Graphify to understand e
 
 1. **Analyze existing similar code:**
    ```bash
-   /graphify query "Find all service classes"
-   /graphify query "Find all repository classes"
+   /mig-graphify query "Find all service classes"
+   /mig-graphify query "Find all repository classes"
    # Understand patterns to replicate in generated code
    ```
 
 2. **Check for naming conflicts:**
    ```bash
-   /graphify query "Find class named X"
+   /mig-graphify query "Find class named X"
    # Ensure generated class names don't conflict
    ```
 
@@ -42,13 +42,13 @@ Generates implementation code from specifications. Uses Graphify to understand e
 
 4. **Find similar implementations:**
    ```bash
-   /graphify query "Find classes with @RestController annotation"
+   /mig-graphify query "Find classes with @RestController annotation"
    # Use as reference for code generation patterns
    ```
 
 5. **After generating code:**
    ```bash
-   /graphify .
+   /mig-graphify .
    # Update graph with newly generated files
    ```
 

@@ -36,14 +36,14 @@ Validates that test coverage meets thresholds, with special attention to critica
 
 3. **Map coverage to classes:**
    ```bash
-   /graphify query "Find all classes in package com.example"
+   /mig-graphify query "Find all classes in package com.example"
    # Cross-reference with coverage report
    ```
 
 4. **Check public API coverage:**
    ```bash
-   /graphify query "Find all @RestController classes"
-   /graphify query "Find all @Service classes"
+   /mig-graphify query "Find all @RestController classes"
+   /mig-graphify query "Find all @Service classes"
    # Public APIs must have 100% coverage
    ```
 

@@ -53,12 +53,12 @@ The project-tracker-agent will create and manage tasks for each phase:
    - Check project path exists
    - Validate migration type
    - Verify required tools are available
-   - Note: graphify skill is bundled (will check for graphify tool when invoked)
+   - Note: /mig-graphify skill will check if graphify CLI is installed
 
 2. **Build Knowledge Graph (REQUIRED)**
    ```bash
    # ALWAYS run this FIRST before any code analysis
-   /graphify <project-path>
+   /mig-graphify <project-path>
    ```
    - Creates `graphify-out/graph.json` knowledge graph (~30s for most projects)
    - Generates `graphify-out/GRAPH_REPORT.md` with architecture overview
@@ -253,7 +253,7 @@ This migration system is **optimized for speed** through Graphify knowledge grap
 - **Complete dependency understanding** without scanning code
 - **Local AST parsing** - no external API calls, zero infrastructure cost
 
-**CRITICAL:** All migration agents depend on the knowledge graph. The `/graphify` command MUST run before delegating to project-tracker-agent, or downstream agents will fail.
+**CRITICAL:** All migration agents depend on the knowledge graph. The `/mig-graphify` command MUST run before delegating to project-tracker-agent, or downstream agents will fail.
 
 ## Notes
 

@@ -29,7 +29,7 @@ Generates prioritized user stories and task breakdown from codebase analysis. Us
 
 2. **Identify critical dependencies:**
    ```bash
-   /graphify query "Find most connected classes"
+   /mig-graphify query "Find most connected classes"
    # High-degree nodes should be prioritized carefully
    ```
 
@@ -41,7 +41,7 @@ Generates prioritized user stories and task breakdown from codebase analysis. Us
 
 4. **Understand transformation impact:**
    ```bash
-   /graphify path "SourceClass" "TargetClass"
+   /mig-graphify path "SourceClass" "TargetClass"
    # Long paths = higher risk, plan accordingly
    ```
 

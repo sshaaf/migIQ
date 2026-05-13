@@ -31,21 +31,21 @@ Uses Graphify to understand code structure, dependencies, and critical paths tha
 
 2. **Identify public APIs to test:**
    ```bash
-   /graphify query "Find all public classes"
-   /graphify query "Find all classes with @Service annotation"
-   /graphify query "Find all classes with @RestController annotation"
+   /mig-graphify query "Find all public classes"
+   /mig-graphify query "Find all classes with @Service annotation"
+   /mig-graphify query "Find all classes with @RestController annotation"
    # Public APIs are the surface area that needs characterization
    ```
 
 3. **Find dependency chains to cover:**
    ```bash
-   /graphify path "ServiceClass" "RepositoryClass"
+   /mig-graphify path "ServiceClass" "RepositoryClass"
    # Understand call paths to ensure integration tests cover flows
    ```
 
 4. **Identify untested areas:**
    ```bash
-   /graphify query "Find all classes in package com.example.core"
+   /mig-graphify query "Find all classes in package com.example.core"
    # Cross-reference with existing tests to find gaps
    ```
 
