@@ -389,14 +389,6 @@ class GitHubProjectsTracker(TrackerInterface):
                     continue
                 else:
                     raise TrackerError(f"GitHub API request failed after {self.MAX_RETRIES} attempts: {e}")
-            except Exception as e:
-                if attempt < self.MAX_RETRIES - 1:
-                    delay = self.RETRY_DELAYS[attempt]
-                    logger.warning(f"Unexpected error, retrying in {delay}s: {e}")
-                    time.sleep(delay)
-                    continue
-                else:
-                    raise TrackerError(f"GitHub API request failed after {self.MAX_RETRIES} attempts: {e}")
 
         raise TrackerError("Unexpected error in GraphQL execution")
 

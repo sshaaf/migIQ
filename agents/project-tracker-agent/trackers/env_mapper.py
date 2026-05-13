@@ -174,39 +174,24 @@ def map_env_to_config(prefix: str = '', env_vars: Optional[Dict[str, str]] = Non
 
     # Process each environment variable
     for key, value in filtered_vars.items():
-        # Build full key path including prefix
+        # Remove prefix if present
         if prefix:
             prefix_upper = prefix.upper() + '_'
             if key.startswith(prefix_upper):
-                # Include prefix in the path: TRACKER_TYPE -> tracker.type
-                full_key = prefix.lower() + '_' + key[len(prefix_upper):]
-            else:
-                full_key = key
-        else:
-            full_key = key
+                key = key[len(prefix_upper):]
 
         # Split key by underscore to create hierarchy
-        parts = full_key.lower().split('_')
-
-        # Limit nesting depth: first 2 parts create nesting, rest joined with underscore
-        # Example: tracker_github_project_number -> tracker.github.project_number
-        # Example: tracker_type -> tracker.type
-        if len(parts) > 3:
-            # Join parts after index 2 with underscore
-            hierarchy_parts = parts[:2]
-            final_key = '_'.join(parts[2:])
-        else:
-            hierarchy_parts = parts[:-1]
-            final_key = parts[-1]
+        parts = key.lower().split('_')
 
         # Navigate/create nested structure
         current = config
-        for part in hierarchy_parts:
+        for i, part in enumerate(parts[:-1]):
             if part not in current:
                 current[part] = {}
             current = current[part]
 
         # Set the value with type detection
+        final_key = parts[-1]
         current[final_key] = _detect_value_type(value)
 
     return config

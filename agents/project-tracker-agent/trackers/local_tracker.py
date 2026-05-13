@@ -100,18 +100,13 @@ class LocalTracker(TrackerInterface):
                 content += "\n\n## User Stories\n\n"
 
             stories_section_start = content.find("## User Stories")
+            before_stories = content[:stories_section_start + len("## User Stories")]
+            after_stories_marker = content.find("\n## ", stories_section_start + len("## User Stories"))
 
-            # Find the next section after User Stories (or end of file)
-            next_section_start = content.find("\n## ", stories_section_start + len("## User Stories"))
-
-            if next_section_start == -1:
-                # No next section, append at end
-                before_new_story = content
-                after_new_story = ""
+            if after_stories_marker == -1:
+                after_stories = ""
             else:
-                # Insert before next section
-                before_new_story = content[:next_section_start]
-                after_new_story = content[next_section_start:]
+                after_stories = content[after_stories_marker:]
 
             # Generate new story section
             story_id = story_data['id']
@@ -161,7 +156,7 @@ class LocalTracker(TrackerInterface):
 """
 
             # Combine sections
-            updated_content = before_new_story + new_story + after_new_story
+            updated_content = before_stories + new_story + after_stories
             self.write_tasks(updated_content)
 
             logger.info(f"Created issue {story_id} in tasks.md")
