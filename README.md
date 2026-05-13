@@ -146,6 +146,93 @@ For each user story, Story Orchestrator Agent coordinates:
 | **KPI Tracker Agent** | Tracks and reports migration KPIs | `generate-kpi-metrics` |
 | **Documentation Manager Agent** | Updates migration documentation | `update-documentation` |
 
+## Screenshots
+
+Visual walkthrough of MigIQ in action:
+
+<table>
+  <tr>
+    <td width="33%">
+      <a href="docs/assets/images/01-screenshot.jpg">
+        <img src="docs/assets/images/01-screenshot.jpg" alt="Initial setup and configuration" width="100%"/>
+      </a>
+      <sub>1. Initial setup and configuration</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/02-screenshot.jpg">
+        <img src="docs/assets/images/02-screenshot.jpg" alt="Knowledge graph building" width="100%"/>
+      </a>
+      <sub>2. Knowledge graph building</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/03-screenshot.jpg">
+        <img src="docs/assets/images/03-screenshot.jpg" alt="Codebase analysis" width="100%"/>
+      </a>
+      <sub>3. Codebase analysis</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <a href="docs/assets/images/04-screenshot.jpg">
+        <img src="docs/assets/images/04-screenshot.jpg" alt="GitHub Projects board view" width="100%"/>
+      </a>
+      <sub>4. GitHub Projects board view</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/05-screenshot.jpg">
+        <img src="docs/assets/images/05-screenshot.jpg" alt="User story tracking" width="100%"/>
+      </a>
+      <sub>5. User story tracking</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/06-screenshot.jpg">
+        <img src="docs/assets/images/06-screenshot.jpg" alt="Issue details and status" width="100%"/>
+      </a>
+      <sub>6. Issue details and status</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <a href="docs/assets/images/07-screenshot.jpg">
+        <img src="docs/assets/images/07-screenshot.jpg" alt="Task execution progress" width="100%"/>
+      </a>
+      <sub>7. Task execution progress</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/08-screenshot.jpg">
+        <img src="docs/assets/images/08-screenshot.jpg" alt="Output attachment in issues" width="100%"/>
+      </a>
+      <sub>8. Output attachment in issues</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/09-screenshot.jpg">
+        <img src="docs/assets/images/09-screenshot.jpg" alt="Migration plan details" width="100%"/>
+      </a>
+      <sub>9. Migration plan details</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <a href="docs/assets/images/10-screenshot.jpg">
+        <img src="docs/assets/images/10-screenshot.jpg" alt="Autonomous mode execution" width="100%"/>
+      </a>
+      <sub>10. Autonomous mode execution</sub>
+    </td>
+    <td width="33%">
+      <a href="docs/assets/images/11-screenshot.jpg">
+        <img src="docs/assets/images/11-screenshot.jpg" alt="Final status and results" width="100%"/>
+      </a>
+      <sub>11. Final status and results</sub>
+    </td>
+    <td width="33%">
+      <!-- Empty cell for grid alignment -->
+    </td>
+  </tr>
+</table>
+
+<sub>*Click any image to view full size*</sub>
+
+
 ### Tracker Integration
 
 The agent mesh supports multiple tracker backends for managing migration user stories:
