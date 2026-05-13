@@ -10,100 +10,6 @@ This package provides a complete set of mesh components for code migration:
 - **Agent Mesh Architecture** - Distributed, autonomous execution patterns
 - **OpenSpec Tracking** - Structured proposals and specifications
 
-## Architecture
-
-The system uses a recursive workflow: **Analyze → Plan → Implement → Validate**
-
-### Migration Workflow
-
-```mermaid
-graph TD
-    User[👤 User] -->|/migration| MigrationSkill[📋 Migration Skill]
-
-    MigrationSkill -->|1. Invoke| GraphifySkill[🗺️ /mig-graphify Skill]
-    GraphifySkill -->|graphify update| KnowledgeGraph[(📊 Knowledge Graph<br/>graph.json)]
-
-    MigrationSkill -->|2. Initialize| ProjectTracker[🎯 Project Tracker Agent]
-
-    ProjectTracker -->|Create Tracker Project| TrackerBackend{Tracker Backend}
-    TrackerBackend -->|GitHub| GitHubProjects[🐙 GitHub Projects v2]
-    TrackerBackend -->|Local| TasksMD[📝 tasks.md]
-
-    ProjectTracker -->|3. Create & Execute| InitialTasks[Initial Tasks]
-
-    subgraph InitialTasks[Initial Tasks]
-        Task001[TASK-001<br/>Analyze Codebase]
-        Task002[TASK-002<br/>Plan Migration]
-        Task003[TASK-003<br/>Generate Backlog]
-    end
-
-    Task001 -->|Uses| AnalyzeSkill[analyze-codebase]
-    Task002 -->|Uses| PlanSkill[plan-migration]
-    Task003 -->|Uses| BacklogSkill[generate-backlog]
-
-    AnalyzeSkill -->|Reads| KnowledgeGraph
-    PlanSkill -->|Reads| KnowledgeGraph
-
-    Task001 -->|Output| AnalysisReport[📄 analysis-report.json]
-    Task002 -->|Output| MigrationPlan[📄 migration-plan.json]
-    Task003 -->|Creates| UserStories[📋 User Stories]
-
-    AnalysisReport -->|Attached to| GitHubProjects
-    MigrationPlan -->|Attached to| GitHubProjects
-
-    UserStories -->|Synced to| GitHubProjects
-    UserStories -->|Synced to| TasksMD
-
-    ProjectTracker -->|4. Process Stories| StoryLoop[Story Processing Loop]
-
-    StoryLoop -->|For Each Story| StoryOrchestrator[🎭 Story Orchestrator Agent]
-
-    StoryOrchestrator -->|Phase 1| TestGen[🧪 Test Generator Agent]
-    StoryOrchestrator -->|Phase 2| CodeRefactor[⚙️ Code Refactor Agent]
-    StoryOrchestrator -->|Phase 3| BenchmarkBuilder[📊 Benchmark Builder Agent]
-    StoryOrchestrator -->|Phase 4| QualityEval[✅ Quality Evaluator Agent]
-    StoryOrchestrator -->|Phase 5| CIIntegration[🚀 CI Integration Agent]
-
-    TestGen -->|Uses| CharTestSkill[generate-characterization-tests]
-    TestGen -->|Uses| FuncTestSkill[generate-functional-tests]
-
-    CodeRefactor -->|Uses| ApplyRulesSkill[apply-refactor-rules]
-    CodeRefactor -->|Uses| SpecCodeSkill[generate-spec-driven-code]
-
-    BenchmarkBuilder -->|Uses| BenchmarkSkill[build-benchmark-suite]
-    BenchmarkBuilder -->|Uses| RunBenchSkill[run-benchmarks]
-
-    QualityEval -->|Uses| ValidateCovSkill[validate-coverage]
-    QualityEval -->|Uses| ValidateQualSkill[validate-quality]
-    QualityEval -->|Uses| ValidateRefSkill[validate-refactoring]
-
-    CIIntegration -->|Uses| PrepMRSkill[prepare-merge-request]
-    CIIntegration -->|Uses| PushMRSkill[push-merge-request]
-
-    StoryOrchestrator -->|On Failure| FailureAnalyzer[🔍 Failure Analyzer Agent]
-    FailureAnalyzer -->|Uses| RootCauseSkill[request-root-cause]
-
-    FailureAnalyzer -->|Autonomous Mode| ContinueLoop[Continue Next Story]
-    FailureAnalyzer -->|Interactive Mode| PauseForHuman[⏸️ Pause for Human]
-
-    StoryOrchestrator -->|Update Status| GitHubProjects
-    StoryOrchestrator -->|Update Status| TasksMD
-
-    StoryOrchestrator -->|All Phases Complete| MergeRequest[🎉 Merge Request Created]
-
-    MergeRequest -->|Triggers| CIPipeline[CI/CD Pipeline]
-    CIPipeline -->|Monitor| MonitorSkill[monitor-pipeline]
-
-    style User fill:#e1f5ff
-    style MigrationSkill fill:#fff4e6
-    style GraphifySkill fill:#e8f5e9
-    style ProjectTracker fill:#f3e5f5
-    style StoryOrchestrator fill:#f3e5f5
-    style GitHubProjects fill:#e3f2fd
-    style KnowledgeGraph fill:#fff9c4
-    style MergeRequest fill:#c8e6c9
-```
-
 #### Workflow Phases
 
 ```mermaid
@@ -286,6 +192,100 @@ Visual walkthrough of MigIQ in action:
 </table>
 
 <sub>*Click any image to view full size*</sub>
+
+## Architecture
+
+The system uses a recursive workflow: **Analyze → Plan → Implement → Validate**
+
+### Detailed Migration Workflow
+
+```mermaid
+graph TD
+    User[👤 User] -->|/migration| MigrationSkill[📋 Migration Skill]
+
+    MigrationSkill -->|1. Invoke| GraphifySkill[🗺️ /mig-graphify Skill]
+    GraphifySkill -->|graphify update| KnowledgeGraph[(📊 Knowledge Graph<br/>graph.json)]
+
+    MigrationSkill -->|2. Initialize| ProjectTracker[🎯 Project Tracker Agent]
+
+    ProjectTracker -->|Create Tracker Project| TrackerBackend{Tracker Backend}
+    TrackerBackend -->|GitHub| GitHubProjects[🐙 GitHub Projects v2]
+    TrackerBackend -->|Local| TasksMD[📝 tasks.md]
+
+    ProjectTracker -->|3. Create & Execute| InitialTasks[Initial Tasks]
+
+    subgraph InitialTasks[Initial Tasks]
+        Task001[TASK-001<br/>Analyze Codebase]
+        Task002[TASK-002<br/>Plan Migration]
+        Task003[TASK-003<br/>Generate Backlog]
+    end
+
+    Task001 -->|Uses| AnalyzeSkill[analyze-codebase]
+    Task002 -->|Uses| PlanSkill[plan-migration]
+    Task003 -->|Uses| BacklogSkill[generate-backlog]
+
+    AnalyzeSkill -->|Reads| KnowledgeGraph
+    PlanSkill -->|Reads| KnowledgeGraph
+
+    Task001 -->|Output| AnalysisReport[📄 analysis-report.json]
+    Task002 -->|Output| MigrationPlan[📄 migration-plan.json]
+    Task003 -->|Creates| UserStories[📋 User Stories]
+
+    AnalysisReport -->|Attached to| GitHubProjects
+    MigrationPlan -->|Attached to| GitHubProjects
+
+    UserStories -->|Synced to| GitHubProjects
+    UserStories -->|Synced to| TasksMD
+
+    ProjectTracker -->|4. Process Stories| StoryLoop[Story Processing Loop]
+
+    StoryLoop -->|For Each Story| StoryOrchestrator[🎭 Story Orchestrator Agent]
+
+    StoryOrchestrator -->|Phase 1| TestGen[🧪 Test Generator Agent]
+    StoryOrchestrator -->|Phase 2| CodeRefactor[⚙️ Code Refactor Agent]
+    StoryOrchestrator -->|Phase 3| BenchmarkBuilder[📊 Benchmark Builder Agent]
+    StoryOrchestrator -->|Phase 4| QualityEval[✅ Quality Evaluator Agent]
+    StoryOrchestrator -->|Phase 5| CIIntegration[🚀 CI Integration Agent]
+
+    TestGen -->|Uses| CharTestSkill[generate-characterization-tests]
+    TestGen -->|Uses| FuncTestSkill[generate-functional-tests]
+
+    CodeRefactor -->|Uses| ApplyRulesSkill[apply-refactor-rules]
+    CodeRefactor -->|Uses| SpecCodeSkill[generate-spec-driven-code]
+
+    BenchmarkBuilder -->|Uses| BenchmarkSkill[build-benchmark-suite]
+    BenchmarkBuilder -->|Uses| RunBenchSkill[run-benchmarks]
+
+    QualityEval -->|Uses| ValidateCovSkill[validate-coverage]
+    QualityEval -->|Uses| ValidateQualSkill[validate-quality]
+    QualityEval -->|Uses| ValidateRefSkill[validate-refactoring]
+
+    CIIntegration -->|Uses| PrepMRSkill[prepare-merge-request]
+    CIIntegration -->|Uses| PushMRSkill[push-merge-request]
+
+    StoryOrchestrator -->|On Failure| FailureAnalyzer[🔍 Failure Analyzer Agent]
+    FailureAnalyzer -->|Uses| RootCauseSkill[request-root-cause]
+
+    FailureAnalyzer -->|Autonomous Mode| ContinueLoop[Continue Next Story]
+    FailureAnalyzer -->|Interactive Mode| PauseForHuman[⏸️ Pause for Human]
+
+    StoryOrchestrator -->|Update Status| GitHubProjects
+    StoryOrchestrator -->|Update Status| TasksMD
+
+    StoryOrchestrator -->|All Phases Complete| MergeRequest[🎉 Merge Request Created]
+
+    MergeRequest -->|Triggers| CIPipeline[CI/CD Pipeline]
+    CIPipeline -->|Monitor| MonitorSkill[monitor-pipeline]
+
+    style User fill:#e1f5ff
+    style MigrationSkill fill:#fff4e6
+    style GraphifySkill fill:#e8f5e9
+    style ProjectTracker fill:#f3e5f5
+    style StoryOrchestrator fill:#f3e5f5
+    style GitHubProjects fill:#e3f2fd
+    style KnowledgeGraph fill:#fff9c4
+    style MergeRequest fill:#c8e6c9
+```
 
 
 ### Tracker Integration
