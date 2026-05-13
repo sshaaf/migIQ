@@ -1,4 +1,4 @@
-# Agent Mesh for Code Migration
+# MigIQ - AI-Driven Code Migration
 
 A reusable Agent Mesh package providing specialized agents and skills for AI-driven code migration using Claude Code's Agent Mesh architecture.
 
@@ -14,14 +14,137 @@ This package provides a complete set of mesh components for code migration:
 
 The system uses a recursive workflow: **Analyze → Plan → Implement → Validate**
 
-### Key Components
+### Migration Workflow
 
-1. **Harness Agents** - Specialized AI agents for each phase
-2. **Skills** - Reusable, focused commands
-3. **Tracker Integration** - Pluggable project tracking (Local, GitHub Projects, GitLab, Jira)
-4. **CI Platform** - DevOps infrastructure (GitLab/GitHub)
-5. **Kanban Boards** - Visual project tracking
-6. **Human Supervisor** - Oversight and intervention
+```mermaid
+graph TD
+    User[👤 User] -->|/migration| MigrationSkill[📋 Migration Skill]
+
+    MigrationSkill -->|1. Invoke| GraphifySkill[🗺️ /mig-graphify Skill]
+    GraphifySkill -->|graphify update| KnowledgeGraph[(📊 Knowledge Graph<br/>graph.json)]
+
+    MigrationSkill -->|2. Initialize| ProjectTracker[🎯 Project Tracker Agent]
+
+    ProjectTracker -->|Create Tracker Project| TrackerBackend{Tracker Backend}
+    TrackerBackend -->|GitHub| GitHubProjects[🐙 GitHub Projects v2]
+    TrackerBackend -->|Local| TasksMD[📝 tasks.md]
+
+    ProjectTracker -->|3. Create & Execute| InitialTasks[Initial Tasks]
+
+    subgraph InitialTasks[Initial Tasks]
+        Task001[TASK-001<br/>Analyze Codebase]
+        Task002[TASK-002<br/>Plan Migration]
+        Task003[TASK-003<br/>Generate Backlog]
+    end
+
+    Task001 -->|Uses| AnalyzeSkill[analyze-codebase]
+    Task002 -->|Uses| PlanSkill[plan-migration]
+    Task003 -->|Uses| BacklogSkill[generate-backlog]
+
+    AnalyzeSkill -->|Reads| KnowledgeGraph
+    PlanSkill -->|Reads| KnowledgeGraph
+
+    Task001 -->|Output| AnalysisReport[📄 analysis-report.json]
+    Task002 -->|Output| MigrationPlan[📄 migration-plan.json]
+    Task003 -->|Creates| UserStories[📋 User Stories]
+
+    AnalysisReport -->|Attached to| GitHubProjects
+    MigrationPlan -->|Attached to| GitHubProjects
+
+    UserStories -->|Synced to| GitHubProjects
+    UserStories -->|Synced to| TasksMD
+
+    ProjectTracker -->|4. Process Stories| StoryLoop[Story Processing Loop]
+
+    StoryLoop -->|For Each Story| StoryOrchestrator[🎭 Story Orchestrator Agent]
+
+    StoryOrchestrator -->|Phase 1| TestGen[🧪 Test Generator Agent]
+    StoryOrchestrator -->|Phase 2| CodeRefactor[⚙️ Code Refactor Agent]
+    StoryOrchestrator -->|Phase 3| BenchmarkBuilder[📊 Benchmark Builder Agent]
+    StoryOrchestrator -->|Phase 4| QualityEval[✅ Quality Evaluator Agent]
+    StoryOrchestrator -->|Phase 5| CIIntegration[🚀 CI Integration Agent]
+
+    TestGen -->|Uses| CharTestSkill[generate-characterization-tests]
+    TestGen -->|Uses| FuncTestSkill[generate-functional-tests]
+
+    CodeRefactor -->|Uses| ApplyRulesSkill[apply-refactor-rules]
+    CodeRefactor -->|Uses| SpecCodeSkill[generate-spec-driven-code]
+
+    BenchmarkBuilder -->|Uses| BenchmarkSkill[build-benchmark-suite]
+    BenchmarkBuilder -->|Uses| RunBenchSkill[run-benchmarks]
+
+    QualityEval -->|Uses| ValidateCovSkill[validate-coverage]
+    QualityEval -->|Uses| ValidateQualSkill[validate-quality]
+    QualityEval -->|Uses| ValidateRefSkill[validate-refactoring]
+
+    CIIntegration -->|Uses| PrepMRSkill[prepare-merge-request]
+    CIIntegration -->|Uses| PushMRSkill[push-merge-request]
+
+    StoryOrchestrator -->|On Failure| FailureAnalyzer[🔍 Failure Analyzer Agent]
+    FailureAnalyzer -->|Uses| RootCauseSkill[request-root-cause]
+
+    FailureAnalyzer -->|Autonomous Mode| ContinueLoop[Continue Next Story]
+    FailureAnalyzer -->|Interactive Mode| PauseForHuman[⏸️ Pause for Human]
+
+    StoryOrchestrator -->|Update Status| GitHubProjects
+    StoryOrchestrator -->|Update Status| TasksMD
+
+    StoryOrchestrator -->|All Phases Complete| MergeRequest[🎉 Merge Request Created]
+
+    MergeRequest -->|Triggers| CIPipeline[CI/CD Pipeline]
+    CIPipeline -->|Monitor| MonitorSkill[monitor-pipeline]
+
+    style User fill:#e1f5ff
+    style MigrationSkill fill:#fff4e6
+    style GraphifySkill fill:#e8f5e9
+    style ProjectTracker fill:#f3e5f5
+    style StoryOrchestrator fill:#f3e5f5
+    style GitHubProjects fill:#e3f2fd
+    style KnowledgeGraph fill:#fff9c4
+    style MergeRequest fill:#c8e6c9
+```
+
+#### Workflow Phases
+
+**Phase 1: Setup & Analysis**
+1. User invokes `/migration` skill with project path and migration type
+2. `/mig-graphify` builds knowledge graph using offline AST extraction (`graphify update`)
+3. Project Tracker Agent creates tracker project (GitHub Projects or tasks.md)
+4. **TASK-001**: Analyzes codebase using knowledge graph → `analysis-report.json`
+5. **TASK-002**: Creates migration plan → `migration-plan.json`
+6. **TASK-003**: Generates user stories and syncs to tracker
+
+**Phase 2: Story Execution**
+For each user story, Story Orchestrator Agent coordinates:
+1. **Test Generator Agent** - Creates characterization & functional tests
+2. **Code Refactor Agent** - Applies migration rules and generates new code
+3. **Benchmark Builder Agent** - Builds and runs performance benchmarks
+4. **Quality Evaluator Agent** - Validates coverage, quality gates, and refactoring correctness
+5. **CI Integration Agent** - Creates merge request and triggers CI pipeline
+
+**Phase 3: Failure Handling**
+- **Interactive Mode**: Pauses on first failure for human intervention
+- **Autonomous Mode**: Documents failure in GitHub issue, continues with remaining stories
+
+**Phase 4: Tracking & Visibility**
+- All tasks and stories tracked in GitHub Issues with real-time status updates
+- Task outputs (JSON reports, plans) attached to issues as collapsible comments
+- CI/CD pipeline status monitored and reported
+
+### Agents & Skills Reference
+
+| Agent | Purpose | Skills Used |
+|-------|---------|-------------|
+| **Project Tracker Agent** | Orchestrates migration workflow | `analyze-codebase`, `plan-migration`, `generate-backlog` |
+| **Story Orchestrator Agent** | Coordinates story execution through harness phases | All harness skills |
+| **Test Generator Agent** | Creates characterization and functional tests | `generate-characterization-tests`, `generate-functional-tests`, `calculate-test-scores` |
+| **Code Refactor Agent** | Applies refactoring rules and generates code | `apply-refactor-rules`, `generate-spec-driven-code`, `validate-refactoring` |
+| **Benchmark Builder Agent** | Builds and runs performance benchmarks | `build-benchmark-suite`, `run-benchmarks`, `establish-baseline` |
+| **Quality Evaluator Agent** | Validates quality gates and coverage | `validate-coverage`, `validate-quality`, `generate-evaluation-metrics` |
+| **CI Integration Agent** | Creates merge requests and monitors pipelines | `prepare-merge-request`, `push-merge-request`, `monitor-pipeline`, `handle-pipeline-result` |
+| **Failure Analyzer Agent** | Analyzes failures and generates remediation plans | `request-root-cause` |
+| **KPI Tracker Agent** | Tracks and reports migration KPIs | `generate-kpi-metrics` |
+| **Documentation Manager Agent** | Updates migration documentation | `update-documentation` |
 
 ### Tracker Integration
 
@@ -118,84 +241,6 @@ graphify --version
 # Hook runs /graphify . before any agent execution to ensure graph exists
 ```
 
-**API Key Requirements:**
-
-| Context | API Keys Needed | Notes |
-|---------|-----------------|-------|
-| **Skill usage** (`/graphify`) | None | Uses your Claude Code session automatically |
-| **CLI usage** (`graphify extract`) | Required | Set `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or others |
-
-For production use with agents, the skill (`/graphify`) is recommended as it requires no additional API configuration.
-
-**Query examples:**
-
-Using the skill (in Claude Code/IDE):
-```bash
-# Natural language queries
-/mig-graphify query "Find all service classes"
-/mig-graphify query "Find classes with @Stateless annotation"
-/mig-graphify query "Find files importing javax.*"
-
-# Find dependency paths
-/mig-graphify path "ClassA" "ClassB"
-
-# Incremental updates
-/mig-graphify --update
-```
-
-Using the CLI directly (in terminal/scripts):
-```bash
-# Natural language queries
-graphify query "Find all service classes"
-graphify query "Find classes with @Stateless annotation"
-graphify query "Find files importing javax.*"
-
-# Find dependency paths
-graphify path "ClassA" "ClassB"
-
-# Incremental updates after code changes
-graphify . --update
-```
-
-View outputs:
-```bash
-# Architecture summary
-cat graphify-out/GRAPH_REPORT.md
-
-# Interactive visualization
-open graphify-out/graph.html
-```
-
-**Output files:**
-- `graphify-out/graph.html` - Interactive visualization
-- `graphify-out/GRAPH_REPORT.md` - Architecture summary with god nodes and key connections
-- `graphify-out/graph.json` - Complete graph data for programmatic queries
-
-**Benchmarking:**
-```bash
-# Measure performance improvement
-./scripts/benchmark-without-graph.sh test-generator-agent US-001
-./scripts/benchmark-with-graph.sh test-generator-agent US-001
-python3 scripts/compare-benchmarks.py
-```
-
-See agent `agent.md` files for graph-first analysis strategies.
-
-## Package Structure
-
-```
-/agents/              # 10 specialized mesh agents
-/skills/              # 24 migration skills
-/openspec/            # Proposals and specifications
-/docs/                # Core mesh documentation
-  ├─ agent-mesh-infrastructure.md
-  ├─ testing-guide.md
-  ├─ distributed-tracing.md
-  ├─ failure-recovery.md
-  └─ kpi-tracking.md
-README.md             # This file
-```
-
 ## Documentation
 
 ### Implementation
@@ -222,6 +267,8 @@ Required packages:
 - `pytest` - Testing framework
 
 ## Getting Started - Quick Command
+
+Use the `install-local.sh` if you want to try this out in a project.
 
 To start a migration, use the main `/migration` command:
 
@@ -576,35 +623,6 @@ claude-code agent run test-generator-agent --story US-123
 # Apply refactoring
 /apply-refactor-rules --source-path ./src --rules-path ./rules.yml
 ```
-
-## Configuration for Your Project
-
-When using this mesh in your migration project, you'll need:
-
-**rule.md** - Migration rules, patterns, and constraints:
-- Code transformation rules
-- Architectural patterns
-- Anti-patterns to avoid
-- Quality thresholds
-- Security requirements
-
-**tasks.md** - Task backlog and priorities:
-- User stories
-- Task breakdown
-- Dependencies
-- Priority ordering
-- Assignment and status
-
-**CLAUDE.md** - Project-specific instructions for Claude Code:
-- Coding standards
-- Testing requirements
-- CI/CD workflows
-- Review processes
-
-**.env** - Environment configuration:
-- CI platform credentials (GitLab/GitHub)
-- Kanban board credentials (Jira/Linear/GitHub Projects)
-- External tool configurations
 
 ## Monitoring and Observability
 
