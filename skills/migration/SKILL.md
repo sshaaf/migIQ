@@ -53,7 +53,7 @@ The project-tracker-agent will create and manage tasks for each phase:
    - Check project path exists
    - Validate migration type
    - Verify required tools are available
-   - Verify graphify is installed (`graphify --version`)
+   - Note: graphify skill is bundled (will check for graphify tool when invoked)
 
 2. **Build Knowledge Graph (REQUIRED)**
    ```bash
