@@ -144,6 +144,131 @@ class TestDotenvLocalOverride:
             os.unlink(local_file)
 
 
+class TestProjectDotenvLoading:
+    """Test loading .env from project directory"""
+
+    def test_load_project_env(self):
+        """Load .env from project directory"""
+        # Create temporary project directory
+        with tempfile.TemporaryDirectory() as project_dir:
+            # Create .env in project
+            env_path = os.path.join(project_dir, '.env')
+            with open(env_path, 'w') as f:
+                f.write('PROJECT_VAR=project_value\n')
+                f.write('TRACKER_GITHUB_TOKEN=ghp_project_token\n')
+
+            # Save current environment
+            original_project_var = os.environ.get('PROJECT_VAR')
+            original_token = os.environ.get('TRACKER_GITHUB_TOKEN')
+
+            try:
+                # Load project .env
+                load_dotenv(env_path, override=True)
+
+                # Verify loaded
+                assert os.environ.get('PROJECT_VAR') == 'project_value'
+                assert os.environ.get('TRACKER_GITHUB_TOKEN') == 'ghp_project_token'
+            finally:
+                # Cleanup
+                if original_project_var is None:
+                    os.environ.pop('PROJECT_VAR', None)
+                else:
+                    os.environ['PROJECT_VAR'] = original_project_var
+
+                if original_token is None:
+                    os.environ.pop('TRACKER_GITHUB_TOKEN', None)
+                else:
+                    os.environ['TRACKER_GITHUB_TOKEN'] = original_token
+
+    def test_project_env_overrides_global(self):
+        """Project .env overrides global .env"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create global .env
+            global_env = os.path.join(temp_dir, 'global.env')
+            with open(global_env, 'w') as f:
+                f.write('TRACKER_TYPE=local\n')
+
+            # Create project .env
+            project_env = os.path.join(temp_dir, 'project.env')
+            with open(project_env, 'w') as f:
+                f.write('TRACKER_TYPE=github\n')
+
+            original_tracker_type = os.environ.get('TRACKER_TYPE')
+
+            try:
+                # Load global first
+                load_dotenv(global_env)
+                assert os.environ.get('TRACKER_TYPE') == 'local'
+
+                # Load project with override
+                load_dotenv(project_env, override=True)
+                assert os.environ.get('TRACKER_TYPE') == 'github'
+            finally:
+                if original_tracker_type is None:
+                    os.environ.pop('TRACKER_TYPE', None)
+                else:
+                    os.environ['TRACKER_TYPE'] = original_tracker_type
+
+
+class TestModeConfiguration:
+    """Test MODE environment variable loading"""
+
+    def test_mode_from_environment(self):
+        """Load MODE from environment variable"""
+        original_mode = os.environ.get('MODE')
+
+        try:
+            # Set MODE in environment
+            os.environ['MODE'] = 'autonomous'
+
+            # Simulate context loading (like project_tracker.py does)
+            context = {'mode': None}  # No mode in context
+            mode = context.get('mode') or os.environ.get('MODE', 'interactive')
+
+            assert mode == 'autonomous'
+        finally:
+            if original_mode is None:
+                os.environ.pop('MODE', None)
+            else:
+                os.environ['MODE'] = original_mode
+
+    def test_mode_defaults_to_interactive(self):
+        """Default to interactive when MODE not set"""
+        original_mode = os.environ.get('MODE')
+
+        try:
+            # Remove MODE from environment
+            os.environ.pop('MODE', None)
+
+            # Simulate context loading
+            context = {'mode': None}
+            mode = context.get('mode') or os.environ.get('MODE', 'interactive')
+
+            assert mode == 'interactive'
+        finally:
+            if original_mode is not None:
+                os.environ['MODE'] = original_mode
+
+    def test_context_mode_overrides_env(self):
+        """Context mode takes priority over environment"""
+        original_mode = os.environ.get('MODE')
+
+        try:
+            # Set MODE in environment
+            os.environ['MODE'] = 'autonomous'
+
+            # But context has interactive
+            context = {'mode': 'interactive'}
+            mode = context.get('mode') or os.environ.get('MODE', 'interactive')
+
+            assert mode == 'interactive'
+        finally:
+            if original_mode is None:
+                os.environ.pop('MODE', None)
+            else:
+                os.environ['MODE'] = original_mode
+
+
 class TestBackwardCompatibility:
     """Test backward compatibility with context-only configuration"""
 

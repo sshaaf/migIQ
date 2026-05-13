@@ -36,6 +36,9 @@ class GitHubProjectsTracker(TrackerInterface):
             config: Configuration dictionary with:
                 - token: GitHub PAT (can be $ENV_VAR)
                 - organization: GitHub org or username
+                - repository: Optional repository (owner/repo) for creating real issues
+                              If not provided, attempts to auto-detect from git remote
+                - project_path: Optional project path for auto-detecting repository
                 - project_number: Optional project number (auto-creates if not provided)
                 - auto_create: Optional, defaults to True
                 - project_name: Optional custom project name for auto-creation
@@ -53,6 +56,24 @@ class GitHubProjectsTracker(TrackerInterface):
         self.organization = config.get('organization', '')
         if not self.organization:
             raise ConfigurationError("GitHub organization is required")
+
+        # Repository for creating real issues
+        # Try to auto-detect from git remote if not explicitly provided
+        self.repository = config.get('repository')
+        project_path = config.get('project_path')
+
+        if not self.repository and project_path:
+            try:
+                detected_repo = self._detect_repository_from_git(project_path)
+                if detected_repo:
+                    self.repository = detected_repo
+                    logger.info(f"Auto-detected repository from git remote: {self.repository}")
+                    print(f"✓ Auto-detected GitHub repository: {self.repository}")
+            except Exception as e:
+                logger.debug(f"Could not auto-detect repository: {e}")
+                # Not an error - just means we'll use draft issues
+
+        self._repository_id: Optional[str] = None  # Cache for repository node ID
 
         self.project_number = config.get('project_number')
         auto_create = config.get('auto_create', True)
@@ -80,7 +101,15 @@ class GitHubProjectsTracker(TrackerInterface):
 
                 # Print information for user
                 print(f"\n✓ Created GitHub Project #{self.project_number}: {project_name}")
-                print(f"  URL: https://github.com/orgs/{self.organization}/projects/{self.project_number}")
+
+                # Show appropriate URL based on repository config
+                if self.repository:
+                    print(f"  URL: https://github.com/{self.repository}/projects/{self.project_number}")
+                    print(f"  Mode: Repository issues (issues created in {self.repository})")
+                else:
+                    print(f"  URL: https://github.com/orgs/{self.organization}/projects/{self.project_number}")
+                    print(f"  Mode: Draft issues (project-only items)")
+
                 print(f"\nTo persist this project, add to your .env file:")
                 print(f"  TRACKER_GITHUB_PROJECT_NUMBER={self.project_number}\n")
 
@@ -98,6 +127,68 @@ class GitHubProjectsTracker(TrackerInterface):
         logger.info(
             f"GitHubProjectsTracker initialized for {self.organization}/project/{self.project_number}"
         )
+
+    def _detect_repository_from_git(self, project_path: str) -> Optional[str]:
+        """
+        Auto-detect GitHub repository from git remote URL.
+
+        Args:
+            project_path: Path to project directory
+
+        Returns:
+            Repository in "owner/repo" format, or None if not detected
+
+        Examples:
+            git@github.com:my-org/my-repo.git -> "my-org/my-repo"
+            https://github.com/my-org/my-repo.git -> "my-org/my-repo"
+        """
+        import subprocess
+        import re
+
+        try:
+            # Get git remote origin URL
+            result = subprocess.run(
+                ['git', '-C', project_path, 'remote', 'get-url', 'origin'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode != 0:
+                return None
+
+            remote_url = result.stdout.strip()
+
+            # Parse GitHub repository from URL
+            # Supports both SSH and HTTPS formats:
+            # - git@github.com:owner/repo.git
+            # - https://github.com/owner/repo.git
+            # - https://github.com/owner/repo
+
+            # SSH format: git@github.com:owner/repo.git
+            ssh_match = re.match(r'git@github\.com:([^/]+)/(.+?)(?:\.git)?$', remote_url)
+            if ssh_match:
+                owner, repo = ssh_match.groups()
+                return f"{owner}/{repo}"
+
+            # HTTPS format: https://github.com/owner/repo.git
+            https_match = re.match(r'https://github\.com/([^/]+)/(.+?)(?:\.git)?$', remote_url)
+            if https_match:
+                owner, repo = https_match.groups()
+                return f"{owner}/{repo}"
+
+            logger.debug(f"Could not parse GitHub repo from remote URL: {remote_url}")
+            return None
+
+        except subprocess.TimeoutExpired:
+            logger.debug("git command timed out")
+            return None
+        except FileNotFoundError:
+            logger.debug("git command not found")
+            return None
+        except Exception as e:
+            logger.debug(f"Failed to detect repository: {e}")
+            return None
 
     def _get_owner_id(self, organization: str) -> str:
         """
@@ -156,6 +247,60 @@ class GitHubProjectsTracker(TrackerInterface):
             raise
         except Exception as e:
             raise TrackerError(f"Failed to resolve owner ID for '{organization}': {e}")
+
+    def _get_repository_id(self, repository: str) -> str:
+        """
+        Resolve repository (owner/repo) to GitHub node ID.
+
+        Args:
+            repository: Repository in format "owner/repo"
+
+        Returns:
+            Repository node ID
+
+        Raises:
+            TrackerError: If repository not found
+        """
+        if self._repository_id:
+            return self._repository_id
+
+        # Parse owner/repo
+        parts = repository.split('/')
+        if len(parts) != 2:
+            raise ConfigurationError(
+                f"Invalid repository format '{repository}'. Expected 'owner/repo'"
+            )
+
+        owner, name = parts
+
+        query = """
+        query($owner: String!, $name: String!) {
+          repository(owner: $owner, name: $name) {
+            id
+          }
+        }
+        """
+
+        variables = {'owner': owner, 'name': name}
+
+        try:
+            result = self._execute_graphql(query, variables)
+            repo_data = result.get('data', {}).get('repository')
+
+            if not repo_data or not repo_data.get('id'):
+                raise TrackerError(
+                    f"Repository '{repository}' not found. "
+                    "Please verify the owner and repository name are correct."
+                )
+
+            self._repository_id = repo_data['id']
+            logger.info(f"Resolved repository {repository} to ID {self._repository_id}")
+            return self._repository_id
+
+        except TrackerError:
+            raise
+        except Exception as e:
+            raise TrackerError(f"Failed to resolve repository ID for '{repository}': {e}")
 
     def _create_project_v2(self, owner_id: str, title: str) -> str:
         """
@@ -430,7 +575,10 @@ class GitHubProjectsTracker(TrackerInterface):
 
     def create_issue(self, story_data: Dict) -> str:
         """
-        Create a draft issue in GitHub Projects v2.
+        Create an issue - either as a repository issue or draft issue.
+
+        If repository is configured, creates a real GitHub issue in that repository
+        and links it to the project. Otherwise, creates a draft issue in the project.
 
         Args:
             story_data: Story dictionary
@@ -442,64 +590,160 @@ class GitHubProjectsTracker(TrackerInterface):
             TrackerError: If creation fails
         """
         try:
-            project_id = self._resolve_project_node_id()
-
-            # Format description with acceptance criteria
-            description = story_data.get('description', '')
-            acceptance_criteria = story_data.get('acceptance_criteria', [])
-
-            if acceptance_criteria:
-                description += "\n\n**Acceptance Criteria:**\n"
-                for criterion in acceptance_criteria:
-                    description += f"- [ ] {criterion}\n"
-
-            # Add technical details
-            description += f"\n\n**Technical Details:**\n"
-            description += f"- Affected modules: {', '.join(story_data.get('affected_modules', ['TBD']))}\n"
-            description += f"- Dependencies: {', '.join(story_data.get('dependencies', ['None']))}\n"
-            description += f"- Migration type: {story_data.get('migration_type', 'TBD')}\n"
-
-            mutation = """
-            mutation($projectId: ID!, $title: String!, $body: String!) {
-              addProjectV2DraftIssue(input: {
-                projectId: $projectId
-                title: $title
-                body: $body
-              }) {
-                projectItem {
-                  id
-                  content {
-                    ... on DraftIssue {
-                      title
-                    }
-                  }
-                }
-              }
-            }
-            """
-
-            variables = {
-                'projectId': project_id,
-                'title': f"[{story_data['id']}] {story_data.get('title', 'Untitled')}",
-                'body': description
-            }
-
-            result = self._execute_graphql(mutation, variables)
-            item_data = result.get('data', {}).get('addProjectV2DraftIssue', {}).get('projectItem', {})
-
-            if not item_data:
-                raise TrackerError("Failed to create GitHub project item")
-
-            item_id = item_data['id']
-            logger.info(f"Created GitHub project item {item_id} for story {story_data['id']}")
-
-            return item_id
+            if self.repository:
+                # Create real repository issue + link to project
+                return self._create_repository_issue(story_data)
+            else:
+                # Create draft issue in project only
+                return self._create_draft_issue(story_data)
 
         except TrackerError:
             raise
         except Exception as e:
             logger.error(f"Failed to create GitHub issue: {e}")
             raise TrackerError(f"Failed to create GitHub issue: {e}")
+
+    def _create_draft_issue(self, story_data: Dict) -> str:
+        """Create a draft issue in GitHub Projects v2 (project-only)."""
+        project_id = self._resolve_project_node_id()
+
+        # Format description with acceptance criteria
+        description = story_data.get('description', '')
+        acceptance_criteria = story_data.get('acceptance_criteria', [])
+
+        if acceptance_criteria:
+            description += "\n\n**Acceptance Criteria:**\n"
+            for criterion in acceptance_criteria:
+                description += f"- [ ] {criterion}\n"
+
+        # Add technical details
+        description += f"\n\n**Technical Details:**\n"
+        description += f"- Affected modules: {', '.join(story_data.get('affected_modules', ['TBD']))}\n"
+        description += f"- Dependencies: {', '.join(story_data.get('dependencies', ['None']))}\n"
+        description += f"- Migration type: {story_data.get('migration_type', 'TBD')}\n"
+
+        mutation = """
+        mutation($projectId: ID!, $title: String!, $body: String!) {
+          addProjectV2DraftIssue(input: {
+            projectId: $projectId
+            title: $title
+            body: $body
+          }) {
+            projectItem {
+              id
+              content {
+                ... on DraftIssue {
+                  title
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {
+            'projectId': project_id,
+            'title': f"[{story_data['id']}] {story_data.get('title', 'Untitled')}",
+            'body': description
+        }
+
+        result = self._execute_graphql(mutation, variables)
+        item_data = result.get('data', {}).get('addProjectV2DraftIssue', {}).get('projectItem', {})
+
+        if not item_data:
+            raise TrackerError("Failed to create GitHub project draft issue")
+
+        item_id = item_data['id']
+        logger.info(f"Created GitHub draft issue {item_id} for story {story_data['id']}")
+
+        return item_id
+
+    def _create_repository_issue(self, story_data: Dict) -> str:
+        """Create a real GitHub repository issue and link it to the project."""
+        repo_id = self._get_repository_id(self.repository)
+        project_id = self._resolve_project_node_id()
+
+        # Format description with acceptance criteria
+        description = story_data.get('description', '')
+        acceptance_criteria = story_data.get('acceptance_criteria', [])
+
+        if acceptance_criteria:
+            description += "\n\n**Acceptance Criteria:**\n"
+            for criterion in acceptance_criteria:
+                description += f"- [ ] {criterion}\n"
+
+        # Add technical details
+        description += f"\n\n**Technical Details:**\n"
+        description += f"- Affected modules: {', '.join(story_data.get('affected_modules', ['TBD']))}\n"
+        description += f"- Dependencies: {', '.join(story_data.get('dependencies', ['None']))}\n"
+        description += f"- Migration type: {story_data.get('migration_type', 'TBD')}\n"
+
+        # Step 1: Create repository issue
+        create_issue_mutation = """
+        mutation($repositoryId: ID!, $title: String!, $body: String!) {
+          createIssue(input: {
+            repositoryId: $repositoryId
+            title: $title
+            body: $body
+          }) {
+            issue {
+              id
+              number
+              url
+            }
+          }
+        }
+        """
+
+        issue_variables = {
+            'repositoryId': repo_id,
+            'title': f"[{story_data['id']}] {story_data.get('title', 'Untitled')}",
+            'body': description
+        }
+
+        result = self._execute_graphql(create_issue_mutation, issue_variables)
+        issue_data = result.get('data', {}).get('createIssue', {}).get('issue', {})
+
+        if not issue_data:
+            raise TrackerError("Failed to create GitHub repository issue")
+
+        issue_id = issue_data['id']
+        issue_number = issue_data['number']
+        issue_url = issue_data['url']
+
+        logger.info(f"Created GitHub issue #{issue_number} for story {story_data['id']}: {issue_url}")
+
+        # Step 2: Link issue to project
+        link_mutation = """
+        mutation($projectId: ID!, $contentId: ID!) {
+          addProjectV2ItemById(input: {
+            projectId: $projectId
+            contentId: $contentId
+          }) {
+            item {
+              id
+            }
+          }
+        }
+        """
+
+        link_variables = {
+            'projectId': project_id,
+            'contentId': issue_id
+        }
+
+        result = self._execute_graphql(link_mutation, link_variables)
+        item_data = result.get('data', {}).get('addProjectV2ItemById', {}).get('item', {})
+
+        if not item_data:
+            logger.warning(f"Created issue {issue_url} but failed to link to project")
+            # Return issue ID anyway - issue was created successfully
+            return issue_id
+
+        item_id = item_data['id']
+        logger.info(f"Linked issue #{issue_number} to project (item ID: {item_id})")
+
+        return item_id
 
     def update_issue(self, issue_id: str, updates: Dict) -> bool:
         """

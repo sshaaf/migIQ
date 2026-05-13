@@ -73,6 +73,7 @@ The project-tracker-agent will create and manage tasks for each phase:
    - Migration agents **will fail** without graphify graph
 
 3. **Initialize Context**
+   - Load configuration from project's .env file (if exists)
    - Create/update rule.md if needed
    - Create/update tasks.md if needed
    - Set up environment variables
@@ -110,18 +111,61 @@ Each task includes:
 ## Interactive vs Autonomous Mode
 
 **Interactive Mode (default):**
-- Prompts for confirmation at critical points
-- Pauses for human review after analysis
-- Requires approval before CI push
-- Shows real-time progress
+- Pauses for human intervention when user stories fail
+- Allows manual review and remediation
+- Continues to next story after manual fix
 
 **Autonomous Mode:**
-- Runs end-to-end without intervention
-- Only escalates on critical failures
-- Suitable for trusted codebases
-- Requires --mode autonomous flag
+- Automatically invokes failure-analyzer-agent when stories fail
+- Attempts automatic remediation and retry
+- Continues processing without human intervention
+- Set via `--mode autonomous` or `MODE=autonomous` in .env
+
+**How to enable:**
+```bash
+# Option 1: Command-line flag
+/migration --project-path ./my-app --migration-type framework --mode autonomous
+
+# Option 2: Environment variable in project's .env
+echo "MODE=autonomous" >> ./my-app/.env
+/migration --project-path ./my-app --migration-type framework
+```
 
 ## Configuration Files
+
+### .env (Project Configuration)
+The migration automatically loads configuration from `<project-path>/.env` if it exists.
+
+**Supported variables:**
+```bash
+# Execution Mode
+MODE=autonomous                             # 'interactive' (default) or 'autonomous'
+
+# Tracker Configuration
+TRACKER_TYPE=github                         # or 'local'
+TRACKER_GITHUB_TOKEN=ghp_xxxxx              # GitHub PAT (required for github tracker)
+TRACKER_GITHUB_ORGANIZATION=my-org          # GitHub org name
+TRACKER_GITHUB_REPOSITORY=my-org/my-repo    # Optional: overrides auto-detection
+TRACKER_GITHUB_PROJECT_NUMBER=5             # Optional, auto-creates if missing
+
+# Local Tracker (default)
+TRACKER_LOCAL_TASKS_PATH=./tasks.md
+```
+
+**Note:** `TRACKER_GITHUB_REPOSITORY` is auto-detected from git remote. Only set manually if needed to override.
+
+**GitHub Tracker modes:**
+- **Auto-detected repository** (default): Automatically detects repository from git remote in project directory. Creates real GitHub issues and links them to the project.
+- **Manual repository** (`TRACKER_GITHUB_REPOSITORY=owner/repo`): Override auto-detection with explicit repository.
+- **No repository**: If auto-detection fails and no manual config, creates draft issues (project-only items).
+
+**Priority order:**
+1. Command-line arguments (highest)
+2. Project's .env file (`<project-path>/.env`)
+3. Agent's .env file (current directory)
+4. Defaults (lowest)
+
+This allows you to store GitHub tokens and tracker config in your project's .env file without passing them on the command line.
 
 ### rule.md
 If not provided, creates template with:

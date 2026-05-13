@@ -241,29 +241,52 @@ The agent mesh supports flexible configuration via .env files (recommended) or J
 
 ### Quick Start with .env
 
-1. **Copy the example file:**
-   ```bash
-   cp .env.example .env
-   ```
+The migration automatically loads configuration from your **project's .env file**.
 
-2. **Edit .env with your settings:**
+1. **Create .env in your project directory:**
    ```bash
+   cd ./my-app  # Your project to migrate (must be a git repo)
+   cat > .env << 'EOF'
    # Tracker Configuration
    TRACKER_TYPE=github
-   TRACKER_GITHUB_TOKEN=$GITHUB_TOKEN
+   TRACKER_GITHUB_TOKEN=ghp_your_token_here
    TRACKER_GITHUB_ORGANIZATION=my-org
-   TRACKER_GITHUB_PROJECT_NUMBER=5
+   # TRACKER_GITHUB_REPOSITORY auto-detected from git remote
+   EOF
    ```
 
-3. **Set your GitHub token:**
-   ```bash
-   export GITHUB_TOKEN="ghp_your_token_here"
-   ```
+   **Repository auto-detection:**
+   The migration automatically detects the GitHub repository from your project's git remote:
+   - Parses `git remote get-url origin` in the project directory
+   - Supports both SSH (`git@github.com:owner/repo.git`) and HTTPS formats
+   - Creates real GitHub issues in that repository and links them to the project
+   - Issues appear in `github.com/owner/repo/issues` and the project board
 
-4. **Run the migration:**
+   If auto-detection fails (non-GitHub remote or no git repo), it falls back to creating draft issues (project-only).
+
+2. **Run the migration:**
    ```bash
+   cd ..  # Back to parent directory
    /migration --project-path ./my-app --migration-type framework
    ```
+
+   The migration will automatically:
+   - Load configuration from `./my-app/.env`
+   - Use your GitHub token for tracker integration
+   - Create/sync tasks to GitHub Projects
+
+**Alternative: Use environment variables**
+   ```bash
+   export GITHUB_TOKEN="ghp_your_token_here"
+   /migration --project-path ./my-app --migration-type framework
+   ```
+
+**Configuration priority:**
+1. Command-line arguments (highest)
+2. Project's .env file (`<project-path>/.env`)
+3. Current directory's .env file
+4. Environment variables
+5. Defaults (lowest)
 
 ### Environment Variable Naming Convention
 
@@ -274,6 +297,7 @@ Environment variables use `UPPERCASE_WITH_UNDERSCORES` and map to nested configu
 | `TRACKER_TYPE` | `tracker.type` | `github` |
 | `TRACKER_GITHUB_TOKEN` | `tracker.config.token` | `$GITHUB_TOKEN` |
 | `TRACKER_GITHUB_ORGANIZATION` | `tracker.config.organization` | `my-org` |
+| `TRACKER_GITHUB_REPOSITORY` | `tracker.config.repository` | `my-org/my-repo` |
 | `TRACKER_GITHUB_PROJECT_NUMBER` | `tracker.config.project_number` | `5` |
 
 ### Configuration Priority

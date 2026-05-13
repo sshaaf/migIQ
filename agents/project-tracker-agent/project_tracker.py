@@ -236,7 +236,20 @@ class ProjectTrackerAgent:
         self.migration_type = context['migrationType']
         self.rules_path = context['rulesPath']
         self.tasks_path = context['tasksPath']
-        self.mode = context.get('mode', 'interactive')
+
+        # Load mode with priority: context > environment > default
+        # This allows setting MODE=autonomous in .env
+        self.mode = context.get('mode') or os.environ.get('MODE', 'interactive')
+
+        # Load .env from project directory if it exists
+        # This allows the migration to pick up project-specific config (GITHUB_TOKEN, etc.)
+        project_env = os.path.join(self.project_path, '.env')
+        if os.path.exists(project_env):
+            logger.info(f"Loading project .env from: {project_env}")
+            load_dotenv(project_env, override=True)
+            print(f"\n✓ Loaded configuration from: {project_env}")
+        else:
+            logger.info(f"No .env file found in project: {project_env}")
 
         # Keep TasksFileManager for internal task tracking (TASK-001, TASK-002, etc.)
         # These are different from user stories and handled separately
@@ -278,6 +291,12 @@ class ProjectTrackerAgent:
                 'type': 'local',
                 'config': {'tasks_path': self.tasks_path}
             }
+
+        # Add project_path to tracker config for GitHub repository auto-detection
+        if tracker_config.get('type') == 'github':
+            if 'config' not in tracker_config:
+                tracker_config['config'] = {}
+            tracker_config['config']['project_path'] = self.project_path
 
         try:
             self.tracker = create_tracker(tracker_config)
