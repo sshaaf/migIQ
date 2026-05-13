@@ -4,7 +4,7 @@
 #
 # This installer copies the complete mig-agent-mesh package including:
 # - 10 specialized agents for migration workflow orchestration
-# - 27 skills for code analysis, refactoring, and testing
+# - 24 skills for code analysis, refactoring, and testing (includes bundled graphify skill)
 # - Helper scripts for Graphify integration and benchmarking
 #
 # Usage: ./install-local.sh <target-project-directory>
@@ -113,7 +113,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "⚙️  REQUIRED: Configuration & Dependencies"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "1. Install Graphify (REQUIRED for migration to work):"
+echo "1. Install Graphify tool (REQUIRED for migration to work):"
+echo "   # The graphify skill is already bundled in this package"
+echo "   # You only need to install the graphify tool itself:"
+echo ""
 echo "   # Option A: Using uv (recommended)"
 echo "   uv tool install graphifyy && graphify install"
 echo ""

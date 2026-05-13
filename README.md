@@ -6,7 +6,7 @@ A reusable Agent Mesh package providing specialized agents and skills for AI-dri
 
 This package provides a complete set of mesh components for code migration:
 - **10 Specialized Agents** - Collaborative AI agents for migration workflows
-- **26 Skills** - Reusable, focused commands across all migration phases
+- **24 Skills** - Reusable, focused commands across all migration phases (includes bundled graphify skill)
 - **Agent Mesh Architecture** - Distributed, autonomous execution patterns
 - **OpenSpec Tracking** - Structured proposals and specifications
 
@@ -89,22 +89,23 @@ Agents use [graphify](https://github.com/safishamsi/graphify) for fast code anal
 
 **Requirements:**
 - Python 3.10 or higher
-- **REQUIRED**: graphify skill must be installed for migration agents to work
+- **REQUIRED**: graphify tool must be installed for migration agents to work
+- **INCLUDED**: graphify skill is bundled with this package (no separate installation needed)
 
 **Setup (Required for Production):**
 ```bash
-# 1. Install graphify (Python package) - REQUIRED
+# 1. Install graphify tool (Python package) - REQUIRED
+# The graphify skill is already bundled in this package
 # Option A: Using uv (recommended)
-uv tool install graphifyy && graphify install
+uv tool install graphifyy
 
 # Option B: Using pipx
-pipx install graphifyy && graphify install
+pipx install graphifyy
 
 # Option C: Using pip
-pip install graphifyy && graphify install
+pip install graphifyy
 
 # Note: Package name is 'graphifyy' (double-y), CLI command is 'graphify'
-# The 'graphify install' step creates /Users/<user>/.claude/skills/graphify skill
 
 # 2. Build initial graph (in Claude Code)
 /graphify .
@@ -180,7 +181,7 @@ See agent `agent.md` files for graph-first analysis strategies.
 
 ```
 /agents/              # 10 specialized mesh agents
-/skills/              # 26 migration skills
+/skills/              # 24 migration skills (includes bundled graphify)
 /openspec/            # Proposals and specifications
 /docs/                # Core mesh documentation
   ├─ agent-mesh-infrastructure.md
@@ -369,7 +370,7 @@ See [AGENT-MESH.md](./AGENT-MESH.md) for detailed architecture.
 
 ## Skills Overview
 
-The system provides **27 specialized skills** across all harness phases:
+The system provides **24 specialized skills** across all harness phases (includes bundled graphify skill):
 
 ### Main Orchestration (1 skill)
 - `/migration` - Main entry point to start migration workflow
@@ -447,10 +448,11 @@ This is a **reusable mesh package** meant to be integrated into your migration p
 
 1. **Install Prerequisites (REQUIRED)**
    ```bash
-   # Install graphify - agents depend on this for code analysis
-   uv tool install graphifyy && graphify install
+   # Install graphify tool - agents depend on this for code analysis
+   # Note: The graphify skill is already bundled in this package
+   uv tool install graphifyy
    # Verify installation
-   /graphify --help
+   graphify --version
    ```
 
 2. **Clone or Install the Mesh**
@@ -475,7 +477,7 @@ This is a **reusable mesh package** meant to be integrated into your migration p
 
 3. **Review Skills**
 
-   Browse the 26 skills in `/skills/` organized by phase:
+   Browse the 24 skills in `/skills/` organized by phase:
    - Project Tracking: analyze, plan, generate backlog
    - Testing: characterization tests, functional tests, coverage
    - Code: refactoring, spec-driven generation, validation
@@ -634,7 +636,7 @@ Your project must configure these integrations for the mesh to function.
 
 **Included**:
 - ✅ 10 Specialized agents (1 implemented: project-tracker-agent)
-- ✅ 27 Migration skills (1 implemented: /migration)
+- ✅ 24 Migration skills (includes bundled graphify skill)
 - ✅ Agent Mesh architecture documentation
 - ✅ OpenSpec proposal tracking
 - ✅ Core operational docs
