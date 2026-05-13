@@ -106,6 +106,61 @@ graph TD
 
 #### Workflow Phases
 
+```mermaid
+flowchart LR
+    Start([👤 User runs<br/>/migration]) --> Phase1
+
+    subgraph Phase1[" 🔍 Phase 1: Setup & Analysis "]
+        direction TB
+        G[Build Knowledge Graph] --> A[Analyze Codebase]
+        A --> P[Create Migration Plan]
+        P --> B[Generate User Stories]
+    end
+
+    Phase1 --> Phase2
+
+    subgraph Phase2[" ⚙️ Phase 2: Story Execution "]
+        direction TB
+        T[Generate Tests] --> C[Refactor Code]
+        C --> BM[Run Benchmarks]
+        BM --> Q[Validate Quality]
+        Q --> CI[Create MR & CI/CD]
+    end
+
+    Phase2 --> Decision{Story<br/>Success?}
+
+    Decision -->|✅ Yes| Phase4
+    Decision -->|❌ No| Phase3
+
+    subgraph Phase3[" 🔧 Phase 3: Failure Handling "]
+        direction TB
+        F[Analyze Failure] --> Mode{Mode?}
+        Mode -->|Interactive| Pause[⏸️ Pause for Human]
+        Mode -->|Autonomous| Doc[📝 Document & Continue]
+    end
+
+    Phase3 --> Next{More<br/>Stories?}
+    Next -->|Yes| Phase2
+    Next -->|No| Phase4
+
+    subgraph Phase4[" 📊 Phase 4: Tracking & Visibility "]
+        direction TB
+        Track[Update GitHub Issues] --> Status[Real-time Status]
+        Status --> Report[Attach Reports]
+    end
+
+    Phase4 --> End([✅ Migration Complete])
+
+    style Phase1 fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style Phase2 fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style Phase3 fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style Phase4 fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    style Start fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style End fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style Decision fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    style Next fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+```
+
 **Phase 1: Setup & Analysis**
 1. User invokes `/migration` skill with project path and migration type
 2. `/mig-graphify` builds knowledge graph using offline AST extraction (`graphify update`)
