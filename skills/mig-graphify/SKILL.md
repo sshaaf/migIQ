@@ -29,17 +29,17 @@ Creates a knowledge graph of your codebase that enables 50-70% faster migration 
 ## Usage
 
 ```bash
-# Analyze current directory
+# Analyze current directory (offline, no API key)
 /mig-graphify
 
 # Analyze specific path
 /mig-graphify ./my-project
 
-# Incremental update after code changes
-/mig-graphify --update
+# Force rebuild after major refactoring
+/mig-graphify --force
 
-# Deep analysis (more thorough)
-/mig-graphify --mode deep
+# Skip HTML visualization for large codebases
+/mig-graphify --no-viz
 ```
 
 ## Actions
@@ -70,10 +70,18 @@ Creates a knowledge graph of your codebase that enables 50-70% faster migration 
    After installation, run this command again.
    ```
 
-2. **Build knowledge graph**
+2. **Build knowledge graph (offline mode - no API key required)**
+
+   Use the `update` command for pure AST extraction without LLM:
    ```bash
-   graphify <path> [options]
+   graphify update <path>
    ```
+
+   This performs local-only tree-sitter AST extraction and does not require any API key.
+
+   Optional flags:
+   - `--force` - overwrite graph.json even if rebuild has fewer nodes
+   - `--no-viz` - skip graph.html generation (useful for large graphs)
 
 3. **Verify outputs**
    - Check `graphify-out/graph.json` exists
@@ -82,20 +90,22 @@ Creates a knowledge graph of your codebase that enables 50-70% faster migration 
 
 ## Query Operations
 
-After building the graph, you can query it:
+After building the graph, you can query it (requires LLM API for semantic queries):
 
 ```bash
-# Natural language queries
+# Find dependency paths (no API key needed)
+graphify path "ClassA" "ClassB"
+
+# Explain a node (requires API key)
+graphify explain "ServiceClassName"
+
+# Natural language queries (requires API key)
 graphify query "Find all service classes"
 graphify query "Find classes with @Stateless annotation"
 graphify query "Find files importing javax.*"
-
-# Find dependency paths
-graphify path "ClassA" "ClassB"
-
-# Explain a node
-graphify explain "ServiceClassName"
 ```
+
+**Note:** Query operations require an LLM API key. For migration analysis, the graph structure itself (graph.json) is sufficient and built offline.
 
 ## Outputs
 
@@ -121,7 +131,8 @@ graphify explain "ServiceClassName"
 - **50-70% faster** agent execution
 - **96% reduction** in file reads
 - **Complete dependency understanding** instantly available
-- **Zero API costs** - all analysis is local via tree-sitter AST
+- **Zero API costs** - graph building uses local tree-sitter AST (no LLM required)
+- **Fully offline** - runs without internet connection
 
 ## Integration with Migration
 
@@ -146,6 +157,7 @@ analyze-codebase, plan-migration, etc. ← query graph
 
 ```
 Building knowledge graph for ./my-project...
+Running offline mode (AST-only, no API required)
 
 ✓ Extracted 150 files
 ✓ Found 8 communities
@@ -163,7 +175,7 @@ Graph statistics:
   - Communities: 8
   - God nodes: 5 (degree ≥ 10)
 
-Time: 28.3s
+Time: 28.3s (tree-sitter AST extraction)
 ```
 
 ## Error Handling

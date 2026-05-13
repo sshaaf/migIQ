@@ -614,8 +614,9 @@ class ProjectTrackerAgent:
         if task_001_id:
             try:
                 self.tracker.update_issue(task_001_id, {'status': 'In Progress'})
-            except:
-                pass
+                print("  → Tracker status: In Progress")
+            except Exception as e:
+                logger.warning(f"Failed to update tracker status: {e}")
 
         self.tasks_manager.update_task_status('TASK-001', 'in_progress')
 
@@ -653,8 +654,8 @@ class ProjectTrackerAgent:
                 try:
                     self.tracker.update_issue(task_001_id, {'status': 'Failed'})
                     self.tracker.add_comment(task_001_id, f"❌ Analysis failed: {result.get('message')}")
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to update tracker on failure: {e}")
             return False
 
         # TASK-002: Create migration plan
@@ -665,8 +666,9 @@ class ProjectTrackerAgent:
         if task_002_id:
             try:
                 self.tracker.update_issue(task_002_id, {'status': 'In Progress'})
-            except:
-                pass
+                print("  → Tracker status: In Progress")
+            except Exception as e:
+                logger.warning(f"Failed to update tracker status: {e}")
 
         self.tasks_manager.update_task_status('TASK-002', 'in_progress')
 
@@ -704,8 +706,8 @@ class ProjectTrackerAgent:
                 try:
                     self.tracker.update_issue(task_002_id, {'status': 'Failed'})
                     self.tracker.add_comment(task_002_id, f"❌ Planning failed: {result.get('message')}")
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to update tracker on failure: {e}")
             return False
 
         # TASK-003: Generate backlog
@@ -716,8 +718,9 @@ class ProjectTrackerAgent:
         if task_003_id:
             try:
                 self.tracker.update_issue(task_003_id, {'status': 'In Progress'})
-            except:
-                pass
+                print("  → Tracker status: In Progress")
+            except Exception as e:
+                logger.warning(f"Failed to update tracker status: {e}")
 
         self.tasks_manager.update_task_status('TASK-003', 'in_progress')
 
@@ -766,8 +769,8 @@ class ProjectTrackerAgent:
                 try:
                     self.tracker.update_issue(task_003_id, {'status': 'Failed'})
                     self.tracker.add_comment(task_003_id, f"❌ Backlog generation failed: {result.get('message')}")
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to update tracker on failure: {e}")
             return False
 
         return True

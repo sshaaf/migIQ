@@ -747,11 +747,11 @@ class GitHubProjectsTracker(TrackerInterface):
 
     def update_issue(self, issue_id: str, updates: Dict) -> bool:
         """
-        Update a GitHub project item.
+        Update a GitHub project item fields (e.g., status).
 
         Args:
             issue_id: GitHub project item ID
-            updates: Fields to update
+            updates: Fields to update (e.g., {'status': 'In Progress'})
 
         Returns:
             True if successful
@@ -760,21 +760,117 @@ class GitHubProjectsTracker(TrackerInterface):
             TrackerError: If update fails
         """
         try:
-            # GitHub Projects v2 field updates require field IDs
-            # For simplicity, we'll log the update intent
-            # In production, this would query field IDs and update them
-            logger.info(f"Update requested for GitHub item {issue_id}: {updates}")
+            project_id = self._resolve_project_node_id()
 
-            # Note: Full implementation would require:
-            # 1. Query project fields to get field IDs
-            # 2. Use updateProjectV2ItemFieldValue mutation for each field
-            # This is a simplified version
+            # Handle status updates
+            if 'status' in updates:
+                self._update_status_field(project_id, issue_id, updates['status'])
+
+            # Handle other field updates (story_points, etc.)
+            # For now, just log them
+            other_updates = {k: v for k, v in updates.items() if k != 'status'}
+            if other_updates:
+                logger.info(f"Other field updates requested for {issue_id}: {other_updates}")
 
             return True
 
         except Exception as e:
             logger.error(f"Failed to update GitHub issue {issue_id}: {e}")
             raise TrackerError(f"Failed to update GitHub issue: {e}")
+
+    def _update_status_field(self, project_id: str, item_id: str, status: str) -> bool:
+        """
+        Update the Status field for a project item.
+
+        Args:
+            project_id: GitHub project node ID
+            item_id: Project item node ID
+            status: Status value (e.g., "In Progress", "Done")
+
+        Returns:
+            True if successful
+        """
+        # First, get the Status field ID and option ID
+        query = """
+        query($projectId: ID!) {
+          node(id: $projectId) {
+            ... on ProjectV2 {
+              fields(first: 20) {
+                nodes {
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    options {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+
+        variables = {'projectId': project_id}
+        result = self._execute_graphql(query, variables)
+
+        fields = result.get('data', {}).get('node', {}).get('fields', {}).get('nodes', [])
+
+        # Find Status field and matching option
+        status_field_id = None
+        status_option_id = None
+
+        for field in fields:
+            if field and field.get('name') == 'Status':
+                status_field_id = field['id']
+                for option in field.get('options', []):
+                    if option['name'] == status:
+                        status_option_id = option['id']
+                        break
+                break
+
+        if not status_field_id:
+            logger.warning(f"Status field not found in project {project_id}")
+            return False
+
+        if not status_option_id:
+            logger.warning(f"Status option '{status}' not found in Status field")
+            return False
+
+        # Now update the field value
+        mutation = """
+        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+          updateProjectV2ItemFieldValue(input: {
+            projectId: $projectId
+            itemId: $itemId
+            fieldId: $fieldId
+            value: $value
+          }) {
+            projectV2Item {
+              id
+            }
+          }
+        }
+        """
+
+        variables = {
+            'projectId': project_id,
+            'itemId': item_id,
+            'fieldId': status_field_id,
+            'value': {
+                'singleSelectOptionId': status_option_id
+            }
+        }
+
+        result = self._execute_graphql(mutation, variables)
+
+        if result.get('data', {}).get('updateProjectV2ItemFieldValue', {}).get('projectV2Item'):
+            logger.info(f"Updated status to '{status}' for item {item_id}")
+            return True
+        else:
+            logger.warning(f"Failed to update status for item {item_id}")
+            return False
 
     def get_issue(self, issue_id: str) -> Dict:
         """
