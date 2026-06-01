@@ -12,185 +12,7 @@
 
 MigIQ is a comprehensive migration solution that combines knowledge graph analysis, intelligent planning, and autonomous execution to migrate applications across platforms, frameworks, and languages.
 
-### What Makes MigIQ Different
-
-**Traditional Migrations**:
-- Manual analysis of codebase
-- Manually create migration plan
-- Manually execute tasks
-- Hope you didn't miss anything
-
-**MigIQ Migrations**:
-```bash
-cd my-spring-app
-/migiq
-"Migrate this to Quarkus for OpenShift"
-# → Complete migration with analysis, plan, execution, and deployment artifacts
-```
-
----
-
-## 🚀 Quick Start
-
-### Interactive Migration (30-60 minutes)
-```bash
-cd /path/to/your/app
-# In Claude Code, type:
-/migiq
-"Migrate this Spring Boot app to Quarkus"
-```
-
-### Autonomous Migration (background, multi-hour)
-```javascript
-Agent({
-  description: "Migrate to Quarkus",
-  prompt: `Follow AGENT.md at /Users/sshaaf/git/konveyor/migIQ/AGENT.md
-  
-  Task: Migrate this application from Spring Boot to Quarkus.
-  Working Directory: /path/to/your/app
-  
-  Requirements:
-  - Target: Quarkus 3.x
-  - Deployment: Red Hat OpenShift
-  - Approach: Phased migration
-  
-  Follow the 5-phase migiq workflow. Update me at major milestones.`
-})
-```
-
----
-
-## 🏗️ Architecture
-
-### The MigIQ Ecosystem
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      MigIQ Platform                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────────┐              ┌─────────────────────┐      │
-│  │   /migiq     │              │  Migrator Agent     │      │
-│  │   Skill      │◄────────────►│  (AGENT.md)         │      │
-│  │              │              │                     │      │
-│  │ Interactive  │              │  Autonomous         │      │
-│  │ Orchestration│              │  Long-running       │      │
-│  └──────┬───────┘              └──────────┬──────────┘      │
-│         │                                 │                 │
-│         └─────────────┬───────────────────┘                 │
-│                       │                                     │
-│         ┌─────────────▼────────────────┐                    │
-│         │   Core Migration Skills      │                    │
-│         ├──────────────────────────────┤                    │
-│         │                              │                    │
-│         │  1. mig-graphify             │ ← Analysis         │
-│         │  2. mig-prompt-builder       │ ← Requirements     │
-│         │  3. mig-plan                 │ ← Planning         │
-│         │  4. mig-execute              │ ← Execution        │
-│         │  5. mig-test-gen             │ ← Testing          │
-│         │  6. mig-containerize         │ ← Containers       │
-│         │  7. mig-deploy               │ ← Deployment       │
-│         │                              │                    │
-│         └──────────────────────────────┘                    │
-│                                                             │
-└───────────────────────────────────────────────────────────--┘
-```
-
-### 5-Phase Migration Workflow
-
-```
-Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
-┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
-│ mig-graphify  │         │ mig-prompt-      │       │  mig-plan   │
-│               │         │ builder          │       │             │
-│ • Code graph  │ ────►   │                  │ ────► │ • spec.md   │
-│ • Dependencies│         │ • Source tech    │       │ • design.md │
-│ • Architecture│         │ • Target tech    │       │ • tasks.md  │
-│ • Complexity  │         │ • Constraints    │       │ • stories   │
-└──────────────-┘         └──────────────────┘       └─────────────┘
-                                                             │
-                                                             ▼
-Phase 5: Reporting        Phase 4: Execution
-┌──────────────┐          ┌─────────────────────────┐
-│ Final Report │  ◄────   │    mig-execute          │
-│              │          │                         │
-│ • Summary    │          │ • Code changes          │
-│ • Metrics    │          │ • Tests (mig-test-gen)  │
-│ • Next steps │          │ • Containers            │
-│              │          │ • OpenShift manifests   │
-└──────────────┘          └─────────────────────────┘
-```
-
----
-
-## 📦 Project Structure
-
-```
-migIQ/
-├── README.md                   # This file - project overview
-├── AGENT.md                    # Autonomous migrator agent definition
-├── AGENT_EXAMPLES.md           # 6 example agent prompts
-├── SESSION_SUMMARY.md          # Development session log
-│
-├── migiq/                      # Main orchestration skill
-│   ├── README.md              # Skill documentation
-│   ├── SKILL.md               # Skill definition (5-phase workflow)
-│   ├── TEST_PLAN.md           # Testing strategy
-│   ├── test-validator.sh      # Output validation script
-│   └── evals/
-│       └── evals.json         # Test case definitions
-│
-├── mig-graphify/              # Phase 1: Codebase analysis
-│   └── SKILL.md
-│
-├── mig-prompt-builder/         # Phase 2: Requirements gathering
-│   └── SKILL.md
-│
-├── mig-plan/                   # Phase 3: Migration planning
-│   └── SKILL.md
-│
-├── mig-execute/                # Phase 4: Migration execution
-│   └── SKILL.md
-│
-├── mig-test-gen/               # Testing integration
-│   └── SKILL.md
-│
-├── mig-containerize/           # Containerization integration
-│   └── SKILL.md
-│
-└── mig-deploy/                 # OpenShift deployment
-    └── SKILL.md
-```
-
----
-
-## 🎯 Use Cases
-
-### 1. Platform Migrations
-- Java EE → Spring Boot → Quarkus
-- .NET Framework → .NET 8
-- Node.js 12 → Node.js 20
-- Rails → Node.js/Python
-
-### 2. Cloud Migrations
-- On-prem → OpenShift
-- Traditional VMs → Containers
-- Monolith → Microservices
-
-### 3. Modernization
-- Legacy patterns → Modern idioms
-- Callbacks → async/await
-- Old dependencies → Latest versions
-- Manual deployment → CI/CD
-
-### 4. Language Migrations
-- Java → Kotlin
-- JavaScript → TypeScript
-- Python 2 → Python 3
-
----
-
-## 💡 Two Execution Modes
+## Two Execution Modes
 
 ### Interactive Mode (`/migiq` skill)
 
@@ -219,15 +41,112 @@ cd my-app
 - When you trust the process
 
 **Usage:**
-```javascript
-Agent({
-  description: "Migrate to Quarkus",
-  prompt: `Follow AGENT.md. Migrate from Spring Boot to Quarkus...`
-})
+```
+Follow AGENT.md. Migrate from Spring Boot to Quarkus...
+
 ```
 
 See [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md) for 6 complete example prompts.
 
+
+---
+
+## 🏗️ Architecture
+
+### The MigIQ Ecosystem
+
+```
+                  ┌─────────────────────────────────────────────────────────────┐
+                  │                      MigIQ Platform                         │
+                  ├─────────────────────────────────────────────────────────────┤
+                  │                                                             │
+                  │  ┌──────────────┐              ┌─────────────────────┐      │
+                  │  │   /migiq     │              │  Migrator Agent     │      │
+                  │  │   Skill      │◄────────────►│  (AGENT.md)         │      │
+                  │  │              │              │                     │      │
+                  │  │ Interactive  │              │  Autonomous         │      │
+                  │  │ Orchestration│              │  Long-running       │      │
+                  │  └──────┬───────┘              └──────────┬──────────┘      │
+                  │         │                                 │                 │
+                  │         └─────────────┬───────────────────┘                 │
+                  │                       │                                     │
+                  │         ┌─────────────▼────────────────┐                    │
+                  │         │   Core Migration Skills      │                    │
+                  │         ├──────────────────────────────┤                    │
+                  │         │                              │                    │
+                  │         │  1. mig-graphify             │ ← Analysis         │
+                  │         │  2. mig-prompt-builder       │ ← Requirements     │
+                  │         │  3. mig-plan                 │ ← Planning         │
+                  │         │  4. mig-execute              │ ← Execution        │
+                  │         │  5. mig-test-gen             │ ← Testing          │
+                  │         │  6. mig-containerize         │ ← Containers       │
+                  │         │  7. mig-deploy               │ ← Deployment       │
+                  │         │                              │                    │
+                  │         └──────────────────────────────┘                    │
+                  │                                                             │
+                  └───────────────────────────────────────────────────────────--┘
+```
+
+### 5-Phase Migration Workflow
+
+```
+Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
+                  ┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
+                  │ mig-graphify  │         │ mig-prompt-      │       │  mig-plan   │
+                  │               │         │ builder          │       │             │
+                  │ • Code graph  │ ────►   │                  │ ────► │ • spec.md   │
+                  │ • Dependencies│         │ • Source tech    │       │ • design.md │
+                  │ • Architecture│         │ • Target tech    │       │ • tasks.md  │
+                  │ • Complexity  │         │ • Constraints    │       │ • stories   │
+                  └──────────────-┘         └──────────────────┘       └─────────────┘
+                                                                              │
+                                                                              ▼
+                  Phase 5: Reporting        Phase 4: Execution
+                  ┌──────────────┐          ┌─────────────────────────┐
+                  │ Final Report │  ◄────   │    mig-execute          │
+                  │              │          │                         │
+                  │ • Summary    │          │ • Code changes          │
+                  │ • Metrics    │          │ • Tests (mig-test-gen)  │
+                  │ • Next steps │          │ • Containers            │
+                  │              │          │ • OpenShift manifests   │
+                  └──────────────┘          └─────────────────────────┘
+```
+
+## 🎯 Many Use Cases (supports 31 languages)
+
+### 1. Platform Migrations
+- Java EE → Spring Boot → Quarkus
+- .NET Framework → .NET 8
+- Node.js 12 → Node.js 20
+- Rails → Node.js/Python
+
+### 2. Cloud Migrations
+- On-prem → OpenShift
+- Traditional VMs → Containers
+- Monolith → Microservices
+
+### 3. Modernization
+- Legacy patterns → Modern idioms
+- Callbacks → async/await
+- Old dependencies → Latest versions
+- Manual deployment → CI/CD
+
+### 4. Language Migrations
+- Java → Kotlin
+- JavaScript → TypeScript
+- Python 2 → Python 3
+
+
+### 5. Target Platforms
+- Quarkus, Spring Boot, Micronaut (Java/JVM)
+- Node.js (modern), Next.js, Remix (JavaScript/TypeScript)
+- FastAPI, Django 4+ (Python)
+- .NET 8 (C#)
+
+### 6. Deployment Targets
+- Red Hat OpenShift (primary)
+- Kubernetes
+- Container platforms (Docker, Podman)
 ---
 
 ## 📊 What You Get
@@ -262,62 +181,6 @@ your-project/
     ├── orchestration-log.md # Full orchestration log
     └── MIGRATION_REPORT.md  # ⭐ Share with stakeholders
 ```
-
----
-
-## 🔧 Supported Technologies
-
-### Source Platforms
-- Java EE, Spring Boot, Play Framework
-- Node.js, Express, NestJS
-- Python Django, Flask, FastAPI
-- Ruby on Rails
-- .NET Framework, ASP.NET
-
-### Target Platforms
-- Quarkus, Spring Boot, Micronaut (Java/JVM)
-- Node.js (modern), Next.js, Remix (JavaScript/TypeScript)
-- FastAPI, Django 4+ (Python)
-- .NET 8 (C#)
-
-### Deployment Targets
-- Red Hat OpenShift (primary)
-- Kubernetes
-- Container platforms (Docker, Podman)
-
----
-
-## 📈 Migration Success Metrics
-
-Typical migration outcomes:
-
-| Metric | Target | Typical Result |
-|--------|--------|----------------|
-| Code Coverage | 80%+ | 85-95% |
-| Task Success Rate | 90%+ | 85-100% |
-| Manual Intervention | < 10% | 5-15% |
-| Deployment Ready | Yes | Yes (with containers + manifests) |
-
----
-
-## 🧪 Testing
-
-### Quick Validation
-```bash
-# After migration:
-cd your-migrated-app
-bash /path/to/migiq/test-validator.sh
-```
-
-### Comprehensive Testing
-See [migiq/TEST_PLAN.md](./migiq/TEST_PLAN.md) for full testing procedures.
-
-### Example Test Cases
-1. Spring Boot → Quarkus (~35 min)
-2. Node.js Express Modernization (~25 min)
-3. Java EE → Spring Boot (~50 min)
-
----
 
 ## 📚 Documentation
 
@@ -407,51 +270,7 @@ Sequential would take: 2.5 hours
 
 ---
 
-## 🤝 Contributing
 
-### Improving Skills
-1. Test existing skills on new codebases
-2. Document edge cases and solutions
-3. Add new migration patterns
-4. Improve error handling
-
-### Adding Test Cases
-1. Add to `migiq/evals/evals.json`
-2. Run with test-validator.sh
-3. Document results
-4. Submit improvements
-
-### Extending Platforms
-1. Add new source/target platform support
-2. Update skill definitions
-3. Add example migrations
-4. Document platform-specific patterns
-
----
-
-## 🔍 Troubleshooting
-
-### Migration Fails at Phase 1 (Analysis)
-**Issue**: Graphify can't analyze codebase  
-**Fix**: Check that graphify CLI is installed and accessible
-
-### Migration Fails at Phase 4 (Execution)
-**Issue**: Some tasks fail during execution  
-**Expected**: This is normal for complex migrations  
-**Action**: Review EXECUTION_REPORT.md for specific failures and remediation options
-
-### Agent Doesn't Respond
-**Issue**: Agent spawned but no updates  
-**Check**: Agent might be waiting for permissions  
-**Fix**: Check permission prompts, approve necessary actions
-
-### Final Report Missing
-**Issue**: Migration completes but no report  
-**Fix**: Check `migiq-workspace/` directory, may be in different location
-
----
-
-## 📞 Support
 
 ### Documentation
 - [Full skill documentation](./migiq/SKILL.md)
@@ -472,37 +291,4 @@ For bugs or feature requests, document:
 
 ---
 
-## 📄 License
-
-Part of the Konveyor project.
-
----
-
-## 🎯 Roadmap
-
-### Current (v1.0)
-- ✅ 5-phase orchestration workflow
-- ✅ Interactive and autonomous modes
-- ✅ 7 core migration skills
-- ✅ OpenShift deployment integration
-- ✅ Comprehensive reporting
-
-### Planned (v1.1)
-- [ ] Multi-stage migrations (incremental modernization)
-- [ ] Rollback and recovery features
-- [ ] Migration telemetry dashboard
-- [ ] Pre-migration cost estimation
-- [ ] Post-migration performance comparison
-
-### Future (v2.0)
-- [ ] AI-powered migration strategy recommendations
-- [ ] Cross-cloud platform support
-- [ ] Migration pattern library
-- [ ] Automated post-migration optimization
-- [ ] Integration with CI/CD pipelines
-
----
-
 **Ready to migrate?** Start with [migiq/README.md](./migiq/README.md) or [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md)
-
-**Questions?** Check the [troubleshooting](#-troubleshooting) section or review the [documentation](#-documentation)
