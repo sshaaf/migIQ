@@ -1,0 +1,23 @@
+{
+  "skill_name": "mig-deploy",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "hey so I just containerized my spring boot app with the mig-containerize skill and now i need to get it deployed to our dev cluster. the app uses postgresql for the database. i'm already logged into the cluster (just ran oc login a minute ago) and i want to deploy everything to a namespace called 'spring-demo-dev'. can you deploy this and make sure the database schema gets set up properly? also please verify that the endpoints are actually working once it's deployed.",
+      "expected_output": "Should detect PostgreSQL dependency, check if it exists in cluster, offer deployment options, deploy both database and application, run schema migrations if present, verify pods are running and ready, test route accessibility, and test application endpoints. Should provide comprehensive deployment report with URLs and status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "ok I need to deploy this django application to our staging OpenShift cluster. The containerization is already done - I have all the yaml files. This app depends on both postgresql (for the main database) and redis (for caching and celery tasks). I want to deploy to namespace 'myapp-staging'. I'm logged into the cluster already. Since this is staging, if the postgres and redis aren't already there, I want to use the generated yaml files to deploy them. After deployment, can you hit the /api/users endpoint and /api/health to make sure everything is actually responding?",
+      "expected_output": "Should detect both PostgreSQL and Redis dependencies, check cluster for existing deployments, deploy missing dependencies using generated YAML, deploy application, verify all pods running, test route accessibility, specifically test /api/users and /api/health endpoints, report on dependency connectivity.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I have a simple golang microservice that doesn't have any external dependencies (no database or anything, just a stateless API). I ran mig-containerize on it already and got all the deployment yamls. Can you just deploy this to the 'go-api-prod' namespace on my cluster? I'm already authenticated. Just want to make sure it comes up healthy and the route works.",
+      "expected_output": "Should detect no dependencies, deploy application directly, verify pod status and readiness, check route accessibility, test health endpoints, provide deployment report with minimal complexity since no dependencies exist.",
+      "files": []
+    }
+  ]
+}

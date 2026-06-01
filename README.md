@@ -1,895 +1,508 @@
-# MigIQ - AI-Driven Code Migration
+# MigIQ - Intelligent Application Migration Platform
 
-A reusable Agent Mesh package providing specialized agents and skills for AI-driven code migration using Claude Code's Agent Mesh architecture.
+**AI-powered application migration orchestrator for modernizing legacy applications to cloud-native platforms.**
+
+[![Status](https://img.shields.io/badge/status-ready--for--testing-green)]()
+[![Migration Success](https://img.shields.io/badge/migration-5--phase--orchestration-blue)]()
+[![Platform](https://img.shields.io/badge/platform-OpenShift-red)]()
+
+---
 
 ## Overview
 
-This package provides a complete set of mesh components for code migration:
-- **10 Specialized Agents** - Collaborative AI agents for migration workflows
-- **24 Skills** - Reusable, focused commands across all migration phases
-- **Agent Mesh Architecture** - Distributed, autonomous execution patterns
-- **OpenSpec Tracking** - Structured proposals and specifications
+MigIQ is a comprehensive migration solution that combines knowledge graph analysis, intelligent planning, and autonomous execution to migrate applications across platforms, frameworks, and languages.
 
-#### Workflow Phases
+### What Makes MigIQ Different
 
-```mermaid
-flowchart LR
-    Start([👤 User runs<br/>/migration]) --> Phase1
+**Traditional Migrations**:
+- Manual analysis of codebase
+- Manually create migration plan
+- Manually execute tasks
+- Hope you didn't miss anything
 
-    subgraph Phase1[" 🔍 Phase 1: Setup & Analysis "]
-        direction TB
-        G[Build Knowledge Graph] --> A[Analyze Codebase]
-        A --> P[Create Migration Plan]
-        P --> B[Generate User Stories]
-    end
-
-    Phase1 --> Phase2
-
-    subgraph Phase2[" ⚙️ Phase 2: Story Execution "]
-        direction TB
-        T[Generate Tests] --> C[Refactor Code]
-        C --> BM[Run Benchmarks]
-        BM --> Q[Validate Quality]
-        Q --> CI[Create MR & CI/CD]
-    end
-
-    Phase2 --> Decision{Story<br/>Success?}
-
-    Decision -->|✅ Yes| Phase4
-    Decision -->|❌ No| Phase3
-
-    subgraph Phase3[" 🔧 Phase 3: Failure Handling "]
-        direction TB
-        F[Analyze Failure] --> Mode{Mode?}
-        Mode -->|Interactive| Pause[⏸️ Pause for Human]
-        Mode -->|Autonomous| Doc[📝 Document & Continue]
-    end
-
-    Phase3 --> Next{More<br/>Stories?}
-    Next -->|Yes| Phase2
-    Next -->|No| Phase4
-
-    subgraph Phase4[" 📊 Phase 4: Tracking & Visibility "]
-        direction TB
-        Track[Update GitHub Issues] --> Status[Real-time Status]
-        Status --> Report[Attach Reports]
-    end
-
-    Phase4 --> End([✅ Migration Complete])
-
-    style Phase1 fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style Phase2 fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style Phase3 fill:#ffebee,stroke:#f44336,stroke-width:2px
-    style Phase4 fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    style Start fill:#e1f5ff,stroke:#01579b,stroke-width:2px
-    style End fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
-    style Decision fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-    style Next fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-```
-
-**Phase 1: Setup & Analysis**
-1. User invokes `/migration` skill with project path and migration type
-2. `/mig-graphify` builds knowledge graph using offline AST extraction (`graphify update`)
-3. Project Tracker Agent creates tracker project (GitHub Projects or tasks.md)
-4. **TASK-001**: Analyzes codebase using knowledge graph → `analysis-report.json`
-5. **TASK-002**: Creates migration plan → `migration-plan.json`
-6. **TASK-003**: Generates user stories and syncs to tracker
-
-**Phase 2: Story Execution**
-For each user story, Story Orchestrator Agent coordinates:
-1. **Test Generator Agent** - Creates characterization & functional tests
-2. **Code Refactor Agent** - Applies migration rules and generates new code
-3. **Benchmark Builder Agent** - Builds and runs performance benchmarks
-4. **Quality Evaluator Agent** - Validates coverage, quality gates, and refactoring correctness
-5. **CI Integration Agent** - Creates merge request and triggers CI pipeline
-
-**Phase 3: Failure Handling**
-- **Interactive Mode**: Pauses on first failure for human intervention
-- **Autonomous Mode**: Documents failure in GitHub issue, continues with remaining stories
-
-**Phase 4: Tracking & Visibility**
-- All tasks and stories tracked in GitHub Issues with real-time status updates
-- Task outputs (JSON reports, plans) attached to issues as collapsible comments
-- CI/CD pipeline status monitored and reported
-
-### Agents & Skills Reference
-
-| Agent | Purpose | Skills Used |
-|-------|---------|-------------|
-| **Project Tracker Agent** | Orchestrates migration workflow | `analyze-codebase`, `plan-migration`, `generate-backlog` |
-| **Story Orchestrator Agent** | Coordinates story execution through harness phases | All harness skills |
-| **Test Generator Agent** | Creates characterization and functional tests | `generate-characterization-tests`, `generate-functional-tests`, `calculate-test-scores` |
-| **Code Refactor Agent** | Applies refactoring rules and generates code | `apply-refactor-rules`, `generate-spec-driven-code`, `validate-refactoring` |
-| **Benchmark Builder Agent** | Builds and runs performance benchmarks | `build-benchmark-suite`, `run-benchmarks`, `establish-baseline` |
-| **Quality Evaluator Agent** | Validates quality gates and coverage | `validate-coverage`, `validate-quality`, `generate-evaluation-metrics` |
-| **CI Integration Agent** | Creates merge requests and monitors pipelines | `prepare-merge-request`, `push-merge-request`, `monitor-pipeline`, `handle-pipeline-result` |
-| **Failure Analyzer Agent** | Analyzes failures and generates remediation plans | `request-root-cause` |
-| **KPI Tracker Agent** | Tracks and reports migration KPIs | `generate-kpi-metrics` |
-| **Documentation Manager Agent** | Updates migration documentation | `update-documentation` |
-
-## Screenshots
-
-Visual walkthrough of MigIQ in action:
-
-<table>
-  <tr>
-    <td width="33%">
-      <a href="docs/assets/images/01-screenshot.jpg">
-        <img src="docs/assets/images/01-screenshot.jpg" alt="Initial setup and configuration" width="100%"/>
-      </a>
-      <sub>1. Initial setup and configuration</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/02-screenshot.jpg">
-        <img src="docs/assets/images/02-screenshot.jpg" alt="Knowledge graph building" width="100%"/>
-      </a>
-      <sub>2. Knowledge graph building</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/03-screenshot.jpg">
-        <img src="docs/assets/images/03-screenshot.jpg" alt="Codebase analysis" width="100%"/>
-      </a>
-      <sub>3. Codebase analysis</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="33%">
-      <a href="docs/assets/images/04-screenshot.jpg">
-        <img src="docs/assets/images/04-screenshot.jpg" alt="GitHub Projects board view" width="100%"/>
-      </a>
-      <sub>4. GitHub Projects board view</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/05-screenshot.jpg">
-        <img src="docs/assets/images/05-screenshot.jpg" alt="User story tracking" width="100%"/>
-      </a>
-      <sub>5. User story tracking</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/06-screenshot.jpg">
-        <img src="docs/assets/images/06-screenshot.jpg" alt="Issue details and status" width="100%"/>
-      </a>
-      <sub>6. Issue details and status</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="33%">
-      <a href="docs/assets/images/07-screenshot.jpg">
-        <img src="docs/assets/images/07-screenshot.jpg" alt="Task execution progress" width="100%"/>
-      </a>
-      <sub>7. Task execution progress</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/08-screenshot.jpg">
-        <img src="docs/assets/images/08-screenshot.jpg" alt="Output attachment in issues" width="100%"/>
-      </a>
-      <sub>8. Output attachment in issues</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/09-screenshot.jpg">
-        <img src="docs/assets/images/09-screenshot.jpg" alt="Migration plan details" width="100%"/>
-      </a>
-      <sub>9. Migration plan details</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="33%">
-      <a href="docs/assets/images/10-screenshot.jpg">
-        <img src="docs/assets/images/10-screenshot.jpg" alt="Autonomous mode execution" width="100%"/>
-      </a>
-      <sub>10. Autonomous mode execution</sub>
-    </td>
-    <td width="33%">
-      <a href="docs/assets/images/11-screenshot.jpg">
-        <img src="docs/assets/images/11-screenshot.jpg" alt="Final status and results" width="100%"/>
-      </a>
-      <sub>11. Final status and results</sub>
-    </td>
-    <td width="33%">
-      <!-- Empty cell for grid alignment -->
-    </td>
-  </tr>
-</table>
-
-<sub>*Click any image to view full size*</sub>
-
-## Architecture
-
-The system uses a recursive workflow: **Analyze → Plan → Implement → Validate**
-
-### Detailed Migration Workflow
-
-```mermaid
-graph TD
-    User[👤 User] -->|/migration| MigrationSkill[📋 Migration Skill]
-
-    MigrationSkill -->|1. Invoke| GraphifySkill[🗺️ /mig-graphify Skill]
-    GraphifySkill -->|graphify update| KnowledgeGraph[(📊 Knowledge Graph<br/>graph.json)]
-
-    MigrationSkill -->|2. Initialize| ProjectTracker[🎯 Project Tracker Agent]
-
-    ProjectTracker -->|Create Tracker Project| TrackerBackend{Tracker Backend}
-    TrackerBackend -->|GitHub| GitHubProjects[🐙 GitHub Projects v2]
-    TrackerBackend -->|Local| TasksMD[📝 tasks.md]
-
-    ProjectTracker -->|3. Create & Execute| InitialTasks[Initial Tasks]
-
-    subgraph InitialTasks[Initial Tasks]
-        Task001[TASK-001<br/>Analyze Codebase]
-        Task002[TASK-002<br/>Plan Migration]
-        Task003[TASK-003<br/>Generate Backlog]
-    end
-
-    Task001 -->|Uses| AnalyzeSkill[analyze-codebase]
-    Task002 -->|Uses| PlanSkill[plan-migration]
-    Task003 -->|Uses| BacklogSkill[generate-backlog]
-
-    AnalyzeSkill -->|Reads| KnowledgeGraph
-    PlanSkill -->|Reads| KnowledgeGraph
-
-    Task001 -->|Output| AnalysisReport[📄 analysis-report.json]
-    Task002 -->|Output| MigrationPlan[📄 migration-plan.json]
-    Task003 -->|Creates| UserStories[📋 User Stories]
-
-    AnalysisReport -->|Attached to| GitHubProjects
-    MigrationPlan -->|Attached to| GitHubProjects
-
-    UserStories -->|Synced to| GitHubProjects
-    UserStories -->|Synced to| TasksMD
-
-    ProjectTracker -->|4. Process Stories| StoryLoop[Story Processing Loop]
-
-    StoryLoop -->|For Each Story| StoryOrchestrator[🎭 Story Orchestrator Agent]
-
-    StoryOrchestrator -->|Phase 1| TestGen[🧪 Test Generator Agent]
-    StoryOrchestrator -->|Phase 2| CodeRefactor[⚙️ Code Refactor Agent]
-    StoryOrchestrator -->|Phase 3| BenchmarkBuilder[📊 Benchmark Builder Agent]
-    StoryOrchestrator -->|Phase 4| QualityEval[✅ Quality Evaluator Agent]
-    StoryOrchestrator -->|Phase 5| CIIntegration[🚀 CI Integration Agent]
-
-    TestGen -->|Uses| CharTestSkill[generate-characterization-tests]
-    TestGen -->|Uses| FuncTestSkill[generate-functional-tests]
-
-    CodeRefactor -->|Uses| ApplyRulesSkill[apply-refactor-rules]
-    CodeRefactor -->|Uses| SpecCodeSkill[generate-spec-driven-code]
-
-    BenchmarkBuilder -->|Uses| BenchmarkSkill[build-benchmark-suite]
-    BenchmarkBuilder -->|Uses| RunBenchSkill[run-benchmarks]
-
-    QualityEval -->|Uses| ValidateCovSkill[validate-coverage]
-    QualityEval -->|Uses| ValidateQualSkill[validate-quality]
-    QualityEval -->|Uses| ValidateRefSkill[validate-refactoring]
-
-    CIIntegration -->|Uses| PrepMRSkill[prepare-merge-request]
-    CIIntegration -->|Uses| PushMRSkill[push-merge-request]
-
-    StoryOrchestrator -->|On Failure| FailureAnalyzer[🔍 Failure Analyzer Agent]
-    FailureAnalyzer -->|Uses| RootCauseSkill[request-root-cause]
-
-    FailureAnalyzer -->|Autonomous Mode| ContinueLoop[Continue Next Story]
-    FailureAnalyzer -->|Interactive Mode| PauseForHuman[⏸️ Pause for Human]
-
-    StoryOrchestrator -->|Update Status| GitHubProjects
-    StoryOrchestrator -->|Update Status| TasksMD
-
-    StoryOrchestrator -->|All Phases Complete| MergeRequest[🎉 Merge Request Created]
-
-    MergeRequest -->|Triggers| CIPipeline[CI/CD Pipeline]
-    CIPipeline -->|Monitor| MonitorSkill[monitor-pipeline]
-
-    style User fill:#e1f5ff
-    style MigrationSkill fill:#fff4e6
-    style GraphifySkill fill:#e8f5e9
-    style ProjectTracker fill:#f3e5f5
-    style StoryOrchestrator fill:#f3e5f5
-    style GitHubProjects fill:#e3f2fd
-    style KnowledgeGraph fill:#fff9c4
-    style MergeRequest fill:#c8e6c9
-```
-
-
-### Tracker Integration
-
-The agent mesh supports multiple tracker backends for managing migration user stories:
-
-- **Local Tracker** (default) - tasks.md file-based tracking, no external dependencies
-- **GitHub Projects** - Sync stories to GitHub Projects v2 via GraphQL API with auto-creation
-- **GitLab Issues** (planned) - GitLab Issues integration
-- **Jira** (planned) - Jira Cloud/Server integration
-
-#### GitHub Projects Auto-Creation
-
-The `project_number` field is now **optional**. If not specified, the tracker will automatically create a new GitHub Project:
-
-```json
-{
-  "tracker": {
-    "type": "github",
-    "config": {
-      "token": "$GITHUB_TOKEN",
-      "organization": "my-org"
-    }
-  }
-}
-```
-
-The agent will:
-1. Create a new project: `Migration Agent - {org} - {timestamp}`
-2. Print the project number to console
-3. Suggest adding `TRACKER_GITHUB_PROJECT_NUMBER` to your .env file
-
-Alternatively, specify an existing project:
-```json
-{
-  "tracker": {
-    "type": "github",
-    "config": {
-      "token": "$GITHUB_TOKEN",
-      "organization": "my-org",
-      "project_number": 5
-    }
-  }
-}
-```
-
-See [agents/project-tracker-agent/README.md](./agents/project-tracker-agent/README.md) for detailed configuration.
-
-### Code Analysis with Graphify
-
-Agents use [graphify](https://github.com/safishamsi/graphify) for fast code analysis via knowledge graphs. This reduces analysis time by 50-70% compared to traditional Grep/Read approaches.
-
-**How it works:**
-1. Pre-execution hook builds knowledge graph (one-time, ~30s)
-2. Agents query graph for dependencies, services, and architecture
-3. Graphify extracts Java annotations and imports via tree-sitter AST (local, no API calls for code)
-4. Migration-specific queries detect EJB patterns and javax imports
-5. Fall back to Grep/Read only when graph can't answer the question
-
-**Performance impact:**
-- 50-70% faster agent execution
-- 96% reduction in file reads per task
-- Complete dependency understanding
-- Zero infrastructure cost (AST-only, no external services)
-- Local code analysis (tree-sitter AST parsing, no API calls)
-
-**Requirements:**
-- Python 3.10 or higher
-- **REQUIRED**: graphify CLI tool must be installed for migration agents to work
-
-**Setup (Required for Production):**
+**MigIQ Migrations**:
 ```bash
-# 1. Install graphify CLI tool (Python package) - REQUIRED
-# Option A: Using uv (recommended)
-uv tool install graphifyy
-
-# Option B: Using pipx
-pipx install graphifyy
-
-# Option C: Using pip
-pip install graphifyy
-
-# Verify installation
-graphify --version
-
-# Note: Package name is 'graphifyy' (double-y), CLI command is 'graphify'
-
-# 2. Build initial graph (in Claude Code)
-/mig-graphify .
-# Uses graphify CLI for AST parsing and graph building
-# Critical for Java EE migration: detects @Stateless, @MessageDriven, javax.* imports
-# All analysis is local via tree-sitter - no API calls for code
-
-# 3. Agents automatically use graph (via PreAgentExecution hook)
-# Hook runs /graphify . before any agent execution to ensure graph exists
+cd my-spring-app
+/migiq
+"Migrate this to Quarkus for OpenShift"
+# → Complete migration with analysis, plan, execution, and deployment artifacts
 ```
 
-## Documentation
+---
 
-### Implementation
-- **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** - Complete implementation guide for project-tracker-agent
-- **[Migration Flow](./docs/migration-flow.md)** - Detailed workflow and task structure
+## 🚀 Quick Start
 
-### Architecture
-- **[Agent Mesh Infrastructure](./docs/agent-mesh-infrastructure.md)** - Core architecture and patterns
-- **[Testing Guide](./docs/testing-guide.md)** - How to test the mesh
-- **[Distributed Tracing](./docs/distributed-tracing.md)** - Mesh observability
-- **[Failure Recovery](./docs/failure-recovery.md)** - Error handling and recovery
-- **[KPI Tracking](./docs/kpi-tracking.md)** - Metrics and reporting
-
-## Installation
-
-Install dependencies:
+### Interactive Migration (30-60 minutes)
 ```bash
-pip install -r requirements.txt
+cd /path/to/your/app
+# In Claude Code, type:
+/migiq
+"Migrate this Spring Boot app to Quarkus"
 ```
 
-Required packages:
-- `python-dotenv` - .env file loading for configuration
-- `requests` - HTTP client for GitHub API integration
-- `pytest` - Testing framework
+### Autonomous Migration (background, multi-hour)
+```javascript
+Agent({
+  description: "Migrate to Quarkus",
+  prompt: `Follow AGENT.md at /Users/sshaaf/git/konveyor/migIQ/AGENT.md
+  
+  Task: Migrate this application from Spring Boot to Quarkus.
+  Working Directory: /path/to/your/app
+  
+  Requirements:
+  - Target: Quarkus 3.x
+  - Deployment: Red Hat OpenShift
+  - Approach: Phased migration
+  
+  Follow the 5-phase migiq workflow. Update me at major milestones.`
+})
+```
 
-## Getting Started - Quick Command
+---
 
-Use the `install-local.sh` if you want to try this out in a project.
+## 🏗️ Architecture
 
-To start a migration, use the main `/migration` command:
+### The MigIQ Ecosystem
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      MigIQ Platform                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────┐              ┌─────────────────────┐      │
+│  │   /migiq     │              │  Migrator Agent     │      │
+│  │   Skill      │◄────────────►│  (AGENT.md)         │      │
+│  │              │              │                     │      │
+│  │ Interactive  │              │  Autonomous         │      │
+│  │ Orchestration│              │  Long-running       │      │
+│  └──────┬───────┘              └──────────┬──────────┘      │
+│         │                                 │                 │
+│         └─────────────┬───────────────────┘                 │
+│                       │                                     │
+│         ┌─────────────▼────────────────┐                    │
+│         │   Core Migration Skills      │                    │
+│         ├──────────────────────────────┤                    │
+│         │                              │                    │
+│         │  1. mig-graphify             │ ← Analysis         │
+│         │  2. mig-prompt-builder       │ ← Requirements     │
+│         │  3. mig-plan                 │ ← Planning         │
+│         │  4. mig-execute              │ ← Execution        │
+│         │  5. mig-test-gen             │ ← Testing          │
+│         │  6. mig-containerize         │ ← Containers       │
+│         │  7. mig-deploy               │ ← Deployment       │
+│         │                              │                    │
+│         └──────────────────────────────┘                    │
+│                                                             │
+└───────────────────────────────────────────────────────────--┘
+```
+
+### 5-Phase Migration Workflow
+
+```
+Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
+┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
+│ mig-graphify  │         │ mig-prompt-      │       │  mig-plan   │
+│               │         │ builder          │       │             │
+│ • Code graph  │ ────►   │                  │ ────► │ • spec.md   │
+│ • Dependencies│         │ • Source tech    │       │ • design.md │
+│ • Architecture│         │ • Target tech    │       │ • tasks.md  │
+│ • Complexity  │         │ • Constraints    │       │ • stories   │
+└──────────────-┘         └──────────────────┘       └─────────────┘
+                                                             │
+                                                             ▼
+Phase 5: Reporting        Phase 4: Execution
+┌──────────────┐          ┌─────────────────────────┐
+│ Final Report │  ◄────   │    mig-execute          │
+│              │          │                         │
+│ • Summary    │          │ • Code changes          │
+│ • Metrics    │          │ • Tests (mig-test-gen)  │
+│ • Next steps │          │ • Containers            │
+│              │          │ • OpenShift manifests   │
+└──────────────┘          └─────────────────────────┘
+```
+
+---
+
+## 📦 Project Structure
+
+```
+migIQ/
+├── README.md                   # This file - project overview
+├── AGENT.md                    # Autonomous migrator agent definition
+├── AGENT_EXAMPLES.md           # 6 example agent prompts
+├── SESSION_SUMMARY.md          # Development session log
+│
+├── migiq/                      # Main orchestration skill
+│   ├── README.md              # Skill documentation
+│   ├── SKILL.md               # Skill definition (5-phase workflow)
+│   ├── TEST_PLAN.md           # Testing strategy
+│   ├── test-validator.sh      # Output validation script
+│   └── evals/
+│       └── evals.json         # Test case definitions
+│
+├── mig-graphify/              # Phase 1: Codebase analysis
+│   └── SKILL.md
+│
+├── mig-prompt-builder/         # Phase 2: Requirements gathering
+│   └── SKILL.md
+│
+├── mig-plan/                   # Phase 3: Migration planning
+│   └── SKILL.md
+│
+├── mig-execute/                # Phase 4: Migration execution
+│   └── SKILL.md
+│
+├── mig-test-gen/               # Testing integration
+│   └── SKILL.md
+│
+├── mig-containerize/           # Containerization integration
+│   └── SKILL.md
+│
+└── mig-deploy/                 # OpenShift deployment
+    └── SKILL.md
+```
+
+---
+
+## 🎯 Use Cases
+
+### 1. Platform Migrations
+- Java EE → Spring Boot → Quarkus
+- .NET Framework → .NET 8
+- Node.js 12 → Node.js 20
+- Rails → Node.js/Python
+
+### 2. Cloud Migrations
+- On-prem → OpenShift
+- Traditional VMs → Containers
+- Monolith → Microservices
+
+### 3. Modernization
+- Legacy patterns → Modern idioms
+- Callbacks → async/await
+- Old dependencies → Latest versions
+- Manual deployment → CI/CD
+
+### 4. Language Migrations
+- Java → Kotlin
+- JavaScript → TypeScript
+- Python 2 → Python 3
+
+---
+
+## 💡 Two Execution Modes
+
+### Interactive Mode (`/migiq` skill)
+
+**Best for:**
+- Learning how migrations work
+- Migrations < 1 hour
+- Active participation desired
+- Approving each phase
+
+**Usage:**
 ```bash
-/migration --project-path ./my-app --migration-type framework
+cd my-app
+# In Claude Code:
+/migiq
+"Migrate to [target technology]"
 ```
 
-This command:
-1. Validates inputs and initializes the migration context
-2. Creates `rule.md` and `tasks.md` if they don't exist
-3. Delegates to `project-tracker-agent` which creates and executes tasks
-4. Returns a session ID and trace ID for monitoring
+---
 
-## Configuration
+### Autonomous Mode (Migrator Agent)
 
-The agent mesh supports flexible configuration via .env files (recommended) or JSON context.
+**Best for:**
+- Migrations > 1 hour
+- Background/overnight work
+- Parallel multi-app migrations
+- When you trust the process
 
-### Quick Start with .env
+**Usage:**
+```javascript
+Agent({
+  description: "Migrate to Quarkus",
+  prompt: `Follow AGENT.md. Migrate from Spring Boot to Quarkus...`
+})
+```
 
-The migration automatically loads configuration from your **project's .env file**.
+See [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md) for 6 complete example prompts.
 
-1. **Create .env in your project directory:**
-   ```bash
-   cd ./my-app  # Your project to migrate (must be a git repo)
-   cat > .env << 'EOF'
-   # Tracker Configuration
-   TRACKER_TYPE=github
-   TRACKER_GITHUB_TOKEN=ghp_your_token_here
-   TRACKER_GITHUB_ORGANIZATION=my-org
-   # TRACKER_GITHUB_REPOSITORY auto-detected from git remote
-   EOF
-   ```
+---
 
-   **Repository auto-detection:**
-   The migration automatically detects the GitHub repository from your project's git remote:
-   - Parses `git remote get-url origin` in the project directory
-   - Supports both SSH (`git@github.com:owner/repo.git`) and HTTPS formats
-   - Creates real GitHub issues in that repository and links them to the project
-   - Issues appear in `github.com/owner/repo/issues` and the project board
+## 📊 What You Get
 
-   If auto-detection fails (non-GitHub remote or no git repo), it falls back to creating draft issues (project-only).
+After a migration, you'll have:
 
-2. **Run the migration:**
-   ```bash
-   cd ..  # Back to parent directory
-   /migration --project-path ./my-app --migration-type framework
-   ```
+```
+your-project/
+├── graphify-out/              # Phase 1: Analysis
+│   ├── graph.json            # Knowledge graph
+│   ├── GRAPH_REPORT.md       # Analysis report
+│   └── graph.html            # Interactive visualization
+│
+├── mig-prompt-workspace/      # Phase 2: Requirements
+│   └── migration-prompt.md   # Standardized prompt
+│
+├── mig-plan-workspace/        # Phase 3: Planning
+│   ├── spec.md              # Current state + target state
+│   ├── design.md            # Architecture design
+│   ├── tasks.md             # Detailed task breakdown
+│   └── UserStory.md         # User stories
+│
+├── mig-execute-workspace/     # Phase 4: Execution
+│   ├── EXECUTION_REPORT.md  # Execution results
+│   ├── execution-log.md     # Detailed timeline
+│   └── outputs/
+│       ├── tests/           # Generated tests
+│       ├── containers/      # Dockerfiles
+│       └── deployments/     # OpenShift YAMLs
+│
+└── migiq-workspace/           # Phase 5: Orchestration
+    ├── orchestration-log.md # Full orchestration log
+    └── MIGRATION_REPORT.md  # ⭐ Share with stakeholders
+```
 
-   The migration will automatically:
-   - Load configuration from `./my-app/.env`
-   - Use your GitHub token for tracker integration
-   - Create/sync tasks to GitHub Projects
+---
 
-**Alternative: Use environment variables**
-   ```bash
-   export GITHUB_TOKEN="ghp_your_token_here"
-   /migration --project-path ./my-app --migration-type framework
-   ```
+## 🔧 Supported Technologies
 
-**Configuration priority:**
-1. Command-line arguments (highest)
-2. Project's .env file (`<project-path>/.env`)
-3. Current directory's .env file
-4. Environment variables
-5. Defaults (lowest)
+### Source Platforms
+- Java EE, Spring Boot, Play Framework
+- Node.js, Express, NestJS
+- Python Django, Flask, FastAPI
+- Ruby on Rails
+- .NET Framework, ASP.NET
 
-**Autonomous mode:**
-Set `MODE=autonomous` in your project's .env to run the migration fully automated:
+### Target Platforms
+- Quarkus, Spring Boot, Micronaut (Java/JVM)
+- Node.js (modern), Next.js, Remix (JavaScript/TypeScript)
+- FastAPI, Django 4+ (Python)
+- .NET 8 (C#)
+
+### Deployment Targets
+- Red Hat OpenShift (primary)
+- Kubernetes
+- Container platforms (Docker, Podman)
+
+---
+
+## 📈 Migration Success Metrics
+
+Typical migration outcomes:
+
+| Metric | Target | Typical Result |
+|--------|--------|----------------|
+| Code Coverage | 80%+ | 85-95% |
+| Task Success Rate | 90%+ | 85-100% |
+| Manual Intervention | < 10% | 5-15% |
+| Deployment Ready | Yes | Yes (with containers + manifests) |
+
+---
+
+## 🧪 Testing
+
+### Quick Validation
 ```bash
-# In ./my-app/.env
-MODE=autonomous
-TRACKER_TYPE=github
-TRACKER_GITHUB_TOKEN=ghp_xxx
-TRACKER_GITHUB_ORGANIZATION=my-org
+# After migration:
+cd your-migrated-app
+bash /path/to/migiq/test-validator.sh
 ```
 
-In autonomous mode:
-- All user stories are processed without human intervention
-- Failures are documented as comments in GitHub issues
-- Migration continues with remaining stories even if some fail
-- Perfect for overnight runs or CI/CD pipelines
+### Comprehensive Testing
+See [migiq/TEST_PLAN.md](./migiq/TEST_PLAN.md) for full testing procedures.
 
-### Environment Variable Naming Convention
+### Example Test Cases
+1. Spring Boot → Quarkus (~35 min)
+2. Node.js Express Modernization (~25 min)
+3. Java EE → Spring Boot (~50 min)
 
-Environment variables use `UPPERCASE_WITH_UNDERSCORES` and map to nested configuration:
+---
 
-| Environment Variable | Maps To | Example |
-|---------------------|---------|---------|
-| `TRACKER_TYPE` | `tracker.type` | `github` |
-| `TRACKER_GITHUB_TOKEN` | `tracker.config.token` | `$GITHUB_TOKEN` |
-| `TRACKER_GITHUB_ORGANIZATION` | `tracker.config.organization` | `my-org` |
-| `TRACKER_GITHUB_REPOSITORY` | `tracker.config.repository` | `my-org/my-repo` |
-| `TRACKER_GITHUB_PROJECT_NUMBER` | `tracker.config.project_number` | `5` |
+## 📚 Documentation
 
-### Configuration Priority
+### Getting Started
+- [migiq/README.md](./migiq/README.md) - Skill quick start
+- [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md) - Agent usage examples
 
-Configuration is loaded in this priority order (highest first):
+### Deep Dives
+- [migiq/SKILL.md](./migiq/SKILL.md) - Complete orchestration workflow
+- [AGENT.md](./AGENT.md) - Autonomous agent definition
+- [migiq/TEST_PLAN.md](./migiq/TEST_PLAN.md) - Testing strategy
 
-1. **Explicit JSON context** (via `--context` argument)
-2. **Environment variables** (from .env file)
-3. **System environment variables**
-4. **Default values**
+### Individual Skills
+- [mig-graphify/SKILL.md](./mig-graphify/SKILL.md) - Code analysis
+- [mig-prompt-builder/SKILL.md](./mig-prompt-builder/SKILL.md) - Requirements
+- [mig-plan/SKILL.md](./mig-plan/SKILL.md) - Planning
+- [mig-execute/SKILL.md](./mig-execute/SKILL.md) - Execution
 
-### Migrating from JSON Context
+---
 
-If you have existing JSON context configuration, convert it to .env:
+## 🎓 Examples
 
-```bash
-python scripts/context_to_env.py --context '{"tracker":{"type":"github",...}}' --output .env
+### Example 1: Spring Boot to Quarkus
+```
+User: "Migrate this Spring Boot app to Quarkus"
+
+MigIQ:
+✅ Analyzed: 42 classes, 15 REST endpoints
+✅ Plan: 47 tasks across 8 user stories
+✅ Executed: 45/47 tasks successful
+✅ Result: Containerized Quarkus app ready for OpenShift
+
+Time: 38 minutes
+Report: migiq-workspace/MIGRATION_REPORT.md
 ```
 
-See `.env.example` for all available configuration options.
-
-## Workflow Phases
-
-### 1. Project Tracking HARNESS
-- Analyze codebase for migration needs
-- Plan user stories
-- Generate and maintain backlog
-- Loop through each story
-
-**Agent**: `project-tracker-agent`
-**Triggered by**: `/migration` skill
-
-### 2. Test HARNESS
-- Generate characterization tests (capture current behavior)
-- Generate functional tests (define expected behavior)
-- Validate test coverage
-
-**Agent**: `test-generator-agent`
-**Tools**: opencode agent
-
-### 3. Code HARNESS
-- Apply automated refactoring
-- Generate spec-driven code
-- Validate transformations
-
-**Agent**: `code-refactor-agent`
-**Tools**: opencode agent
-
-### 4. Benchmark HARNESS
-- Build benchmark test suite
-- Establish performance baselines
-- Run benchmarks and compare
-
-**Agent**: `benchmark-builder-agent`
-
-### 5. Evaluation HARNESS
-- Generate comprehensive evaluation metrics
-- Calculate test scores
-- Validate quality thresholds
-
-**Agent**: `quality-evaluator-agent`
-**Tools**: opencode agent
-
-### 6. CI HARNESS
-- Prepare merge requests
-- Push to CI platform
-- Monitor pipeline execution
-- Handle results and feedback
-
-**Agent**: `ci-integration-agent`
-**Tools**: GitLab/GitHub API, opencode agent (KPI metrics)
-
-## Agent Mesh Architecture
-
-The system uses a **distributed mesh of specialized agents** that collaborate autonomously:
-
+### Example 2: Overnight Java EE Migration
 ```
-project-tracker-agent (Coordination Layer)
-    ↓
-story-orchestrator-agent (Per-story orchestration)
-    ↓
-    ├─ test-generator-agent ──────┐
-    ├─ code-refactor-agent        ├── Parallel execution
-    ├─ benchmark-builder-agent    │   where possible
-    └─ quality-evaluator-agent ───┘
-          ↓
-    ci-integration-agent (Integration)
-          ↓
-    CI Platform → Kanban → (loop if needed)
+User: Agent({ ... migrate Java EE to Spring Boot overnight })
+
+Agent (6 hours later):
+✅ Migrated: 80K LOC from Java EE to Spring Boot
+✅ Converted: 52 EJBs to Spring beans
+✅ Tests: 87% coverage
+⚠️ Manual review: 3 stateful EJBs (see report)
+
+Report: migiq-workspace/MIGRATION_REPORT.md
 ```
 
-**Supporting Agents**:
-- `failure-analyzer-agent` - Root cause analysis
-- `documentation-manager-agent` - Knowledge management
-- `kpi-tracker-agent` - Metrics and reporting
-
-See [AGENT-MESH.md](./AGENT-MESH.md) for detailed architecture.
-
-## Skills Overview
-
-The system provides **24 specialized skills** across all harness phases:
-
-### Main Orchestration (1 skill)
-- `/migration` - Main entry point to start migration workflow
-
-### Project Tracking (3 skills)
-- `/analyze-codebase` - Analyze codebase for migration needs
-- `/plan-migration` - Create migration plan from analysis
-- `/generate-backlog` - Generate and update Kanban backlog
-
-### Testing (3 skills)
-- `/generate-characterization-tests` - Capture current behavior
-- `/generate-functional-tests` - Define expected behavior
-- `/validate-coverage` - Validate coverage meets requirements
-
-### Code (3 skills)
-- `/apply-refactor-rules` - Apply refactoring using opencode agent
-- `/generate-spec-driven-code` - Generate code from specifications
-- `/validate-refactoring` - Validate refactored code
-
-### Benchmarking (3 skills)
-- `/build-benchmark-suite` - Compile benchmark suite
-- `/establish-baseline` - Establish performance baseline
-- `/run-benchmarks` - Execute and compare benchmarks
-
-### Evaluation (3 skills)
-- `/generate-evaluation-metrics` - Generate quality metrics
-- `/calculate-test-scores` - Calculate test scores
-- `/validate-quality` - Validate quality thresholds
-
-### CI Integration (4 skills)
-- `/prepare-merge-request` - Prepare MR with artifacts
-- `/push-merge-request` - Push to CI platform
-- `/monitor-pipeline` - Monitor CI pipeline
-- `/handle-pipeline-result` - Handle pipeline results
-
-### Cross-Cutting (3 skills)
-- `/generate-kpi-metrics` - Generate KPI metrics
-- `/update-documentation` - Update rule.md and tasks.md
-- `/request-root-cause` - Root cause analysis for failures
-
-See [skills.md](./skills.md) for complete skill documentation.
-
-## Feedback Loops
-
-### Success Path
+### Example 3: Parallel Microservices Upgrade
 ```
-Project Tracking → Test → Code → Benchmark → Evaluation → CI → Merge → Done
+User: [Spawns 5 agents for 5 microservices]
+
+All agents (30 min later):
+✅ user-service: Node 12 → 20 ✅
+✅ product-service: Node 12 → 20 ✅
+✅ order-service: Node 12 → 20 ✅
+✅ notification-service: Node 12 → 20 ✅
+✅ analytics-service: Node 12 → 20 ✅
+
+Total time: 30 minutes (parallel)
+Sequential would take: 2.5 hours
 ```
 
-### Failure Path
-```
-CI Platform → KPI Metrics → Root Cause Analysis → Backlog → Retry
-```
+---
 
-### Human Intervention Points
+## 🛡️ Best Practices
 
-1. **Update Documentation** - Refine `rule.md` and `tasks.md`
-2. **Root Cause Analysis** - Deep analysis on failures
-3. **Backlog Management** - Adjust priorities and refinements
+### Before Migration
+1. ✅ Commit all changes (git status clean)
+2. ✅ Run existing tests (establish baseline)
+3. ✅ Backup database if applicable
+4. ✅ Review current architecture
 
-## Getting Started
+### During Migration
+1. ✅ Monitor progress logs
+2. ✅ Review generated plan before execution
+3. ✅ Don't interrupt long-running operations
+4. ✅ Save checkpoints frequently
 
-### Prerequisites
+### After Migration
+1. ✅ Review migration report
+2. ✅ Run full test suite
+3. ✅ Compare performance (before/after)
+4. ✅ Deploy to dev/staging first
+5. ✅ Monitor for issues
 
-- Claude Code CLI or Desktop App
-- **graphify skill installed** (required for agents to work)
-  ```bash
-  uv tool install graphifyy && graphify install
-  ```
-- Target project using this mesh for code migration
+---
 
-### Using This Mesh
+## 🤝 Contributing
 
-This is a **reusable mesh package** meant to be integrated into your migration project:
+### Improving Skills
+1. Test existing skills on new codebases
+2. Document edge cases and solutions
+3. Add new migration patterns
+4. Improve error handling
 
-1. **Install Prerequisites (REQUIRED)**
-   ```bash
-   # Install graphify CLI tool - agents depend on this for code analysis
-   uv tool install graphifyy
-   # Verify installation
-   graphify --version
-   ```
+### Adding Test Cases
+1. Add to `migiq/evals/evals.json`
+2. Run with test-validator.sh
+3. Document results
+4. Submit improvements
 
-2. **Clone or Install the Mesh**
-   ```bash
-   git clone <repository-url>
-   cd mig-agent-mesh
-   ```
+### Extending Platforms
+1. Add new source/target platform support
+2. Update skill definitions
+3. Add example migrations
+4. Document platform-specific patterns
 
-2. **Review Agents**
+---
 
-   Explore the 10 specialized agents in `/agents/`:
-   - `project-tracker-agent` - Main coordination loop
-   - `story-orchestrator-agent` - Per-story orchestration
-   - `test-generator-agent` - Test creation harness
-   - `code-refactor-agent` - Code transformation harness
-   - `benchmark-builder-agent` - Performance benchmarking
-   - `quality-evaluator-agent` - Quality validation
-   - `ci-integration-agent` - CI/CD integration
-   - `failure-analyzer-agent` - Root cause analysis
-   - `documentation-manager-agent` - Knowledge management
-   - `kpi-tracker-agent` - Metrics and reporting
+## 🔍 Troubleshooting
 
-3. **Review Skills**
+### Migration Fails at Phase 1 (Analysis)
+**Issue**: Graphify can't analyze codebase  
+**Fix**: Check that graphify CLI is installed and accessible
 
-   Browse the 24 skills in `/skills/` organized by phase:
-   - Project Tracking: analyze, plan, generate backlog
-   - Testing: characterization tests, functional tests, coverage
-   - Code: refactoring, spec-driven generation, validation
-   - Benchmarking: build suite, baseline, run benchmarks
-   - Evaluation: metrics, scoring, quality validation
-   - CI Integration: MR preparation, pipeline monitoring
-   - Cross-Cutting: KPI metrics, documentation, root cause
+### Migration Fails at Phase 4 (Execution)
+**Issue**: Some tasks fail during execution  
+**Expected**: This is normal for complex migrations  
+**Action**: Review EXECUTION_REPORT.md for specific failures and remediation options
 
-4. **Review OpenSpec Proposals**
+### Agent Doesn't Respond
+**Issue**: Agent spawned but no updates  
+**Check**: Agent might be waiting for permissions  
+**Fix**: Check permission prompts, approve necessary actions
 
-   Check `/openspec/` for structured specifications and proposals
+### Final Report Missing
+**Issue**: Migration completes but no report  
+**Fix**: Check `migiq-workspace/` directory, may be in different location
 
-5. **Integration**
+---
 
-   Copy or reference agents and skills from your migration project's `.claude/` directory
+## 📞 Support
 
-### Using the Migration System
+### Documentation
+- [Full skill documentation](./migiq/SKILL.md)
+- [Agent guide](./AGENT.md)
+- [Testing procedures](./migiq/TEST_PLAN.md)
 
-**Start a Migration (Recommended):**
-```bash
-# Basic migration
-/migration --project-path ./my-app --migration-type framework
+### Debugging
+- Check `orchestration-log.md` for workflow trace
+- Review `execution-log.md` for detailed timeline
+- Validate outputs with `test-validator.sh`
 
-# With full configuration
-/migration \
-  --project-path ./my-app \
-  --migration-type framework \
-  --kanban-platform jira \
-  --kanban-project PROJ-123 \
-  --ci-platform gitlab
+### Issues
+For bugs or feature requests, document:
+1. Source and target technologies
+2. Migration phase that failed
+3. Error messages from logs
+4. Steps to reproduce
 
-# Autonomous mode (no prompts)
-/migration --project-path ./my-app --migration-type framework --mode autonomous
-```
+---
 
-**Advanced: Run Agents Directly:**
-```bash
-# Start project tracker manually
-claude-code agent run project-tracker-agent --context '{"sessionId":"...","traceId":"..."}'
+## 📄 License
 
-# Run specific harness
-claude-code agent run test-generator-agent --story US-123
-```
+Part of the Konveyor project.
 
-**Invoke Individual Skills:**
-```bash
-# Analyze codebase
-/analyze-codebase --path ./src --migration-type framework
+---
 
-# Generate tests
-/generate-characterization-tests --source-path ./src/main
+## 🎯 Roadmap
 
-# Apply refactoring
-/apply-refactor-rules --source-path ./src --rules-path ./rules.yml
-```
+### Current (v1.0)
+- ✅ 5-phase orchestration workflow
+- ✅ Interactive and autonomous modes
+- ✅ 7 core migration skills
+- ✅ OpenShift deployment integration
+- ✅ Comprehensive reporting
 
-## Monitoring and Observability
+### Planned (v1.1)
+- [ ] Multi-stage migrations (incremental modernization)
+- [ ] Rollback and recovery features
+- [ ] Migration telemetry dashboard
+- [ ] Pre-migration cost estimation
+- [ ] Post-migration performance comparison
 
-### KPI Dashboard
+### Future (v2.0)
+- [ ] AI-powered migration strategy recommendations
+- [ ] Cross-cloud platform support
+- [ ] Migration pattern library
+- [ ] Automated post-migration optimization
+- [ ] Integration with CI/CD pipelines
 
-Track key metrics:
-- **Migration Velocity** - Stories completed per day
-- **Automation Rate** - % of migrations without human intervention
-- **Quality Score** - Aggregate quality metrics
-- **Cycle Time** - Time from story start to merge
-- **Success Rate** - % of migrations that pass first time
+---
 
-### Distributed Tracing
+**Ready to migrate?** Start with [migiq/README.md](./migiq/README.md) or [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md)
 
-Each story has a trace ID that flows through all agents:
-```
-Trace: migration-story-US123
-  ├─ project-tracker-agent (10s)
-  ├─ story-orchestrator-agent (300s)
-  │   ├─ test-generator-agent (120s)
-  │   ├─ code-refactor-agent (100s)
-  │   ├─ benchmark-builder-agent (50s)
-  │   └─ quality-evaluator-agent (30s)
-  └─ ci-integration-agent (200s)
-```
-
-### Logs and Metrics
-
-All agents produce:
-- **Structured logs** - JSON formatted, searchable
-- **Metrics** - Prometheus-compatible
-- **Traces** - OpenTelemetry compatible
-- **Events** - Event stream for real-time monitoring
-
-## Supported Integrations
-
-The mesh agents and skills are designed to integrate with:
-
-**CI/CD Platforms:**
-- GitLab - MR creation, pipeline monitoring
-- GitHub - PR creation, workflow monitoring
-
-**Kanban Boards:**
-- Jira - REST API integration
-- Linear - GraphQL API integration
-- GitHub Projects - API integration
-
-**Code Operations:**
-- opencode agent - All code analysis, refactoring, testing, and evaluation
-
-Your project must configure these integrations for the mesh to function.
-
-## Success Criteria
-
-1. **Automation Rate** - >80% of migrations complete without human intervention
-2. **Quality** - All tests pass, code coverage maintained/improved
-3. **Performance** - No regression in benchmark metrics
-4. **Reliability** - Consistent feedback loop handling
-5. **Traceability** - Full audit trail from story to merge
-
-## Technical Stack
-
-- **Orchestration** - Claude Code (Agent Mesh architecture)
-- **Languages** - Java, Python, JavaScript (examples)
-- **Code Operations** - opencode agent (all analysis, refactoring, testing, evaluation)
-- **CI/CD** - GitLab, GitHub
-- **Tracking** - Jira, Linear, GitHub Projects
-
-## Package Status
-
-**Current State**: Core mesh components with working implementation
-
-**Included**:
-- ✅ 10 Specialized agents (1 implemented: project-tracker-agent)
-- ✅ 24 Migration skills
-- ✅ Agent Mesh architecture documentation
-- ✅ OpenSpec proposal tracking
-- ✅ Core operational docs
-- ✅ Tasks.md template for tracking
-- ✅ Working migration orchestration flow
-
-**Implemented & Ready**:
-- ✅ `/migration` command - Main entry point
-- ✅ `project-tracker-agent` - Full Python implementation
-  - Executes initial tasks (analyze, plan, generate-backlog)
-  - Parses and updates tasks.md
-  - Processes user stories
-  - Integrates with Kanban (simulated)
-- ✅ TasksFileManager - tasks.md parsing and updates
-- ✅ Session and trace ID generation
-- ✅ Error handling and status tracking
-
-**Usage**:
-This is a **reusable mesh package**. To use it:
-1. Clone this repository
-2. Run: `/migration --project-path ./your-app --migration-type framework`
-3. The system creates rule.md, tasks.md and executes the migration workflow
-4. Monitor progress in tasks.md or your Kanban board
-
-## Contributing
-
-Contributions welcome for:
-- New or improved agents
-- New or improved skills
-- Documentation enhancements
-- OpenSpec proposals
-- Integration examples
-
-## References
-
-- **Red Hat Blog**: [Refactoring at the speed of mission](https://www.redhat.com/en/blog/refactoring-speed-mission-agent-mesh-approach-legacy-system-modernization-red-hat-ai)
-- **Claude Code**: [Documentation](https://claude.com/claude-code)
-
-## License
-
-[To be determined]
-
-## Authors
-
-- Architecture: Based on Red Hat Agent Mesh approach
-- Implementation: Claude Code Agent Mesh architecture
-
-## Support
-
-For questions and support:
-- Open an issue in the repository
-- Review the documentation in `/docs/`
-- Check OpenSpec proposals in `/openspec/`
+**Questions?** Check the [troubleshooting](#-troubleshooting) section or review the [documentation](#-documentation)

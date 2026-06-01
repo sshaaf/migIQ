@@ -1,0 +1,95 @@
+{
+  "skill_name": "mig-containerize",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to containerize this Spring Boot application for deployment on OpenShift. It's currently running on a VM and connects to a PostgreSQL database, has file uploads that go to /var/app/uploads, and uses application.properties for configuration. The graph analysis is already done (graphify-out/ exists). Can you create a production-ready container setup with Red Hat UBI images, including the Dockerfile, OpenShift manifests, and security hardening? Make sure database credentials go into secrets and the upload directory becomes a persistent volume.",
+      "expected_output": "Complete containerization package: Dockerfile using UBI OpenJDK image, OpenShift manifests (Deployment, Service, Route, ConfigMap, Secret, PVC for uploads, StatefulSet for PostgreSQL), security hardening (non-root, read-only FS, vulnerability scan), podman-compose for local dev, and containerization report documenting graph findings and deployment instructions.",
+      "files": [],
+      "assertions": [
+        {"name": "read_graph_outputs", "description": "Agent read graphify outputs (graph.json or GRAPH_REPORT.md)"},
+        {"name": "selected_ubi_image", "description": "Agent selected appropriate Red Hat UBI base image (e.g., ubi9/openjdk-17)"},
+        {"name": "generated_dockerfile", "description": "Agent created a Dockerfile"},
+        {"name": "dockerfile_multistage", "description": "Dockerfile uses multi-stage build pattern"},
+        {"name": "dockerfile_nonroot", "description": "Dockerfile runs as non-root user (USER 1001 or similar)"},
+        {"name": "generated_deployment", "description": "Agent created OpenShift Deployment manifest"},
+        {"name": "generated_service", "description": "Agent created Service manifest"},
+        {"name": "generated_route", "description": "Agent created Route manifest for external access"},
+        {"name": "generated_configmap", "description": "Agent created ConfigMap for application configuration"},
+        {"name": "generated_secret", "description": "Agent created Secret for database credentials"},
+        {"name": "generated_pvc_or_statefulset", "description": "Agent created PVC for uploads and/or StatefulSet for PostgreSQL"},
+        {"name": "generated_podman_compose", "description": "Agent created podman-compose.yml for local development"},
+        {"name": "externalized_config", "description": "Configuration externalized using ENV variables"},
+        {"name": "security_hardening", "description": "Security context configured (readOnlyRootFilesystem, capabilities dropped, etc.)"},
+        {"name": "created_report", "description": "Agent created containerization report documenting the process"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're moving our Django application to OpenShift containers. It uses PostgreSQL for data, Redis for caching, and calls an external payment API. Currently everything is hardcoded in settings.py including the database URL and API keys. I've already run graphify so the analysis exists. Containerize this with Red Hat UBI Python images - I need the database and Redis running in OpenShift too, with all secrets properly secured. Also need a way to test locally with podman.",
+      "expected_output": "Full containerization: Dockerfile with UBI Python image + gunicorn, OpenShift manifests including StatefulSet for PostgreSQL, Deployment for Redis, ConfigMap for app settings, Secret for database password and API keys, Service and Route for external access, podman-compose with all services for local testing, security scan results, and migration report.",
+      "files": [],
+      "assertions": [
+        {"name": "read_graph_outputs", "description": "Agent read graphify outputs"},
+        {"name": "selected_ubi_python", "description": "Agent selected Red Hat UBI Python image (e.g., ubi9/python-39 or ubi9/python-311)"},
+        {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
+        {"name": "uses_gunicorn", "description": "Dockerfile includes gunicorn for WSGI server"},
+        {"name": "generated_deployment", "description": "Agent created Deployment manifest for Django app"},
+        {"name": "generated_postgres_statefulset", "description": "Agent created StatefulSet for PostgreSQL"},
+        {"name": "generated_redis_deployment", "description": "Agent created Deployment for Redis"},
+        {"name": "generated_services", "description": "Agent created Service manifests for app, postgres, redis"},
+        {"name": "generated_route", "description": "Agent created Route for external access"},
+        {"name": "generated_configmap", "description": "Agent created ConfigMap"},
+        {"name": "generated_secret", "description": "Agent created Secret for database password and API keys"},
+        {"name": "generated_podman_compose", "description": "Agent created podman-compose.yml with all services"},
+        {"name": "externalized_secrets", "description": "Hardcoded credentials from settings.py externalized to Secret"},
+        {"name": "created_report", "description": "Agent created containerization/migration report"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a Node.js Express API that we want to run on OpenShift. It connects to MongoDB and Redis, has worker processes that handle background jobs, and stores uploaded files locally. The graphify analysis is done. Create container images using Red Hat UBI Node.js, set up the full OpenShift deployment with the database and cache, externalize all the configuration, and make sure it follows security best practices. I need both the OpenShift YAML files and a podman-compose for development.",
+      "expected_output": "Containerization artifacts: Dockerfile using UBI Node.js 20 image, OpenShift manifests (Deployment for API and workers, StatefulSet for MongoDB, Deployment for Redis, ConfigMap, Secret, Service, Route), PVC for file uploads, security context with non-root user and read-only filesystem, podman-compose.yml with all services, vulnerability scan report, and detailed deployment guide.",
+      "files": [],
+      "assertions": [
+        {"name": "read_graph_outputs", "description": "Agent read graphify outputs"},
+        {"name": "selected_ubi_nodejs", "description": "Agent selected Red Hat UBI Node.js image (e.g., ubi9/nodejs-18 or ubi9/nodejs-20)"},
+        {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
+        {"name": "generated_api_deployment", "description": "Agent created Deployment for Express API"},
+        {"name": "generated_worker_deployment", "description": "Agent created separate Deployment for worker processes"},
+        {"name": "generated_mongodb_statefulset", "description": "Agent created StatefulSet for MongoDB with persistent storage"},
+        {"name": "generated_redis_deployment", "description": "Agent created Deployment for Redis"},
+        {"name": "generated_pvc_uploads", "description": "Agent created PVC for file uploads"},
+        {"name": "generated_services", "description": "Agent created Service manifests"},
+        {"name": "generated_route", "description": "Agent created Route for API access"},
+        {"name": "generated_configmap", "description": "Agent created ConfigMap"},
+        {"name": "generated_secret", "description": "Agent created Secret"},
+        {"name": "security_context", "description": "Security context configured (non-root, readOnlyRootFilesystem)"},
+        {"name": "generated_podman_compose", "description": "Agent created podman-compose.yml"},
+        {"name": "created_report", "description": "Agent created deployment guide/report"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our legacy Java application on bare metal needs to move to OpenShift. It's a mess - hardcoded Oracle connection strings, writes logs to /opt/app/logs, has scheduled Quartz jobs, and loads properties from /etc/myapp/config.properties. The codebase has been analyzed with graphify already. Containerize it with Red Hat UBI, but we'll use an external managed Oracle database instead of running it in OpenShift. Handle all the platform-specific stuff, make it secure, and give me deployment instructions.",
+      "expected_output": "Containerization package addressing legacy issues: Dockerfile with UBI OpenJDK and multi-stage build, refactored configuration to use ENV variables and ConfigMap, logs redirected to stdout, Quartz jobs configured for container environment, OpenShift manifests with external database reference in Secret, emptyDir volumes for temp/cache, security hardening, podman build and test instructions, and migration report documenting all platform-specific code changes required.",
+      "files": [],
+      "assertions": [
+        {"name": "read_graph_outputs", "description": "Agent read graphify outputs to identify platform-specific code"},
+        {"name": "selected_ubi_openjdk", "description": "Agent selected Red Hat UBI OpenJDK image"},
+        {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
+        {"name": "dockerfile_multistage", "description": "Dockerfile uses multi-stage build"},
+        {"name": "identified_platform_dependencies", "description": "Agent identified hardcoded paths, Oracle connection, log files, config files"},
+        {"name": "externalized_oracle_config", "description": "Oracle connection string externalized to Secret or ENV variable"},
+        {"name": "logs_to_stdout", "description": "Logging redirected to stdout/stderr instead of file"},
+        {"name": "generated_deployment", "description": "Agent created Deployment manifest"},
+        {"name": "generated_configmap", "description": "Agent created ConfigMap (replacing /etc/myapp/config.properties)"},
+        {"name": "generated_secret", "description": "Agent created Secret for Oracle credentials"},
+        {"name": "emptydir_volumes", "description": "Used emptyDir volumes for temp/cache directories"},
+        {"name": "external_database", "description": "Documented external Oracle database (no StatefulSet in OpenShift)"},
+        {"name": "generated_podman_compose", "description": "Agent created podman-compose.yml"},
+        {"name": "created_migration_report", "description": "Agent created report documenting platform-specific code changes"}
+      ]
+    }
+  ]
+}

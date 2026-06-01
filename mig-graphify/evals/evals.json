@@ -1,0 +1,69 @@
+{
+  "skill_name": "mig-graphify",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a legacy Java Spring Boot application that's been running for about 5 years now. Our DevOps team wants us to migrate to Quarkus for better cloud performance and lower memory footprint. The app has about 150 Java files, uses Spring Data JPA, Spring Security, and has a bunch of REST endpoints. I need to understand what we're getting into here - can you analyze our codebase and tell me how complex this migration is going to be? The code is in the current directory.",
+      "expected_output": "Knowledge graph built via graphify, followed by detailed migration analysis report covering: Spring→Quarkus component mapping, dependency analysis, migration complexity assessment, recommended phased approach, risk areas (especially around Spring-specific annotations), and specific next steps",
+      "files": [],
+      "assertions": [
+        {"name": "ran_graphify_cli", "description": "Agent ran 'graphify update' or 'graphify extract' command to build knowledge graph"},
+        {"name": "references_graph_output", "description": "Report references graphify outputs (graph.json, GRAPH_REPORT.md, or graphify-out directory)"},
+        {"name": "mentions_god_nodes", "description": "Report identifies god nodes or high-degree nodes from graph analysis"},
+        {"name": "mentions_communities", "description": "Report discusses detected communities or logical groupings"},
+        {"name": "uses_graph_metrics", "description": "Report uses specific graph metrics (degree, edges, nodes count, etc.)"},
+        {"name": "identifies_spring_dependencies", "description": "Report identifies Spring Boot, Spring Data JPA, and Spring Security as key dependencies"},
+        {"name": "suggests_migration_strategy", "description": "Report suggests a phased migration approach based on graph structure"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "ok so we need to break up our python monolith into microservices because it's getting impossible to scale. It's a Django app with around 80 python files, lots of models and business logic all tangled together. Before we start ripping things apart I want to understand the dependency structure - like which modules are tightly coupled, what can be safely extracted first, that kind of thing. Can you help me map this out?",
+      "expected_output": "Knowledge graph via graphify showing Python module dependencies, analysis identifying: tightly coupled modules, circular dependencies, safe extraction candidates (low coupling), suggested service boundaries, migration order (start with leaf dependencies), and risks around shared database models",
+      "files": [],
+      "assertions": [
+        {"name": "ran_graphify_cli", "description": "Agent ran 'graphify update' or 'graphify extract' command to build knowledge graph"},
+        {"name": "references_graph_output", "description": "Report references graphify outputs (graph.json, GRAPH_REPORT.md, or graphify-out directory)"},
+        {"name": "mentions_god_nodes", "description": "Report identifies god nodes or high-degree nodes from graph analysis"},
+        {"name": "mentions_communities", "description": "Report discusses detected communities that could become microservices"},
+        {"name": "uses_graph_metrics", "description": "Report uses specific graph metrics (degree, coupling, edges, etc.)"},
+        {"name": "identifies_circular_dependencies", "description": "Report identifies circular dependencies between modules"},
+        {"name": "recommends_extraction_order", "description": "Report recommends extraction order based on graph structure (leaf nodes first, etc.)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My company wants to move our on-premises Java application to OpenShift. It's a traditional enterprise app - runs on Tomcat, connects to Oracle DB, has some scheduled batch jobs, file system dependencies for storing uploaded docs. Around 200 java files. I need to figure out what needs to change for containerization and OpenShift deployment and what the tricky parts are going to be. Can you analyze the codebase and give me a migration plan?",
+      "expected_output": "Knowledge graph analysis highlighting: platform-specific dependencies (file system, DB connections, batch jobs), cloud-native equivalent recommendations (PVCs/object storage for files, OpenShift Database operator or external DB, CronJobs/Jobs for batch), dependency analysis showing coupling to on-prem infrastructure, containerization strategy, migration strategy for data layer, and risk assessment for stateful components",
+      "files": [],
+      "assertions": [
+        {"name": "ran_graphify_cli", "description": "Agent ran 'graphify update' or 'graphify extract' command to build knowledge graph"},
+        {"name": "references_graph_output", "description": "Report references graphify outputs (graph.json, GRAPH_REPORT.md, or graphify-out directory)"},
+        {"name": "mentions_god_nodes", "description": "Report identifies god nodes or critical files with high connectivity"},
+        {"name": "uses_graph_metrics", "description": "Report uses specific graph metrics from knowledge graph"},
+        {"name": "identifies_file_system_dependencies", "description": "Report identifies hardcoded file paths and local file system dependencies"},
+        {"name": "identifies_oracle_dependency", "description": "Report identifies Oracle database dependency"},
+        {"name": "identifies_platform_specific_code", "description": "Report identifies platform-specific dependencies (NFS, mainframe, network paths)"},
+        {"name": "discusses_containerization", "description": "Report discusses containerization requirements and image creation strategy"},
+        {"name": "provides_migration_phases", "description": "Report provides phased migration strategy based on dependency graph"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We have a Node.js application with MongoDB that's currently running on bare metal servers. We need to containerize it and deploy to OpenShift. The app is about 60 JavaScript files - has Express API server, MongoDB for data, uses local file uploads, has some worker processes, and connects to Redis for sessions. I need help understanding what needs to change for containerization - like how to handle the database, file storage, configuration, and getting everything running in OpenShift. Can you analyze the app and give me a containerization plan?",
+      "expected_output": "Knowledge graph analysis highlighting: app structure and service dependencies, containerization strategy for Node.js app, MongoDB deployment options (StatefulSet vs external), file upload handling (PVC vs object storage), Redis session management, environment configuration and secrets, Docker/Podman image creation, OpenShift deployment manifests, health checks and readiness probes, and migration phases",
+      "files": [],
+      "assertions": [
+        {"name": "ran_graphify_cli", "description": "Agent ran 'graphify update' or 'graphify extract' command to build knowledge graph"},
+        {"name": "references_graph_output", "description": "Report references graphify outputs (graph.json, GRAPH_REPORT.md, or graphify-out directory)"},
+        {"name": "mentions_god_nodes", "description": "Report identifies god nodes or highly connected files from graph"},
+        {"name": "uses_graph_metrics", "description": "Report uses graph metrics to assess complexity"},
+        {"name": "identifies_service_dependencies", "description": "Report identifies MongoDB, Redis, and file storage dependencies"},
+        {"name": "discusses_configuration_management", "description": "Report discusses ConfigMaps and Secrets for environment variables"},
+        {"name": "provides_dockerfile_guidance", "description": "Report provides Dockerfile/containerization guidance for Node.js app"},
+        {"name": "addresses_multi_service_coordination", "description": "Report discusses how to coordinate multiple services"},
+        {"name": "provides_openshift_deployment_plan", "description": "Report provides OpenShift-specific deployment guidance"}
+      ]
+    }
+  ]
+}

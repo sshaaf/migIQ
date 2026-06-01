@@ -1,0 +1,64 @@
+{
+  "skill_name": "mig-execute",
+  "evals": [
+    {
+      "id": "full-execution",
+      "prompt": "ok we've got the migration plan ready, let's execute it. the plan is in mig-plan-workspace/ and we need to migrate from Spring Boot 1.5 to 3.0. I want you to run through all the tasks, use sub-agents where it makes sense to parallelize, and keep me updated on progress. if anything fails just pause and let me know what options we have.",
+      "expected_output": "Skill should load the plan, execute all 3 user stories in order, spawn sub-agents for independent subtasks, update checkboxes in tasks.md and UserStory.md, maintain execution-log.md, and generate EXECUTION_REPORT.md at the end.",
+      "files": [
+        "evals/sample-plan/spec.md",
+        "evals/sample-plan/design.md",
+        "evals/sample-plan/tasks.md",
+        "evals/sample-plan/UserStory.md"
+      ],
+      "assertions": [
+        "EXECUTION_REPORT.md exists and contains executive summary",
+        "execution-log.md exists with timestamped task entries",
+        "All 3 user stories are addressed in the output",
+        "Tasks.md is updated with checked boxes for completed tasks",
+        "Report includes statistics (completed/failed/skipped counts)",
+        "Report mentions or demonstrates parallel execution of independent tasks",
+        "Output includes next steps or recommendations"
+      ]
+    },
+    {
+      "id": "partial-execution-with-failure",
+      "prompt": "execute the migration plan but I want you to simulate a failure on task 2.2 (updating servlet API references). when that fails, give me some options for how to proceed - maybe skip it for now, try a different approach, or abort and let me fix it manually.",
+      "expected_output": "Skill executes user story 1 successfully, starts user story 2, fails at task 2.2, pauses execution, presents 3-4 remedy options to the user with clear explanations of each option's impact and risk level.",
+      "files": [
+        "evals/sample-plan/spec.md",
+        "evals/sample-plan/design.md",
+        "evals/sample-plan/tasks.md",
+        "evals/sample-plan/UserStory.md"
+      ],
+      "assertions": [
+        "Execution pauses after task 2.2 failure",
+        "Failure report includes clear error description",
+        "At least 3 remedy options are presented to the user",
+        "Each remedy option includes risk level (Low/Medium/High)",
+        "Each remedy option explains what will be done",
+        "Options include both 'skip' and 'abort' strategies",
+        "User story 1 tasks completed before the failure"
+      ]
+    },
+    {
+      "id": "resume-execution",
+      "prompt": "hey so we ran the migration earlier and got through user story 1 and most of user story 2, but had to stop. can you resume from where we left off? check the tasks.md to see what's already done and just continue with the remaining stuff. the checked boxes should tell you what's complete.",
+      "expected_output": "Skill reads tasks.md and UserStory.md, detects completed tasks (checked boxes), skips those, and resumes execution from the first uncompleted task. Should not re-execute already completed work.",
+      "files": [
+        "evals/sample-plan/spec.md",
+        "evals/sample-plan/design.md",
+        "evals/sample-plan/tasks.md",
+        "evals/sample-plan/UserStory.md"
+      ],
+      "assertions": [
+        "Agent reads tasks.md to detect completed tasks",
+        "Agent does NOT re-execute tasks 1.1-1.5 (already checked)",
+        "Agent does NOT re-execute task 2.1 (already checked)",
+        "Execution starts from task 2.2 (first unchecked task)",
+        "Report or log acknowledges resuming from previous state",
+        "Remaining tasks (2.2-3.5) are executed"
+      ]
+    }
+  ]
+}

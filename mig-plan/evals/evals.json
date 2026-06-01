@@ -1,0 +1,53 @@
+{
+  "skill_name": "mig-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a legacy Java EE 7 application running on WebLogic that we need to migrate to Spring Boot 3.x. The app has about 50 EJBs, uses JPA for persistence with Oracle DB, and has some JAX-RS REST endpoints. We want to containerize it and deploy to OpenShift. Can you create a migration plan?",
+      "expected_output": "Complete migration plan with spec.md analyzing current Java EE structure, design.md proposing Spring Boot architecture, tasks.md with detailed migration tasks including test generation, containerization, and deployment configs, and UserStory.md grouping work into deliverable stories",
+      "files": [],
+      "assertions": [
+        {"name": "all_four_documents_generated", "description": "Verify that spec.md, design.md, tasks.md, and UserStory.md were all created"},
+        {"name": "spec_has_code_examples", "description": "spec.md includes at least 2 concrete code examples showing current state patterns"},
+        {"name": "design_addresses_ejb_migration", "description": "design.md specifically addresses how to migrate EJBs to Spring components"},
+        {"name": "tasks_have_integration_hooks", "description": "tasks.md includes mig-test-gen, mig-containerize, and mig-deploy subtasks"},
+        {"name": "tasks_are_actionable", "description": "Each task has specific, implementable subtasks with checkboxes (not vague TODOs)"},
+        {"name": "userstory_links_to_tasks", "description": "UserStory.md references specific task groups from tasks.md"},
+        {"name": "userstory_has_acceptance_criteria", "description": "Each user story includes testable acceptance criteria"},
+        {"name": "addresses_openshift_deployment", "description": "Plan includes OpenShift-specific deployment considerations"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need help planning a migration from a Rails monolith to Node.js microservices. The current app is about 80k lines of Ruby code with ActiveRecord models, background jobs using Sidekiq, and a PostgreSQL database. We're targeting Kubernetes deployment on AWS EKS. The team wants a phased approach, not big bang. Create a detailed migration roadmap.",
+      "expected_output": "Migration plan showing phased approach with spec.md documenting Rails architecture, design.md proposing microservice boundaries and Node.js stack, tasks.md breaking down phased migration with parallel run strategy, and UserStory.md organizing by business capability",
+      "files": [],
+      "assertions": [
+        {"name": "all_four_documents_generated", "description": "Verify that spec.md, design.md, tasks.md, and UserStory.md were all created"},
+        {"name": "design_proposes_phased_approach", "description": "design.md explicitly outlines a phased migration strategy (not big bang)"},
+        {"name": "design_defines_microservice_boundaries", "description": "design.md proposes specific microservice boundaries and rationale"},
+        {"name": "tasks_include_parallel_run_strategy", "description": "tasks.md addresses how old and new systems will run in parallel during migration"},
+        {"name": "addresses_sidekiq_migration", "description": "Plan addresses how to migrate Sidekiq background jobs to Node.js equivalent"},
+        {"name": "addresses_activerecord_to_orm", "description": "Plan addresses migrating ActiveRecord models to Node.js ORM (like Sequelize/TypeORM)"},
+        {"name": "userstory_organized_by_phase", "description": "UserStory.md organizes stories by migration phase or business capability"},
+        {"name": "eks_kubernetes_specifics", "description": "Plan includes AWS EKS and Kubernetes-specific deployment details"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our company has a .NET Framework 4.8 application that needs to move to .NET 8 and containerize for Azure AKS deployment. The app uses WCF services, Entity Framework 6, and SQL Server. There are also some legacy ASMX web services we need to modernize to REST APIs. What's the migration plan?",
+      "expected_output": "Migration plan with spec.md analyzing .NET Framework dependencies and WCF usage, design.md showing modernization to .NET 8 with gRPC/REST, tasks.md covering WCF-to-gRPC migration, EF6-to-EF Core upgrade, containerization, and AKS deployment, UserStory.md organizing by service boundaries",
+      "files": [],
+      "assertions": [
+        {"name": "all_four_documents_generated", "description": "Verify that spec.md, design.md, tasks.md, and UserStory.md were all created"},
+        {"name": "addresses_wcf_migration", "description": "design.md proposes specific approach for migrating WCF services (gRPC, REST, or CoreWCF)"},
+        {"name": "addresses_ef6_to_ef_core", "description": "Plan addresses upgrading Entity Framework 6 to EF Core with migration considerations"},
+        {"name": "addresses_asmx_modernization", "description": "Plan includes strategy for modernizing ASMX web services to REST APIs"},
+        {"name": "tasks_have_integration_hooks", "description": "tasks.md includes mig-test-gen, mig-containerize, and mig-deploy subtasks"},
+        {"name": "aks_azure_specifics", "description": "Plan includes Azure AKS-specific deployment considerations"},
+        {"name": "framework_to_net8_challenges", "description": "spec.md or design.md addresses breaking changes from .NET Framework 4.8 to .NET 8"},
+        {"name": "userstory_has_dependencies", "description": "UserStory.md shows dependencies between stories (what must complete first)"}
+      ]
+    }
+  ]
+}
