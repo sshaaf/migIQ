@@ -5,6 +5,36 @@
 [![Status](https://img.shields.io/badge/status-ready--for--testing-green)]()
 [![Migration Success](https://img.shields.io/badge/migration-5--phase--orchestration-blue)]()
 [![Platform](https://img.shields.io/badge/platform-OpenShift-red)]()
+[![npm version](https://img.shields.io/npm/v/@sshaaf/migiq)]()
+
+---
+
+## 🚀 Quick Start
+
+Install MigIQ for Claude Code with a single command:
+
+```bash
+# Install to local project .claude directory (recommended)
+npx @sshaaf/migiq
+
+# Or install globally to ~/.claude
+npx @sshaaf/migiq -g
+```
+
+Then in Claude Code:
+```
+/migiq
+"Migrate this Spring Boot app to Quarkus"
+```
+
+Or for autonomous migration:
+```
+Agent({
+  description: "Spring Boot to Quarkus migration",
+  prompt: "Follow AGENT.md. Migrate this Spring Boot application to Quarkus...",
+  subagent_type: "general-purpose"
+})
+```
 
 ---
 

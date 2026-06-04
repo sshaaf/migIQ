@@ -56,5 +56,23 @@ Thumbs.db
 *.bak
 .cache/
 
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+
 # Claude Code configuration (local development settings)
 .claude/
+
+# MigIQ - Workspace directories (runtime outputs)
+# These contain test execution artifacts, grading results, timing data
+*-workspace/
+
+# Keep benchmark result exports for GitHub Pages publishing
+!benchmark-results/
+
+# Migration output directories (created by skills during execution)
+graphify-out/
+
+# Session artifacts
+SESSION_SUMMARY.md
