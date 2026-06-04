@@ -12,12 +12,13 @@ This skill creates comprehensive, actionable migration plans for application mod
 When invoked, this skill:
 
 1. **Analyzes the codebase** using mig-graphify to build a knowledge graph
-2. **Generates spec.md** - detailed specification of current state and migration scenario
-3. **Creates design.md** - overall design and architecture for the target state
-4. **Produces tasks.md** - granular task breakdown with subtasks
-5. **Generates UserStory.md** - user stories linking tasks to business value
+2. **Uses migration prompt** from mig-prompt-builder as the planning foundation (contains specification and design)
+3. **Produces tasks.md** - granular task breakdown with subtasks
+4. **Generates UserStory.md** - user stories linking tasks to business value
 
 All outputs are saved to `mig-plan-workspace/`.
+
+**Note**: This skill leverages the comprehensive migration prompt from mig-prompt-builder which already contains specification and design details, eliminating the need for separate spec.md and design.md files. This optimizes token usage while maintaining planning quality.
 
 ## When to Use This Skill
 
@@ -42,160 +43,18 @@ First, ensure you have the knowledge graph:
    - Technology stack
    - Integration points
 
-### Phase 2: Understand Migration Context
+### Phase 2: Use Migration Prompt as Foundation
 
-Ask the user for migration specifics:
-- **Source**: What are we migrating FROM? (platform, framework, version)
-- **Target**: What are we migrating TO? (platform, framework, version)
-- **Constraints**: Timeline, budget, risk tolerance
-- **Scope**: Full migration or phased approach?
+The migration prompt from mig-prompt-builder already contains:
+- Current application summary (from graphify analysis)
+- Target platform and technologies
+- Migration approach and strategy
+- Required deliverables (containerization, OpenShift, test coverage)
+- Success criteria and constraints
 
-### Phase 3: Generate Specification (spec.md)
+Use this as the foundation for task and story generation instead of creating separate spec.md and design.md files.
 
-Create `mig-plan-workspace/spec.md` with detailed analysis:
-
-```markdown
-# Migration Specification
-
-## Overview
-[One paragraph summary of the migration]
-
-## Current State Analysis
-
-### Technology Stack
-- [Current technologies with versions]
-- [Dependencies and libraries]
-- [Infrastructure and deployment]
-
-### Architecture
-[Describe current architecture with observations from graphify output]
-
-### Key Components
-[List major components, modules, services discovered in the knowledge graph]
-
-### Integration Points
-[External systems, APIs, databases, message queues]
-
-### Code Examples
-[Include 2-3 representative code snippets from the current codebase that illustrate patterns to be migrated]
-
-## Target State
-
-### Technology Stack
-- [Target technologies with versions]
-- [New dependencies and libraries]
-- [Target infrastructure]
-
-### Architecture Changes
-[What architectural changes are needed?]
-
-## Migration Scenario
-
-### Migration Type
-[Replatform, refactor, rearchitect, etc.]
-
-### Migration Strategy
-[Big bang, strangler fig, phased, etc.]
-
-### Risk Assessment
-[Key risks and mitigation strategies]
-
-### Success Criteria
-[How do we know the migration succeeded?]
-
-## Observations and Challenges
-
-### Technical Challenges
-- [Challenge 1 with context from code analysis]
-- [Challenge 2]
-
-### Dependencies
-- [Critical dependencies to address]
-
-### Data Migration
-- [Data migration requirements if applicable]
-```
-
-**Why detailed analysis matters**: The spec becomes the source of truth. Include specific code examples from the graphify analysis so developers understand exactly what patterns they're changing.
-
-### Phase 4: Generate Design (design.md)
-
-Create `mig-plan-workspace/design.md`:
-
-```markdown
-# Migration Design
-
-## Architecture Overview
-
-### Target Architecture
-[Describe the target architecture with diagrams if possible]
-
-### Components
-[List new/modified components and their responsibilities]
-
-### Technology Choices
-
-#### Framework/Platform
-- **Choice**: [Selected technology]
-- **Rationale**: [Why this choice?]
-- **Alternatives Considered**: [What else was considered?]
-
-[Repeat for each major technology decision]
-
-### Design Patterns
-[Patterns to be used in the target state]
-
-## Migration Approach
-
-### Phasing Strategy
-[If phased, describe the phases]
-
-### Component Migration Order
-1. [Component 1] - Why first?
-2. [Component 2]
-...
-
-### Parallel Run Strategy
-[How will old and new systems coexist during migration?]
-
-## Integration Design
-
-### External Systems
-[How will integrations change?]
-
-### Data Strategy
-[Data migration, synchronization approach]
-
-### API Compatibility
-[Backward compatibility strategy if needed]
-
-## Testing Strategy
-
-### Test Approach
-[Unit, integration, E2E testing plans]
-
-### Validation Criteria
-[How to validate each migration phase]
-
-## Deployment Strategy
-
-### Containerization
-[Container strategy - see mig-containerization integration]
-
-### Orchestration
-[Kubernetes, OpenShift, etc.]
-
-### CI/CD Pipeline
-[Pipeline changes needed]
-
-## Rollback Plan
-[How to rollback if things go wrong]
-
-## Monitoring and Observability
-[Logging, metrics, tracing in target state]
-```
-
-### Phase 5: Generate Tasks (tasks.md)
+### Phase 3: Generate Tasks (tasks.md)
 
 Create `mig-plan-workspace/tasks.md` with detailed task breakdown.
 
@@ -268,7 +127,7 @@ C. **Documentation**: Document the changes
   - Add troubleshooting guide for common auth issues
 ```
 
-### Phase 6: Generate User Stories (UserStory.md)
+### Phase 4: Generate User Stories (UserStory.md)
 
 Create `mig-plan-workspace/UserStory.md` that groups tasks into user stories.
 
@@ -417,29 +276,30 @@ When this skill runs, follow these steps in order:
 
 1. **Invoke mig-graphify** if graphify-out/ doesn't exist
 2. **Read knowledge graph** from graphify-out/
-3. **Gather migration context** from user (source, target, constraints)
-4. **Generate spec.md** using knowledge graph + user context
-5. **Generate design.md** based on spec and best practices
-6. **Generate tasks.md** breaking down the design into actionable work
-7. **For each task with integration hooks**, actually invoke the relevant skill:
+3. **Read migration prompt** from mig-prompt-workspace/migration-prompt.md (should already exist from mig-prompt-builder)
+   - If migration prompt doesn't exist, prompt the user to run mig-prompt-builder first or provide migration context
+4. **Generate tasks.md** breaking down the migration prompt into actionable work, using knowledge graph for specifics
+5. **For each task with integration hooks**, actually invoke the relevant skill:
    - Call `/skill mig-test-gen` with context from the task
    - Call `/skill mig-containerize` with component details
    - Call `/skill mig-deploy` with deployment requirements
    - Capture outputs and embed references in the task
-8. **Generate UserStory.md** grouping tasks into stories
-9. **Present summary** to user with links to all documents
+6. **Generate UserStory.md** grouping tasks into stories
+7. **Present summary** to user with links to all documents
 
 ## Output Structure
 
 ```
 mig-plan-workspace/
-├── spec.md           # Detailed specification
-├── design.md         # Overall design
 ├── tasks.md          # Task breakdown with subtasks
 └── UserStory.md      # User stories linking tasks
 ```
 
+**Note**: Specification and design details are in `mig-prompt-workspace/migration-prompt.md` (created by mig-prompt-builder).
+
 ## Important Notes
+
+**Uses mig-prompt-builder output**: This skill expects a migration prompt from mig-prompt-builder. If the prompt doesn't exist, guide the user to run mig-prompt-builder first.
 
 **Auto-execution of integration skills**: Unlike traditional planning tools, this skill actively invokes mig-test-gen, mig-containerize, and mig-deploy during plan generation. This produces concrete, actionable outputs rather than placeholders.
 
@@ -447,25 +307,32 @@ mig-plan-workspace/
 
 **Realistic estimates**: When creating tasks and user stories, base estimates on actual code complexity from the knowledge graph, not generic assumptions.
 
-**Link everything**: Maintain traceability from user stories → tasks → design → spec → knowledge graph. Each decision should trace back to code reality.
+**Link everything**: Maintain traceability from user stories → tasks → migration prompt → knowledge graph. Each decision should trace back to code reality.
+
+**Token optimization**: By using the migration prompt instead of generating separate spec.md and design.md files, we significantly reduce token usage while maintaining comprehensive planning.
 
 ## Example Invocation
 
-User: "I need to migrate our Java EE monolith to Spring Boot microservices"
+User: "I need to create a migration plan" (after running mig-prompt-builder)
 
 Skill flow:
 1. Check for graphify-out/ (invoke graphify if missing)
-2. Ask clarifying questions about target Spring Boot version, microservice boundaries, deployment platform
-3. Generate spec.md analyzing the current monolith structure
-4. Generate design.md proposing microservice decomposition
-5. Generate tasks.md with detailed migration tasks
-6. For each task, invoke integration skills to generate tests, containers, and deployment configs
-7. Generate UserStory.md grouping work into deliverable stories
-8. Present complete plan to user
+2. Read migration prompt from mig-prompt-workspace/migration-prompt.md
+3. Generate tasks.md with detailed migration tasks based on the prompt and knowledge graph
+4. For each task, invoke integration skills to generate tests, containers, and deployment configs
+5. Generate UserStory.md grouping work into deliverable stories
+6. Present complete plan to user
+
+**Typical workflow**:
+1. User runs `/skill mig-prompt-builder` (creates migration-prompt.md)
+2. User runs `/skill mig-plan` (creates tasks.md and UserStory.md)
+3. User executes tasks using the generated plan
 
 ## Tips for Success
 
+- **Start with mig-prompt-builder**: Ensure a comprehensive migration prompt exists before planning
 - **Use the knowledge graph**: Don't guess about code structure, read it from graphify output
+- **Reference the migration prompt**: All task details should align with the approach defined in the migration prompt
 - **Be specific**: Include actual class names, file paths, and code patterns from the codebase
 - **Consider dependencies**: Order tasks and stories based on technical dependencies
 - **Plan for testing**: Every migration task needs corresponding tests

@@ -177,7 +177,8 @@ EJBs and needs to run on OpenShift eventually.
    # Should see: migration-prompt.md
    
    ls -la mig-plan-workspace/
-   # Should see: spec.md, design.md, tasks.md, UserStory.md
+   # Should see: tasks.md, UserStory.md
+   # Note: spec/design are in migration-prompt.md
    
    ls -la mig-execute-workspace/
    # Should see: EXECUTION_REPORT.md, execution-log.md, outputs/
@@ -201,8 +202,8 @@ EJBs and needs to run on OpenShift eventually.
    - [ ] Deliverables include containerization, deployment, testing, plan
    
    **Phase 3 - Planning**:
-   - [ ] `spec.md` describes current Spring Boot app accurately
-   - [ ] `design.md` outlines Quarkus target architecture
+   - [ ] `migration-prompt.md` describes current Spring Boot app accurately (Phase 2)
+   - [ ] `migration-prompt.md` outlines Quarkus target architecture (Phase 2)
    - [ ] `tasks.md` includes specific Spring → Quarkus conversion tasks
    - [ ] `UserStory.md` groups work into stories with acceptance criteria
    - [ ] Task breakdown includes integration hooks (test-gen, containerize, deploy)
@@ -297,7 +298,7 @@ echo ""
 
 # Phase 3 outputs
 echo "Phase 3: Migration Planning"
-for file in spec.md design.md tasks.md UserStory.md; do
+for file in tasks.md UserStory.md; do
     if [ -f "mig-plan-workspace/$file" ]; then
         echo "  ✅ $file exists"
     else
@@ -305,6 +306,7 @@ for file in spec.md design.md tasks.md UserStory.md; do
         ((ERRORS++))
     fi
 done
+echo "  ℹ️  Note: spec.md and design.md are replaced by migration-prompt.md for token optimization"
 echo ""
 
 # Phase 4 outputs

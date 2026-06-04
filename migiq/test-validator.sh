@@ -49,7 +49,7 @@ echo ""
 
 # Phase 3 outputs
 echo "Phase 3: Migration Planning"
-for file in spec.md design.md tasks.md UserStory.md; do
+for file in tasks.md UserStory.md; do
     if [ -f "mig-plan-workspace/$file" ]; then
         echo "  ✅ $file exists"
     else
@@ -57,6 +57,7 @@ for file in spec.md design.md tasks.md UserStory.md; do
         ((ERRORS++))
     fi
 done
+echo "  ℹ️  Note: spec.md and design.md are replaced by migration-prompt.md for token optimization"
 echo ""
 
 # Phase 4 outputs

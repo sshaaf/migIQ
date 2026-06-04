@@ -27,19 +27,15 @@ def grade_eval_1(run_dir):
     results = []
     run_path = Path(run_dir)
 
-    # Check all four documents exist
-    files = ['spec.md', 'design.md', 'tasks.md', 'UserStory.md']
+    # Check required documents exist (tasks.md and UserStory.md)
+    files = ['tasks.md', 'UserStory.md']
     all_exist = all((run_path / f).exists() for f in files)
-    results.append({"name": "all_four_documents_generated", "passed": all_exist, 
-                   "evidence": f"{sum(1 for f in files if (run_path/f).exists())}/4 files exist"})
+    results.append({"name": "required_documents_generated", "passed": all_exist,
+                   "evidence": f"{sum(1 for f in files if (run_path/f).exists())}/{len(files)} files exist"})
 
-    # spec_has_code_examples
-    passed, evidence = check_patterns(run_path / 'spec.md', ['```', 'example', 'code'])
-    results.append({"name": "spec_has_code_examples", "passed": passed, "evidence": evidence})
-
-    # design_addresses_ejb_migration
-    passed, evidence = check_patterns(run_path / 'design.md', ['ejb', 'spring', 'component', 'service'])
-    results.append({"name": "design_addresses_ejb_migration", "passed": passed, "evidence": evidence})
+    # tasks_address_specific_migration_patterns (e.g., EJB to Spring)
+    passed, evidence = check_patterns(run_path / 'tasks.md', ['ejb', 'spring', 'component', 'service', 'migrate'])
+    results.append({"name": "tasks_address_migration_patterns", "passed": passed, "evidence": evidence})
 
     # tasks_have_integration_hooks
     passed, evidence = check_patterns(run_path / 'tasks.md', ['mig-test-gen', 'mig-containerize', 'mig-deploy'])
