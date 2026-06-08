@@ -1,6 +1,6 @@
 {
   "name": "@sshaaf/migiq",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "AI-powered application migration orchestrator for modernizing legacy applications to cloud-native platforms",
   "main": "install.js",
   "bin": {
