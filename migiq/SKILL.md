@@ -415,10 +415,9 @@ MIGRATION_PROMPT=$(cat mig-prompt-workspace/migration-prompt.md)
 
 # Invoke mig-plan skill with the prompt
 # This will generate:
-# - mig-plan-workspace/spec.md
-# - mig-plan-workspace/design.md
 # - mig-plan-workspace/tasks.md
 # - mig-plan-workspace/UserStory.md
+# Note: spec and design are in migration-prompt.md from Phase 2
 ```
 
 The mig-plan skill will:
@@ -434,10 +433,9 @@ This phase may take several minutes for complex migrations.
 ```bash
 # Verify all plan documents were created
 echo "Plan Validation:"
-[ -f mig-plan-workspace/spec.md ] && echo "✅ spec.md" || echo "❌ spec.md missing"
-[ -f mig-plan-workspace/design.md ] && echo "✅ design.md" || echo "❌ design.md missing"
 [ -f mig-plan-workspace/tasks.md ] && echo "✅ tasks.md" || echo "❌ tasks.md missing"
 [ -f mig-plan-workspace/UserStory.md ] && echo "✅ UserStory.md" || echo "❌ UserStory.md missing"
+echo "Note: Specification and design are in mig-prompt-workspace/migration-prompt.md"
 
 # Count user stories and tasks
 echo "Plan Statistics:"
@@ -458,8 +456,7 @@ echo "Subtasks: $(grep -c "^- \[ \]" mig-plan-workspace/tasks.md)"
 - Estimated Duration: [from plan]
 
 **Key Documents**:
-- Specification: mig-plan-workspace/spec.md
-- Design: mig-plan-workspace/design.md
+- Migration Prompt (spec + design): mig-prompt-workspace/migration-prompt.md
 - Tasks: mig-plan-workspace/tasks.md
 - User Stories: mig-plan-workspace/UserStory.md
 
@@ -478,10 +475,9 @@ Update orchestration-log.md:
 **Duration**: [time]
 
 **Outputs**:
-- mig-plan-workspace/spec.md
-- mig-plan-workspace/design.md
 - mig-plan-workspace/tasks.md
 - mig-plan-workspace/UserStory.md
+(Note: spec/design in mig-prompt-workspace/migration-prompt.md)
 
 **Statistics**:
 - User Stories: [count]
@@ -729,27 +725,27 @@ Executed the migration plan with automated task orchestration:
 ### Source Application Analysis
 
 **Technology Stack** (before migration):
-[From spec.md]
+[From migration-prompt.md - Current Application Summary]
 
-**Architecture Pattern**: [from spec.md]
+**Architecture Pattern**: [from migration-prompt.md]
 
 **Key Components**:
-[List from spec.md]
+[List from migration-prompt.md]
 
 **Code Metrics**:
 - Lines of Code: [from graphify if available]
 - Primary Language: [from graphify]
-- Frameworks: [from spec.md]
+- Frameworks: [from migration-prompt.md]
 
 ### Target Application Design
 
 **Technology Stack** (after migration):
-[From design.md]
+[From migration-prompt.md - Target Platform and Technologies]
 
-**Architecture Pattern**: [from design.md]
+**Architecture Pattern**: [from migration-prompt.md]
 
 **Key Changes**:
-[List architectural changes from design.md]
+[List architectural changes from migration-prompt.md]
 
 ### Files Changed
 
@@ -823,10 +819,9 @@ project-root/
 │   └── migration-prompt.md
 │
 ├── mig-plan-workspace/        # Planning artifacts
-│   ├── spec.md
-│   ├── design.md
 │   ├── tasks.md
 │   └── UserStory.md
+│   # Note: spec/design in mig-prompt-workspace/migration-prompt.md
 │
 ├── mig-execute-workspace/     # Execution results
 │   ├── EXECUTION_REPORT.md
@@ -844,11 +839,10 @@ project-root/
 ### Key Documents
 1. **Migration Plan**: mig-plan-workspace/tasks.md
 2. **Execution Report**: mig-execute-workspace/EXECUTION_REPORT.md
-3. **Technical Specification**: mig-plan-workspace/spec.md
-4. **Architecture Design**: mig-plan-workspace/design.md
-5. **User Stories**: mig-plan-workspace/UserStory.md
-6. **Codebase Analysis**: graphify-out/GRAPH_REPORT.md
-7. **Orchestration Log**: migiq-workspace/orchestration-log.md
+3. **Migration Prompt (spec + design)**: mig-prompt-workspace/migration-prompt.md
+4. **User Stories**: mig-plan-workspace/UserStory.md
+5. **Codebase Analysis**: graphify-out/GRAPH_REPORT.md
+6. **Orchestration Log**: migiq-workspace/orchestration-log.md
 
 ---
 
@@ -976,10 +970,9 @@ project-root/
 │   └── migration-prompt.md
 │
 ├── mig-plan-workspace/        # Phase 3: Planning
-│   ├── spec.md
-│   ├── design.md
 │   ├── tasks.md
 │   └── UserStory.md
+│   # Note: spec/design in migration-prompt.md (Phase 2)
 │
 ├── mig-execute-workspace/     # Phase 4: Execution
 │   ├── EXECUTION_REPORT.md

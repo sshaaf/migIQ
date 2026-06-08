@@ -11,7 +11,7 @@ This skill automates the execution of migration plans created by the mig-plan sk
 
 When invoked, this skill:
 
-1. **Loads the migration plan** from mig-plan-workspace/ (spec.md, design.md, tasks.md, UserStory.md)
+1. **Loads the migration plan** from mig-plan-workspace/ (tasks.md, UserStory.md) and mig-prompt-workspace/ (migration-prompt.md)
 2. **Parses user stories and tasks** into an executable workflow
 3. **Orchestrates sub-agents** to execute tasks in parallel where dependencies allow
 4. **Tracks progress** by updating checkboxes in plan files and maintaining a detailed execution log
@@ -33,25 +33,27 @@ Use this skill when the user:
 **CRITICAL**: This skill requires mig-plan to have run first. Before proceeding:
 
 1. Check if `mig-plan-workspace/` exists with these files:
-   - `spec.md` - Migration specification
-   - `design.md` - Migration design
    - `tasks.md` - Task breakdown
    - `UserStory.md` - User stories
 
-2. If missing, tell the user: "I need to run mig-plan first to create the migration plan. Should I do that now?"
+2. Check if `mig-prompt-workspace/` exists with:
+   - `migration-prompt.md` - Migration specification and design (from mig-prompt-builder)
 
-3. Optionally check for `graphify-out/` - the knowledge graph helps understand code during execution
+3. If missing, tell the user: "I need to run mig-plan first to create the migration plan. Should I do that now?"
+
+4. Optionally check for `graphify-out/` - the knowledge graph helps understand code during execution
 
 ## Workflow
 
 ### Phase 1: Load and Parse Migration Plan
 
-Read all plan files from `mig-plan-workspace/`:
+Read all plan files:
 
 ```bash
+# Read the migration prompt (contains spec and design)
+cat mig-prompt-workspace/migration-prompt.md
+
 # Read the plan files
-cat mig-plan-workspace/spec.md
-cat mig-plan-workspace/design.md
 cat mig-plan-workspace/tasks.md
 cat mig-plan-workspace/UserStory.md
 ```
@@ -93,8 +95,8 @@ Create the execution log header:
 # Migration Execution Log
 
 **Started**: [timestamp]
-**Migration**: [source → target from spec.md]
-**Plan Version**: [from spec.md]
+**Migration**: [source → target from migration-prompt.md]
+**Plan Version**: [timestamp or version]
 
 ---
 
@@ -186,9 +188,9 @@ For each subtask:
 You are executing a migration task. Here's the context:
 
 **Migration Context**:
-- Source: [from spec.md]
-- Target: [from spec.md]
-- Overall Goal: [from spec.md]
+- Source: [from migration-prompt.md]
+- Target: [from migration-prompt.md]
+- Overall Goal: [from migration-prompt.md]
 
 **Current Task**: [task group title]
 
@@ -196,7 +198,7 @@ You are executing a migration task. Here's the context:
 
 **Code Understanding**: 
 [If needed, include relevant info from graphify-out/GRAPH_REPORT.md]
-[Include relevant code snippets from spec.md]
+[Include relevant context from migration-prompt.md]
 
 **Dependencies**: [list any outputs from previous subtasks]
 
@@ -244,7 +246,7 @@ When encountering integration subtasks (test-gen, containerization, deployment):
    ```
    /skill mig-containerize
    Component: [name]
-   Config: [env vars, secrets, ConfigMaps from design.md]
+   Config: [env vars, secrets, ConfigMaps from migration-prompt.md]
    ```
 3. Validate Dockerfile and config
 4. Mark subtask complete
@@ -619,7 +621,7 @@ cat graphify-out/graph.json | jq '.communities'
 - Only run sequentially when there are actual dependencies
 
 **Provide rich context**:
-- Include relevant spec.md excerpts
+- Include relevant migration-prompt.md excerpts
 - Add code examples from the current codebase
 - Reference graphify insights about structure
 - Pass outputs from previous subtasks

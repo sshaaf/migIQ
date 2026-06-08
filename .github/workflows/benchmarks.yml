@@ -1,0 +1,276 @@
+name: Publish Skill Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'benchmark-results/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  publish-benchmarks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Publish pass rate benchmarks (bigger is better)
+      - name: Publish pass rate benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-prompt-builder-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+        continue-on-error: true
+
+      # Publish duration benchmarks (smaller is better)
+      - name: Publish duration benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-prompt-builder-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+        continue-on-error: true
+
+      # Publish token usage benchmarks (smaller is better)
+      - name: Publish token usage benchmarks
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-prompt-builder-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+        continue-on-error: true
+
+      # mig-graphify
+      - name: Publish mig-graphify pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-graphify-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-graphify-pass-rate.json') != ''
+
+      - name: Publish mig-graphify duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-graphify-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-graphify-duration.json') != ''
+
+      - name: Publish mig-graphify tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-graphify-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-graphify-tokens.json') != ''
+
+      # mig-plan
+      - name: Publish mig-plan pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-plan-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-plan-pass-rate.json') != ''
+
+      - name: Publish mig-plan duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-plan-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-plan-duration.json') != ''
+
+      - name: Publish mig-plan tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-plan-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-plan-tokens.json') != ''
+
+      # mig-execute
+      - name: Publish mig-execute pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-execute-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-execute-pass-rate.json') != ''
+
+      - name: Publish mig-execute duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-execute-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-execute-duration.json') != ''
+
+      - name: Publish mig-execute tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-execute-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-execute-tokens.json') != ''
+
+      # mig-test-gen
+      - name: Publish mig-test-gen pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-test-gen-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-test-gen-pass-rate.json') != ''
+
+      - name: Publish mig-test-gen duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-test-gen-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-test-gen-duration.json') != ''
+
+      - name: Publish mig-test-gen tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-test-gen-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-test-gen-tokens.json') != ''
+
+      # mig-containerize
+      - name: Publish mig-containerize pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-containerize-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-containerize-pass-rate.json') != ''
+
+      - name: Publish mig-containerize duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-containerize-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-containerize-duration.json') != ''
+
+      - name: Publish mig-containerize tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-containerize-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-containerize-tokens.json') != ''
+
+      # mig-deploy
+      - name: Publish mig-deploy pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/mig-deploy-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-deploy-pass-rate.json') != ''
+
+      - name: Publish mig-deploy duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-deploy-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-deploy-duration.json') != ''
+
+      - name: Publish mig-deploy tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/mig-deploy-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/mig-deploy-tokens.json') != ''
+
+      # migiq (orchestrator)
+      - name: Publish migiq pass rates
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark-results/migiq-pass-rate.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/migiq-pass-rate.json') != ''
+
+      - name: Publish migiq duration
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/migiq-duration.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/migiq-duration.json') != ''
+
+      - name: Publish migiq tokens
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: benchmark-results/migiq-tokens.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+        continue-on-error: true
+        if: hashFiles('benchmark-results/migiq-tokens.json') != ''

@@ -1,0 +1,36 @@
+# Don't publish development files
+.git/
+.github/
+.vscode/
+.idea/
+
+# Don't publish test/temp directories
+.cache/
+*.tmp
+*.bak
+.DS_Store
+
+# Don't publish environment files
+.env
+.env.local
+.env.test
+
+# Don't publish CI/CD configs
+.gitlab-ci.yml
+.travis.yml
+
+# Don't publish examples
+examples/
+
+# Don't publish logs
+*.log
+
+# Include .env.example (it's needed)
+!.env.example
+
+# Include all skill and agent directories (even though .gitignore excludes .claude)
+!mig-*/
+!migiq/
+!AGENT.md
+!AGENT_EXAMPLES.md
+!HOW_TO_USE_AGENT.md

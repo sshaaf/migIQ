@@ -59,10 +59,9 @@ your-project/
 │   └── migration-prompt.md
 │
 ├── mig-plan-workspace/        # Detailed planning
-│   ├── spec.md
-│   ├── design.md
 │   ├── tasks.md
 │   └── UserStory.md
+│   # Note: spec/design in migration-prompt.md (Phase 2)
 │
 ├── mig-execute-workspace/     # Implementation results
 │   ├── EXECUTION_REPORT.md

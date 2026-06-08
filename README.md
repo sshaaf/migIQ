@@ -5,6 +5,36 @@
 [![Status](https://img.shields.io/badge/status-ready--for--testing-green)]()
 [![Migration Success](https://img.shields.io/badge/migration-5--phase--orchestration-blue)]()
 [![Platform](https://img.shields.io/badge/platform-OpenShift-red)]()
+[![npm version](https://img.shields.io/npm/v/@sshaaf/migiq)]()
+
+---
+
+## 🚀 Quick Start
+
+Install MigIQ for Claude Code with a single command:
+
+```bash
+# Install to local project .claude directory (recommended)
+npx @sshaaf/migiq
+
+# Or install globally to ~/.claude
+npx @sshaaf/migiq -g
+```
+
+Then in Claude Code:
+```
+/migiq
+"Migrate this Spring Boot app to Quarkus"
+```
+
+Or for autonomous migration:
+```
+Agent({
+  description: "Spring Boot to Quarkus migration",
+  prompt: "Follow AGENT.md. Migrate this Spring Boot application to Quarkus...",
+  subagent_type: "general-purpose"
+})
+```
 
 ---
 
@@ -94,11 +124,13 @@ Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
                   ┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
                   │ mig-graphify  │         │ mig-prompt-      │       │  mig-plan   │
                   │               │         │ builder          │       │             │
-                  │ • Code graph  │ ────►   │                  │ ────► │ • spec.md   │
-                  │ • Dependencies│         │ • Source tech    │       │ • design.md │
-                  │ • Architecture│         │ • Target tech    │       │ • tasks.md  │
-                  │ • Complexity  │         │ • Constraints    │       │ • stories   │
-                  └──────────────-┘         └──────────────────┘       └─────────────┘
+                  │ • Code graph  │ ────►   │                  │ ────► │ • tasks.md  │
+                  │ • Dependencies│         │ • Source tech    │       │ • stories   │
+                  │ • Architecture│         │ • Target tech    │       │             │
+                  │ • Complexity  │         │ • Constraints    │       │ (uses       │
+                  └──────────────-┘         │ • migration-     │       │ migration-  │
+                                            │   prompt.md      │       │ prompt.md)  │
+                                            └──────────────────┘       └─────────────┘
                                                                               │
                                                                               ▼
                   Phase 5: Reporting        Phase 4: Execution
@@ -164,10 +196,9 @@ your-project/
 │   └── migration-prompt.md   # Standardized prompt
 │
 ├── mig-plan-workspace/        # Phase 3: Planning
-│   ├── spec.md              # Current state + target state
-│   ├── design.md            # Architecture design
 │   ├── tasks.md             # Detailed task breakdown
 │   └── UserStory.md         # User stories
+│   # Note: spec/design in migration-prompt.md (Phase 2)
 │
 ├── mig-execute-workspace/     # Phase 4: Execution
 │   ├── EXECUTION_REPORT.md  # Execution results
