@@ -19,6 +19,9 @@
 .gitlab-ci.yml
 .travis.yml
 
+# Don't publish examples
+examples/
+
 # Don't publish logs
 *.log
 
