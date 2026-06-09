@@ -1,0 +1,4 @@
+com/example/demo/model/ProductTest.class
+com/example/demo/service/ProductServiceTest.class
+com/example/demo/controller/ProductControllerTest.class
+com/example/demo/repository/ProductRepositoryTest.class

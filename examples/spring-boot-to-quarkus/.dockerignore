@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+LICENSE
+NOTICE
+docs/
+*.txt
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# Build artifacts (will be built in container)
+target/
+build/
+out/
+bin/
+
+# Testing
+**/test/
+**/*Test.java
+**/*IT.java
+src/test/
+
+# Dependencies (will be downloaded in container)
+.m2/
+.gradle/
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (secrets should not be in image)
+.env
+.env.*
+*.key
+*.pem
+*.crt
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.bak
+
+# Migration artifacts (not needed in container)
+graphify-out/
+mig-plan-workspace/
+mig-execute-workspace/
+mig-prompt-workspace/
+migiq-workspace/
+.claude/
+
+# Container files (don't need these in the build context)
+Dockerfile*
+.dockerignore
+podman-compose.yml
+docker-compose.yml

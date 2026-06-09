@@ -1,0 +1,190 @@
+[{
+  "apiVersion" : "v1",
+  "kind" : "Service",
+  "metadata" : {
+    "annotations" : {
+      "app.openshift.io/vcs-uri" : "<<unknown>>",
+      "app.quarkus.io/quarkus-version" : "3.10.0",
+      "app.quarkus.io/commit-id" : "f1e66211d232efa7365a8458df5861b4015bd421",
+      "app.quarkus.io/vcs-uri" : "https://github.com/sshaaf/migIQ.git",
+      "app.quarkus.io/build-timestamp" : "2026-06-09 - 12:52:19 +0000"
+    },
+    "labels" : {
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0",
+      "app.kubernetes.io/managed-by" : "quarkus",
+      "app.openshift.io/runtime" : "quarkus"
+    },
+    "name" : "quarkus-demo",
+    "namespace" : "migiq-examples"
+  },
+  "spec" : {
+    "ports" : [ {
+      "name" : "http",
+      "port" : 80,
+      "protocol" : "TCP",
+      "targetPort" : 8080
+    } ],
+    "selector" : {
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0"
+    },
+    "type" : "ClusterIP"
+  }
+},{
+  "apiVersion" : "image.openshift.io/v1",
+  "kind" : "ImageStream",
+  "metadata" : {
+    "labels" : {
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0"
+    },
+    "name" : "openjdk-17",
+    "namespace" : "migiq-examples"
+  },
+  "spec" : {
+    "dockerImageRepository" : "registry.access.redhat.com/ubi8/openjdk-17",
+    "lookupPolicy" : {
+      "local" : true
+    }
+  }
+},{
+  "apiVersion" : "image.openshift.io/v1",
+  "kind" : "ImageStream",
+  "metadata" : {
+    "annotations" : {
+      "app.openshift.io/vcs-uri" : "<<unknown>>",
+      "app.quarkus.io/quarkus-version" : "3.10.0",
+      "app.quarkus.io/commit-id" : "f1e66211d232efa7365a8458df5861b4015bd421",
+      "app.quarkus.io/vcs-uri" : "https://github.com/sshaaf/migIQ.git",
+      "app.quarkus.io/build-timestamp" : "2026-06-09 - 12:52:19 +0000"
+    },
+    "labels" : {
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0",
+      "app.kubernetes.io/managed-by" : "quarkus",
+      "app.openshift.io/runtime" : "quarkus"
+    },
+    "name" : "quarkus-demo",
+    "namespace" : "migiq-examples"
+  },
+  "spec" : {
+    "dockerImageRepository" : "image-registry.openshift-image-registry.svc:5000/migiq-examples/spring-boot-to-quarkus",
+    "lookupPolicy" : {
+      "local" : true
+    }
+  }
+},{
+  "apiVersion" : "build.openshift.io/v1",
+  "kind" : "BuildConfig",
+  "metadata" : {
+    "annotations" : {
+      "app.openshift.io/vcs-uri" : "<<unknown>>",
+      "app.quarkus.io/quarkus-version" : "3.10.0",
+      "app.quarkus.io/commit-id" : "f1e66211d232efa7365a8458df5861b4015bd421",
+      "app.quarkus.io/vcs-uri" : "https://github.com/sshaaf/migIQ.git",
+      "app.quarkus.io/build-timestamp" : "2026-06-09 - 12:52:19 +0000"
+    },
+    "labels" : {
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0",
+      "app.kubernetes.io/managed-by" : "quarkus",
+      "app.openshift.io/runtime" : "quarkus"
+    },
+    "name" : "quarkus-demo",
+    "namespace" : "migiq-examples"
+  },
+  "spec" : {
+    "output" : {
+      "to" : {
+        "kind" : "ImageStreamTag",
+        "name" : "quarkus-demo:1.0.0"
+      }
+    },
+    "source" : {
+      "binary" : { }
+    },
+    "strategy" : {
+      "sourceStrategy" : {
+        "from" : {
+          "kind" : "ImageStreamTag",
+          "name" : "openjdk-17:1.18"
+        }
+      }
+    }
+  }
+},{
+  "apiVersion" : "apps/v1",
+  "kind" : "Deployment",
+  "metadata" : {
+    "annotations" : {
+      "app.openshift.io/vcs-uri" : "<<unknown>>",
+      "app.quarkus.io/quarkus-version" : "3.10.0",
+      "app.quarkus.io/commit-id" : "f1e66211d232efa7365a8458df5861b4015bd421",
+      "app.quarkus.io/vcs-uri" : "https://github.com/sshaaf/migIQ.git",
+      "app.quarkus.io/build-timestamp" : "2026-06-09 - 12:52:19 +0000"
+    },
+    "labels" : {
+      "app.kubernetes.io/managed-by" : "quarkus",
+      "app.openshift.io/runtime" : "quarkus",
+      "app.kubernetes.io/name" : "quarkus-demo",
+      "app.kubernetes.io/version" : "1.0.0"
+    },
+    "name" : "quarkus-demo",
+    "namespace" : "migiq-examples"
+  },
+  "spec" : {
+    "replicas" : 2,
+    "selector" : {
+      "matchLabels" : {
+        "app.kubernetes.io/name" : "quarkus-demo",
+        "app.kubernetes.io/version" : "1.0.0"
+      }
+    },
+    "template" : {
+      "metadata" : {
+        "annotations" : {
+          "alpha.image.policy.openshift.io/resolve-names" : "*",
+          "app.openshift.io/vcs-uri" : "<<unknown>>",
+          "app.quarkus.io/quarkus-version" : "3.10.0",
+          "app.quarkus.io/commit-id" : "f1e66211d232efa7365a8458df5861b4015bd421",
+          "app.quarkus.io/vcs-uri" : "https://github.com/sshaaf/migIQ.git",
+          "app.quarkus.io/build-timestamp" : "2026-06-09 - 12:52:19 +0000"
+        },
+        "labels" : {
+          "app.kubernetes.io/managed-by" : "quarkus",
+          "app.openshift.io/runtime" : "quarkus",
+          "app.kubernetes.io/name" : "quarkus-demo",
+          "app.kubernetes.io/version" : "1.0.0"
+        },
+        "namespace" : "migiq-examples"
+      },
+      "spec" : {
+        "containers" : [ {
+          "env" : [ {
+            "name" : "JAVA_APP_JAR",
+            "value" : "/deployments/quarkus-run.jar"
+          } ],
+          "image" : "image-registry.openshift-image-registry.svc:5000/migiq-examples/spring-boot-to-quarkus:latest",
+          "imagePullPolicy" : "Always",
+          "name" : "quarkus-demo",
+          "ports" : [ {
+            "containerPort" : 8080,
+            "name" : "http",
+            "protocol" : "TCP"
+          } ],
+          "resources" : {
+            "limits" : {
+              "cpu" : "500m",
+              "memory" : "512Mi"
+            },
+            "requests" : {
+              "cpu" : "100m",
+              "memory" : "256Mi"
+            }
+          }
+        } ]
+      }
+    }
+  }
+}]
