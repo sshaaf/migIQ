@@ -213,6 +213,8 @@ your-project/
     └── MIGRATION_REPORT.md  # ⭐ Share with stakeholders
 ```
 
+the examples/spring-boot-to-quarkus.tar.gz has an example of a completed migration, deployed to OpenShift.
+
 ## 📚 Documentation
 
 ### Getting Started
@@ -229,78 +231,6 @@ your-project/
 - [mig-prompt-builder/SKILL.md](./mig-prompt-builder/SKILL.md) - Requirements
 - [mig-plan/SKILL.md](./mig-plan/SKILL.md) - Planning
 - [mig-execute/SKILL.md](./mig-execute/SKILL.md) - Execution
-
----
-
-## 🎓 Examples
-
-### Example 1: Spring Boot to Quarkus
-```
-User: "Migrate this Spring Boot app to Quarkus"
-
-MigIQ:
-✅ Analyzed: 42 classes, 15 REST endpoints
-✅ Plan: 47 tasks across 8 user stories
-✅ Executed: 45/47 tasks successful
-✅ Result: Containerized Quarkus app ready for OpenShift
-
-Time: 38 minutes
-Report: migiq-workspace/MIGRATION_REPORT.md
-```
-
-### Example 2: Overnight Java EE Migration
-```
-User: Agent({ ... migrate Java EE to Spring Boot overnight })
-
-Agent (6 hours later):
-✅ Migrated: 80K LOC from Java EE to Spring Boot
-✅ Converted: 52 EJBs to Spring beans
-✅ Tests: 87% coverage
-⚠️ Manual review: 3 stateful EJBs (see report)
-
-Report: migiq-workspace/MIGRATION_REPORT.md
-```
-
-### Example 3: Parallel Microservices Upgrade
-```
-User: [Spawns 5 agents for 5 microservices]
-
-All agents (30 min later):
-✅ user-service: Node 12 → 20 ✅
-✅ product-service: Node 12 → 20 ✅
-✅ order-service: Node 12 → 20 ✅
-✅ notification-service: Node 12 → 20 ✅
-✅ analytics-service: Node 12 → 20 ✅
-
-Total time: 30 minutes (parallel)
-Sequential would take: 2.5 hours
-```
-
----
-
-## 🛡️ Best Practices
-
-### Before Migration
-1. ✅ Commit all changes (git status clean)
-2. ✅ Run existing tests (establish baseline)
-3. ✅ Backup database if applicable
-4. ✅ Review current architecture
-
-### During Migration
-1. ✅ Monitor progress logs
-2. ✅ Review generated plan before execution
-3. ✅ Don't interrupt long-running operations
-4. ✅ Save checkpoints frequently
-
-### After Migration
-1. ✅ Review migration report
-2. ✅ Run full test suite
-3. ✅ Compare performance (before/after)
-4. ✅ Deploy to dev/staging first
-5. ✅ Monitor for issues
-
----
-
 
 
 ### Documentation
