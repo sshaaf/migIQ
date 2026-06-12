@@ -76,9 +76,6 @@ Follow AGENT.md. Migrate from Spring Boot to Quarkus...
 
 ```
 
-See [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md) for 6 complete example prompts.
-
-
 ---
 
 ## 🏗️ Architecture
@@ -219,7 +216,6 @@ the examples/spring-boot-to-quarkus.tar.gz has an example of a completed migrati
 
 ### Getting Started
 - [migiq/README.md](./migiq/README.md) - Skill quick start
-- [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md) - Agent usage examples
 
 ### Deep Dives
 - [migiq/SKILL.md](./migiq/SKILL.md) - Complete orchestration workflow
@@ -252,4 +248,4 @@ For bugs or feature requests, document:
 
 ---
 
-**Ready to migrate?** Start with [migiq/README.md](./migiq/README.md) or [AGENT_EXAMPLES.md](./AGENT_EXAMPLES.md)
+**Ready to migrate?** Start with [migiq/README.md](./migiq/README.md)

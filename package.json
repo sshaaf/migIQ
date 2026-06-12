@@ -33,8 +33,6 @@
     "bin/",
     "install.js",
     "AGENT.md",
-    "AGENT_EXAMPLES.md",
-    "HOW_TO_USE_AGENT.md",
     "mig-graphify/",
     "mig-plan/",
     "mig-prompt-builder/",

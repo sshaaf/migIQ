@@ -102,9 +102,7 @@ async function installMigIQ(isGlobal = false) {
     fs.mkdirSync(agentsDir, { recursive: true });
 
     const agentFiles = [
-      'AGENT.md',
-      'AGENT_EXAMPLES.md',
-      'HOW_TO_USE_AGENT.md'
+      'AGENT.md'
     ];
 
     const migratorDir = path.join(agentsDir, 'migrator');
@@ -165,11 +163,8 @@ Agent({
 })
 \`\`\`
 
-See agents/migrator/AGENT_EXAMPLES.md for complete examples.
-
 ## Documentation
 - Main README: https://github.com/sshaaf/migIQ
-- Agent Examples: agents/migrator/AGENT_EXAMPLES.md
 - Skill Docs: skills/migiq/SKILL.md
 
 ## Version
@@ -210,7 +205,6 @@ NEXT STEPS:
 
 DOCUMENTATION:
   • Quick start: ${targetDir}/README.migiq.md
-  • Agent examples: ${agentsDir}/migrator/AGENT_EXAMPLES.md
   • Full docs: https://github.com/sshaaf/migIQ
 
 Happy migrating! 🚀

@@ -58,7 +58,6 @@ WHAT GETS INSTALLED:
 AFTER INSTALLATION:
   In Claude Code, use:
     /migiq                  - Interactive migration
-    Agent({ ... })          - Autonomous migration (see AGENT_EXAMPLES.md)
 
 DOCUMENTATION:
   https://github.com/sshaaf/migIQ
