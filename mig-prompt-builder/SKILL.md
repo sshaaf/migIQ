@@ -54,6 +54,32 @@ First, ensure we have knowledge about the current application:
    - Data storage technologies
    - Integration points
 
+### Phase 1.5: Migration Skill Detection
+
+Before gathering requirements, check if a pre-built migration skill is available that provides authoritative mapping tables and phased instructions for this specific migration.
+
+1. **Check for installed migration skills:**
+   Check if `.claude/skills/migration-skills.json` exists. If it does, read it and extract the `skills` array.
+
+2. **Match against known technologies:**
+   Using the source technology identified by graphify (Phase 1) and any target technology the user has already mentioned:
+   - Compare against each skill's `source_tech` and `target_tech` fields
+   - Normalize for matching: lowercase both sides, treat hyphens and spaces as equivalent
+   - Strip version suffixes for broad matching (e.g., "Spring Boot" matches `spring-boot-2`, `spring-boot-3`)
+   - If the user specified a version, prefer exact version match over broad match
+   - If multiple skills match (e.g., spring-boot-2-to-3 and spring-boot-3-to-4), present them and ask the user to choose
+
+3. **If a matching skill is found:**
+   - Inform the user: "I found a migration skill for [source] → [target] with authoritative mapping tables and phased instructions. This will significantly improve migration accuracy."
+   - Read the matched skill's SKILL.md to extract:
+     - The ordered phase list (e.g., build-system, code, config, testing, additional, cleanup)
+     - The build tool and build command from `metadata.build_tool`
+     - Whether dual migration paths are supported (look for "two migration paths" or "compatibility" in the description)
+   - Note the matched skill name and path for use in Phase 3
+
+4. **If no matching skill is found:**
+   - Proceed normally. Optionally inform the user: "No pre-built migration skill was found for this migration path. The migration will use general LLM knowledge. You can install migration skills with `npx migiq add <git-url-or-path>`."
+
 ### Phase 2: Gather Migration Requirements
 
 Ask the user targeted questions to understand their migration goals. Don't ask all questions at once - have a conversation.
@@ -94,7 +120,24 @@ Ask the user targeted questions to understand their migration goals. Don't ask a
 
 ### Phase 3: Generate Standardized Migration Prompt
 
-Create a comprehensive migration prompt following this structure:
+Create a comprehensive migration prompt following this structure.
+
+**If a migration skill was matched in Phase 1.5**, prepend the following section at the top of the prompt before "Current Application Summary":
+
+```markdown
+## Migration Skill Reference
+
+**Matched Skill:** [skill name, e.g., spring-boot-to-quarkus]
+**Skill Path:** .claude/skills/[skill-name]
+**Build Command:** [from metadata.build_tool, e.g., mvn compile]
+**Phases:** [comma-separated phase list, e.g., build-system, code, config, testing, additional, cleanup]
+**Language:** [from metadata.language]
+
+This migration has a pre-built skill with authoritative mapping tables (dependency, API, config, pattern)
+and phased module instructions. Downstream planning and execution should use these as ground truth.
+```
+
+Then continue with the standard template:
 
 ```markdown
 # Migration Prompt

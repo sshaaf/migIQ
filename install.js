@@ -216,8 +216,354 @@ Happy migrating! 🚀
   }
 }
 
+/**
+ * Parse YAML frontmatter from a SKILL.md file.
+ * Returns { name, description, metadata: { source, target, language, build_tool, ... } }
+ */
+function parseFrontmatter(filePath) {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return null;
+
+  const block = match[1];
+  const result = { metadata: {} };
+  let inMetadata = false;
+
+  for (const line of block.split('\n')) {
+    if (/^\s*$/.test(line)) continue;
+
+    if (/^metadata:\s*$/.test(line)) {
+      inMetadata = true;
+      continue;
+    }
+
+    const nestedMatch = line.match(/^\s{2}(\w[\w_]*):\s*(.+)$/);
+    if (inMetadata && nestedMatch) {
+      let val = nestedMatch[2].trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      result.metadata[nestedMatch[1]] = val;
+      continue;
+    }
+
+    const topMatch = line.match(/^(\w[\w_-]*):\s*(.+)$/);
+    if (topMatch) {
+      inMetadata = false;
+      let val = topMatch[2].trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      result[topMatch[1]] = val;
+    } else if (!nestedMatch) {
+      inMetadata = false;
+    }
+  }
+
+  return result.name ? result : null;
+}
+
+/**
+ * Scan a directory for migration skills.
+ * Looks for skills/<lang>/<name>/SKILL.md and <name>/SKILL.md patterns.
+ * Skips the generator/ directory.
+ */
+function discoverSkills(sourceDir) {
+  const found = [];
+  const seen = new Set();
+
+  function scanSkillDir(skillDir, skillMdPath) {
+    const fm = parseFrontmatter(skillMdPath);
+    if (!fm || !fm.name) return;
+    if (seen.has(fm.name)) return;
+
+    const coreSkills = ['migiq', 'mig-graphify', 'mig-plan', 'mig-prompt-builder',
+      'mig-execute', 'mig-test-gen', 'mig-containerize', 'mig-deploy'];
+    if (coreSkills.includes(fm.name)) {
+      console.log(`  ⚠️  Skipping "${fm.name}" — name conflicts with core migIQ skill`);
+      return;
+    }
+
+    seen.add(fm.name);
+
+    const modules = [];
+    const modulesDir = path.join(skillDir, 'modules');
+    if (fs.existsSync(modulesDir)) {
+      for (const f of fs.readdirSync(modulesDir)) {
+        if (f.endsWith('.md')) modules.push(f.replace('.md', ''));
+      }
+    }
+
+    const references = [];
+    const refsDir = path.join(skillDir, 'references');
+    if (fs.existsSync(refsDir)) {
+      for (const f of fs.readdirSync(refsDir)) {
+        if (f.endsWith('.md')) references.push(f.replace('.md', ''));
+      }
+    }
+
+    found.push({
+      name: fm.name,
+      sourceTech: (fm.metadata && fm.metadata.source) || null,
+      targetTech: (fm.metadata && fm.metadata.target) || null,
+      language: (fm.metadata && fm.metadata.language) || null,
+      buildTool: (fm.metadata && fm.metadata.build_tool) || null,
+      sourcePath: skillDir,
+      hasModules: modules.length > 0,
+      hasReferences: references.length > 0,
+      modules: modules,
+      references: references
+    });
+  }
+
+  // Pattern 1: skills/<lang>/<name>/SKILL.md (migration-skills repo layout)
+  const skillsDir = path.join(sourceDir, 'skills');
+  if (fs.existsSync(skillsDir)) {
+    for (const lang of fs.readdirSync(skillsDir, { withFileTypes: true })) {
+      if (!lang.isDirectory()) continue;
+      const langDir = path.join(skillsDir, lang.name);
+      for (const skill of fs.readdirSync(langDir, { withFileTypes: true })) {
+        if (!skill.isDirectory()) continue;
+        const skillMd = path.join(langDir, skill.name, 'SKILL.md');
+        if (fs.existsSync(skillMd)) {
+          scanSkillDir(path.join(langDir, skill.name), skillMd);
+        }
+      }
+    }
+  }
+
+  // Pattern 2: <name>/SKILL.md (flat layout, skip generator/)
+  for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name === 'generator' || entry.name === 'skills' || entry.name === 'node_modules' || entry.name === '.git') continue;
+    const skillMd = path.join(sourceDir, entry.name, 'SKILL.md');
+    if (fs.existsSync(skillMd)) {
+      scanSkillDir(path.join(sourceDir, entry.name), skillMd);
+    }
+  }
+
+  return found;
+}
+
+/**
+ * Get the manifest file path
+ */
+function getManifestPath(isGlobal) {
+  return path.join(getTargetDir(isGlobal), 'skills', 'migration-skills.json');
+}
+
+/**
+ * Read the manifest file, or return a default empty manifest
+ */
+function readManifest(isGlobal) {
+  const manifestPath = getManifestPath(isGlobal);
+  if (fs.existsSync(manifestPath)) {
+    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  }
+  return { version: 1, source: null, installed_at: null, skills: [] };
+}
+
+/**
+ * Write the manifest file
+ */
+function writeManifest(isGlobal, manifest) {
+  const manifestPath = getManifestPath(isGlobal);
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+}
+
+/**
+ * Install external migration skills from a local path or git URL
+ */
+async function addExternalSkills(source, isGlobal = false) {
+  const { execSync } = require('child_process');
+  const targetDir = getTargetDir(isGlobal);
+  const scope = isGlobal ? 'global' : 'local';
+  let sourceDir = source;
+  let tmpDir = null;
+
+  console.log(`
+╔══════════════════════════════════════════════════════════════════════╗
+║                  Adding Migration Skills                             ║
+╚══════════════════════════════════════════════════════════════════════╝
+`);
+
+  // Clone from git if source is a URL
+  if (/^(https?:\/\/|git@|git:\/\/)/.test(source)) {
+    tmpDir = path.join(os.tmpdir(), 'migiq-add-' + Date.now());
+    console.log(`📥 Cloning from ${source}...`);
+    try {
+      execSync(`git clone --depth 1 "${source}" "${tmpDir}"`, { stdio: 'pipe' });
+    } catch (err) {
+      console.error(`\n❌ Failed to clone repository: ${err.message}`);
+      throw err;
+    }
+    sourceDir = tmpDir;
+  } else {
+    sourceDir = path.resolve(sourceDir);
+    if (!fs.existsSync(sourceDir)) {
+      throw new Error(`Source directory not found: ${sourceDir}`);
+    }
+  }
+
+  try {
+    console.log(`🔍 Discovering migration skills in ${source}...\n`);
+
+    const skills = discoverSkills(sourceDir);
+
+    if (skills.length === 0) {
+      console.log('  ⚠️  No migration skills found.');
+      console.log('  Expected: skills/<lang>/<name>/SKILL.md or <name>/SKILL.md');
+      return;
+    }
+
+    console.log(`📚 Installing ${skills.length} migration skill(s):\n`);
+
+    const skillsDir = path.join(targetDir, 'skills');
+    fs.mkdirSync(skillsDir, { recursive: true });
+
+    for (const skill of skills) {
+      const destDir = path.join(skillsDir, skill.name);
+      copyDir(skill.sourcePath, destDir);
+
+      const parts = [skill.name];
+      if (skill.sourceTech && skill.targetTech) {
+        parts.push(`(${skill.sourceTech} → ${skill.targetTech})`);
+      }
+      console.log(`  ✅ ${parts.join(' ')}`);
+    }
+
+    // Update manifest
+    const manifest = readManifest(isGlobal);
+    manifest.source = source;
+    manifest.installed_at = new Date().toISOString();
+
+    // Merge skills: update existing, add new
+    for (const skill of skills) {
+      const existing = manifest.skills.findIndex(s => s.name === skill.name);
+      const entry = {
+        name: skill.name,
+        source_tech: skill.sourceTech,
+        target_tech: skill.targetTech,
+        language: skill.language,
+        build_tool: skill.buildTool,
+        has_modules: skill.hasModules,
+        has_references: skill.hasReferences,
+        modules: skill.modules,
+        references: skill.references
+      };
+      if (existing >= 0) {
+        manifest.skills[existing] = entry;
+      } else {
+        manifest.skills.push(entry);
+      }
+    }
+
+    writeManifest(isGlobal, manifest);
+
+    console.log(`
+╔══════════════════════════════════════════════════════════════════════╗
+║                  ✨ Skills Added Successfully! ✨                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+✅ Installed ${skills.length} migration skill(s) to: ${skillsDir}
+✅ Manifest saved to: ${getManifestPath(isGlobal)}
+
+Installation type: ${scope}
+
+These skills will be automatically detected during migration planning
+and execution. Run /migiq to start a migration.
+`);
+
+  } finally {
+    // Clean up temp directory
+    if (tmpDir && fs.existsSync(tmpDir)) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
+}
+
+/**
+ * List installed external migration skills
+ */
+function listExternalSkills(isGlobal = false) {
+  const manifest = readManifest(isGlobal);
+
+  if (manifest.skills.length === 0) {
+    console.log('\nNo migration skills installed.');
+    console.log('Install with: npx migiq add <path-or-git-url>\n');
+    return;
+  }
+
+  console.log(`
+Migration Skills (${isGlobal ? 'global' : 'local'}):
+`);
+
+  // Calculate column widths
+  const nameWidth = Math.max(4, ...manifest.skills.map(s => s.name.length));
+  const migWidth = Math.max(9, ...manifest.skills.map(s =>
+    ((s.source_tech || '?') + ' → ' + (s.target_tech || '?')).length
+  ));
+
+  console.log(
+    '  ' + 'Name'.padEnd(nameWidth + 2) +
+    'Migration'.padEnd(migWidth + 2) +
+    'Language'
+  );
+  console.log('  ' + '─'.repeat(nameWidth + migWidth + 12));
+
+  for (const skill of manifest.skills) {
+    const migration = (skill.source_tech || '?') + ' → ' + (skill.target_tech || '?');
+    console.log(
+      '  ' + skill.name.padEnd(nameWidth + 2) +
+      migration.padEnd(migWidth + 2) +
+      (skill.language || '?')
+    );
+  }
+
+  if (manifest.source) {
+    console.log(`\nSource: ${manifest.source}`);
+  }
+  if (manifest.installed_at) {
+    console.log(`Installed: ${manifest.installed_at}`);
+  }
+  console.log('');
+}
+
+/**
+ * Remove an installed external migration skill
+ */
+function removeExternalSkill(name, isGlobal = false) {
+  const manifest = readManifest(isGlobal);
+  const idx = manifest.skills.findIndex(s => s.name === name);
+
+  if (idx < 0) {
+    console.error(`\n❌ Migration skill "${name}" not found.`);
+    console.log('Run "npx migiq list" to see installed skills.\n');
+    return;
+  }
+
+  const targetDir = getTargetDir(isGlobal);
+  const skillDir = path.join(targetDir, 'skills', name);
+
+  if (fs.existsSync(skillDir)) {
+    fs.rmSync(skillDir, { recursive: true, force: true });
+  }
+
+  manifest.skills.splice(idx, 1);
+  writeManifest(isGlobal, manifest);
+
+  console.log(`\n✅ Removed migration skill "${name}".`);
+  console.log(`  Deleted: ${skillDir}\n`);
+}
+
 // Export for use as module
-module.exports = { installMigIQ };
+module.exports = {
+  installMigIQ,
+  addExternalSkills,
+  listExternalSkills,
+  removeExternalSkill
+};
 
 // Run if called directly (for postinstall hook)
 if (require.main === module) {

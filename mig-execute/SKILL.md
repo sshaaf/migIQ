@@ -58,6 +58,8 @@ cat mig-plan-workspace/tasks.md
 cat mig-plan-workspace/UserStory.md
 ```
 
+**Check for migration skill**: Look for a `## Migration Skill Reference` section in `migration-prompt.md`. If present, extract the skill name, skill path, build command, and phase list. This skill provides authoritative mapping tables and module instructions that will be passed to sub-agents during execution. Store these values for use in Phase 4.
+
 **Parse the structure**:
 
 1. **Extract user stories** from UserStory.md:
@@ -200,6 +202,19 @@ You are executing a migration task. Here's the context:
 [If needed, include relevant info from graphify-out/GRAPH_REPORT.md]
 [Include relevant context from migration-prompt.md]
 
+**Migration Skill Context** (include ONLY if a migration skill was detected in Phase 1):
+- Read the module file for this task's phase: .claude/skills/[skill-name]/modules/[phase].md
+  This contains step-by-step instructions for the migration phase this task belongs to.
+- Read the relevant reference tables from .claude/skills/[skill-name]/references/:
+  - For build-system tasks: dependency-map.md
+  - For code tasks: api-map.md, pattern-map.md
+  - For config tasks: config-map.md
+  - For testing tasks: api-map.md (test-related rows)
+  
+  IMPORTANT: When a mapping table specifies a transformation (e.g., @Autowired → @Inject),
+  use that exact transformation. Do not substitute alternatives from your training data.
+  The mapping tables are curated from official migration guides and are authoritative.
+
 **Dependencies**: [list any outputs from previous subtasks]
 
 **Your Job**:
@@ -263,7 +278,17 @@ When encountering integration subtasks (test-gen, containerization, deployment):
 3. Validate manifests
 4. Mark subtask complete
 
-**Step 4: Update progress**
+**Step 4: Enforce build gates (when migration skill is available)**
+
+If the task group contains a **Build Gate** subtask and a migration skill was detected:
+1. Run the build command from the Migration Skill Reference (e.g., the command from `build_tool` metadata)
+2. If the build succeeds, mark the build gate subtask complete and proceed to the next task group
+3. If the build fails:
+   - Attempt to fix the build errors (up to 3 attempts)
+   - If still failing after 3 attempts, trigger Phase 6 (Failure Handling) with the build errors
+   - Do not proceed to the next phase/task group until the build passes
+
+**Step 5: Update progress**
 
 After each subtask completes:
 

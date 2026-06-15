@@ -211,6 +211,49 @@ If not, you'll need to ask during the mig-prompt-builder phase.
 ---
 ```
 
+### Phase 0.5: Migration Skill Detection
+
+**Goal**: Check if a pre-built migration skill is available for this migration.
+
+**Step 1: Check for installed migration skills**
+
+```bash
+[ -f .claude/skills/migration-skills.json ] && echo "Migration skills installed" || echo "No migration skills"
+```
+
+If the manifest exists, read it and extract the list of available skills.
+
+**Step 2: Attempt early matching**
+
+If the user's request includes source and/or target technology (e.g., "migrate to Quarkus"):
+- Search the manifest's `source_tech` and `target_tech` fields for a match
+- Normalize for comparison: lowercase, treat hyphens/spaces as equivalent, strip version suffixes for broad match
+
+**Step 3: Log the result**
+
+If a skill was matched:
+```markdown
+### Phase 0.5: Migration Skill Detection - MATCHED
+**Skill**: [skill name]
+**Source**: [source_tech] → **Target**: [target_tech]
+**Phases**: [phase list]
+**Build Command**: [build_tool]
+
+This migration will use authoritative mapping tables from the migration skill.
+```
+
+If no match was found:
+```markdown
+### Phase 0.5: Migration Skill Detection - NO MATCH
+No pre-built migration skill found for this migration path.
+Migration will proceed using general LLM knowledge.
+Tip: Install migration skills with `npx migiq add <git-url-or-path>`
+```
+
+**Note**: This detection is informational. Each downstream skill (mig-prompt-builder, mig-plan, mig-execute) independently checks for the migration skill reference and uses it if available. No explicit passing is needed.
+
+---
+
 ### Phase 1: Codebase Analysis (mig-graphify)
 
 **Goal**: Build a comprehensive knowledge graph of the current codebase.
@@ -843,6 +886,27 @@ project-root/
 4. **User Stories**: mig-plan-workspace/UserStory.md
 5. **Codebase Analysis**: graphify-out/GRAPH_REPORT.md
 6. **Orchestration Log**: migiq-workspace/orchestration-log.md
+
+---
+
+## Migration Knowledge Source
+
+[If a migration skill was used during this migration]
+**Migration Skill**: [skill name]
+**Source Repository**: [from manifest source field]
+**Mapping Tables Applied**:
+- Dependency replacements: [count of rows in dependency-map.md]
+- API changes: [count of rows in api-map.md]
+- Config property renames: [count of rows in config-map.md]
+- Pattern transformations: [count of rows in pattern-map.md]
+
+[If no migration skill was used]
+**Migration Knowledge**: General LLM training data
+**Recommendation**: For improved accuracy in future migrations, install curated migration skills:
+```
+npx migiq add https://github.com/savitharaghunathan/migration-skills
+```
+Run `npx migiq list` to see available migration skills.
 
 ---
 

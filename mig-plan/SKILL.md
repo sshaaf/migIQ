@@ -58,6 +58,69 @@ Use this as the foundation for task and story generation instead of creating sep
 
 Create `mig-plan-workspace/tasks.md` with detailed task breakdown.
 
+**First**: Check if `mig-prompt-workspace/migration-prompt.md` contains a `## Migration Skill Reference` section. If it does, extract the skill name, path, and phase list, then follow **Skill-Driven Task Generation** below. Otherwise, follow the standard task generation.
+
+#### Skill-Driven Task Generation
+
+When a migration skill is available, structure task groups around the skill's phases and use its mapping tables as ground truth:
+
+1. **Read the skill's SKILL.md** from the path in the Migration Skill Reference section. Extract the ordered phase list (e.g., build-system, code, config, testing, additional, cleanup).
+
+2. **Create one task group per phase.** For each phase:
+
+   a. **Read the module file** at `.claude/skills/<skill-name>/modules/<phase>.md` — this contains step-by-step instructions for the phase.
+
+   b. **Read the relevant reference tables** at `.claude/skills/<skill-name>/references/`:
+      - **build-system phase**: Read `dependency-map.md`. Create subtasks grouped by logical section (e.g., "Replace Spring Boot starters with Quarkus extensions", "Replace build plugins", "Update database drivers"). Don't create one subtask per row — group related changes.
+      - **code phase**: Read `api-map.md` and `pattern-map.md`. Create subtasks grouped by `kind` (annotations, classes, methods) and by `category` (behavioral, structural). Example: "Replace DI annotations (@Autowired → @Inject, @Component → @ApplicationScoped, etc.)"
+      - **config phase**: Read `config-map.md`. Create subtasks grouped by domain (datasource properties, logging properties, server properties, etc.).
+      - **testing phase**: Read `api-map.md` for test-related rows. Create subtasks for test framework changes.
+      - **additional/cleanup phases**: Read the module file and create subtasks matching its steps.
+
+   c. **Add a build gate subtask** at the end of each task group using the build command from the Migration Skill Reference section (e.g., the `build_tool` metadata value):
+      ```markdown
+      - [ ] N.LAST **Build Gate**: Run the build command — fix all errors before proceeding to next phase
+      ```
+
+   d. **Add a skill reference line** to each task group:
+      ```markdown
+      > **Skill Reference**: `.claude/skills/<skill-name>/modules/<phase>.md` — read for detailed instructions
+      ```
+
+3. **After the skill phases**, append integration task groups as usual:
+   - Test Generation (mig-test-gen)
+   - Containerization (mig-containerize)
+   - Deployment (mig-deploy)
+   - Documentation
+
+4. The resulting tasks.md should have this structure:
+   ```markdown
+   # Migration Tasks
+
+   ## 1. Build System Migration
+   > **Skill Reference**: `.claude/skills/<name>/modules/build-system.md`
+   - [ ] 1.1 [subtasks from dependency-map groupings]
+   - [ ] 1.2 ...
+   - [ ] 1.N **Build Gate**: Run build command from Migration Skill Reference
+
+   ## 2. Code Migration
+   > **Skill Reference**: `.claude/skills/<name>/modules/code.md`
+   - [ ] 2.1 [subtasks from api-map/pattern-map groupings]
+   - [ ] 2.N **Build Gate**: Run build command from Migration Skill Reference
+
+   ## 3. Configuration Migration
+   ## 4. Testing Migration
+   ## 5. Additional Migration
+   ## 6. Cleanup
+   ## 7. Test Generation (mig-test-gen)
+   ## 8. Containerization (mig-containerize)
+   ## 9. Deployment (mig-deploy)
+   ```
+
+#### Standard Task Generation (No Migration Skill)
+
+When no migration skill is referenced, use the existing approach:
+
 **Task Structure**: Group related work into numbered task groups. Each task has subtasks with checkboxes.
 
 **Critical Integration Points**: Every task group MUST include these subtasks:
