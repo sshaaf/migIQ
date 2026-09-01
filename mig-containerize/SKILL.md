@@ -1,23 +1,15 @@
 ---
 name: mig-containerize
-description: Containerize applications for OpenShift using Red Hat UBI images. Use when the user wants to containerize code, deploy to OpenShift, create Dockerfiles, or migrate applications to containers. Triggers on phrases like "containerize this", "create Dockerfile", "deploy to OpenShift", "move to containers", "build container image", or any mention of Docker/Podman/OpenShift deployment. This skill REQUIRES graphify-out/ to exist first - run mig-graphify before using this skill.
+description: Containerize applications for OpenShift using Red Hat UBI images. Use when the user wants to containerize code, deploy to OpenShift, create Dockerfiles, or migrate applications to containers. Triggers on phrases like "containerize this", "create Dockerfile", "deploy to OpenShift", "move to containers", "build container image", or any mention of Docker/Podman/OpenShift deployment. Requires the codebase to be indexed with rgctl first.
 ---
 
 # Application Containerization with Red Hat UBI
 
-This skill containerizes applications for OpenShift using Red Hat Universal Base Images (UBI), with full security hardening and deployment manifest generation. It uses Graphify's knowledge graph to intelligently assess containerization readiness and identify platform-specific dependencies.
+This skill containerizes applications for OpenShift using Red Hat Universal Base Images (UBI), with full security hardening and deployment manifest generation. It uses rgctl's knowledge graph to intelligently assess containerization readiness and identify platform-specific dependencies.
 
 ## Prerequisites
 
-**CRITICAL REQUIREMENT:** This skill requires an existing Graphify knowledge graph.
-
-Before using this skill, ensure `graphify-out/` exists in the codebase directory:
-```bash
-ls graphify-out/
-# Should contain: graph.json, GRAPH_REPORT.md
-```
-
-If the graph doesn't exist, run the mig-graphify skill first to build it.
+**Prerequisite:** Codebase indexed with rgctl. If unsure, invoke the **rgctl** skill and run `rgctl discover .` from the repo root.
 
 ## When to Use This Skill
 
@@ -33,33 +25,22 @@ The graph-driven approach identifies platform dependencies, external services, a
 
 ## Workflow
 
-### Step 1: Verify Graphify Graph Exists
+### Step 1: Ensure rgctl Index Exists
 
-**FIRST STEP - DO NOT SKIP:**
-
-Check for the knowledge graph:
-```bash
-if [ ! -d "graphify-out" ]; then
-  echo "ERROR: graphify-out/ not found. Run mig-graphify skill first."
-  exit 1
-fi
-
-if [ ! -f "graphify-out/GRAPH_REPORT.md" ]; then
-  echo "ERROR: GRAPH_REPORT.md not found. Graph may be incomplete."
-  exit 1
-fi
-```
-
-If the graph doesn't exist, inform the user they need to run graphify first, then STOP. Do not proceed without the graph.
+If `rgctl -f json metrics --pagerank` fails, invoke the **rgctl** skill and run `rgctl discover .`, then STOP.
 
 ### Step 2: Analyze Graph for Containerization Readiness
 
-Read the graph to understand the application's language, dependencies, and platform-specific code.
+Query the graph to understand the application's language, dependencies, and platform-specific code.
 
-**Read graph outputs:**
+**Query graph via rgctl skill:**
 ```bash
-cat graphify-out/GRAPH_REPORT.md
-cat graphify-out/graph.json
+# Language/framework inventory
+rgctl -f json gql "MATCH (n:Function) RETURN n LIMIT 20"
+
+# Hotspots and communities
+rgctl -f json metrics --pagerank --communities
+rgctl -f json communities list
 ```
 
 **Analyze for containerization concerns:**
@@ -77,7 +58,7 @@ This determines which Red Hat UBI base image to use.
 
 Query the graph for external service dependencies:
 ```bash
-jq '.edges[] | select(.type == "USES" or .type == "CONNECTS_TO") | {source: .source, target: .target}' graphify-out/graph.json
+rgctl -f json gql "MATCH (a)-[r:USES|DEPENDSON]->(b) RETURN a,b LIMIT 50"
 ```
 
 Common patterns to look for:
@@ -96,9 +77,9 @@ For each dependency, decide:
 
 Search for containerization blockers:
 
-**File system dependencies:**
+**File system dependencies** — use semantic search or source grep for hardcoded paths:
 ```bash
-jq '.nodes[] | select(.type == "FILE_OPERATION" or .name | contains("File") or .name | contains("Path"))' graphify-out/graph.json
+rgctl -f json semantic query "file path upload storage" --limit 10
 ```
 
 Look for:

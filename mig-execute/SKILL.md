@@ -17,7 +17,7 @@ When invoked, this skill:
 4. **Tracks progress** by updating checkboxes in plan files and maintaining a detailed execution log
 5. **Handles failures** by pausing, presenting options, and waiting for user decisions
 6. **Generates final report** summarizing successes, failures, and next steps
-7. **References code understanding** from mig-graphify output when needed
+7. **References code understanding** from rgctl output when needed
 
 ## When to Use This Skill
 
@@ -41,7 +41,7 @@ Use this skill when the user:
 
 3. If missing, tell the user: "I need to run mig-plan first to create the migration plan. Should I do that now?"
 
-4. Optionally check for `graphify-out/` - the knowledge graph helps understand code during execution
+4. Optionally use the **rgctl** skill during execution for impact analysis
 
 ## Workflow
 
@@ -197,7 +197,7 @@ You are executing a migration task. Here's the context:
 **Subtask to Execute**: [subtask description]
 
 **Code Understanding**: 
-[If needed, include relevant info from graphify-out/GRAPH_REPORT.md]
+[If needed, include relevant info from rgctl metrics / blast-radius queries]
 [Include relevant context from migration-prompt.md]
 
 **Dependencies**: [list any outputs from previous subtasks]
@@ -344,7 +344,7 @@ Stop all remaining tasks. Let currently running parallel sub-agents complete, bu
 
 Read relevant context:
 - The subtask description
-- The code being modified (use graphify if needed)
+- The code being modified (use rgctl if needed)
 - Error messages and logs
 - Previous subtask outputs
 
@@ -593,24 +593,24 @@ Would you like me to:
 
 ## Using Knowledge Graph
 
-Throughout execution, reference `graphify-out/` to understand code:
+Throughout execution, use the **rgctl** skill to understand code:
 
-**When to reference graphify**:
+**When to reference rgctl**:
 - Before modifying code (understand dependencies)
 - When a task fails (analyze what went wrong)
-- When determining impact of changes (who depends on this?)
+- When determining impact of changes (blast-radius)
 - When planning parallel execution (are these truly independent?)
 
 **How to use it**:
 ```bash
-# Quick reference for god nodes (critical dependencies)
-cat graphify-out/GRAPH_REPORT.md | grep -A 10 "God Nodes"
+# Hotspots (critical dependencies)
+rgctl -f json metrics --pagerank
 
-# Understand dependencies for a specific file
-cat graphify-out/graph.json | jq '.edges[] | select(.source == "path/to/file.py")'
+# Impact of changing a symbol
+rgctl -f json blast-radius path/to/Symbol --depth 2
 
-# Check communities (helps identify independent work)
-cat graphify-out/graph.json | jq '.communities'
+# Communities (helps identify independent work)
+rgctl -f json communities list
 ```
 
 ## Sub-Agent Orchestration Best Practices
@@ -623,7 +623,7 @@ cat graphify-out/graph.json | jq '.communities'
 **Provide rich context**:
 - Include relevant migration-prompt.md excerpts
 - Add code examples from the current codebase
-- Reference graphify insights about structure
+- Reference rgctl insights about structure
 - Pass outputs from previous subtasks
 
 **Monitor resource usage**:
@@ -692,7 +692,7 @@ Skill flow:
 
 **Parallelize wisely**: Independent tasks can run in parallel, but be conservative. It's better to run sequentially than to create race conditions.
 
-**Use graphify**: When executing code changes, reference the knowledge graph to understand impact and dependencies.
+**Use rgctl**: When executing code changes, reference the knowledge graph to understand impact and dependencies.
 
 **Track everything**: Log every action, every file change, every decision. The log is invaluable for debugging.
 

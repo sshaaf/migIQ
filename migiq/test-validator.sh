@@ -10,17 +10,10 @@ WARNINGS=0
 
 # Phase 1 outputs
 echo "Phase 1: Codebase Analysis"
-if [ -f "graphify-out/graph.json" ]; then
-    echo "  ✅ graph.json exists"
+if rgctl -f json metrics --pagerank >/dev/null 2>&1; then
+    echo "  ✅ rgctl index responds"
 else
-    echo "  ❌ graph.json missing"
-    ((ERRORS++))
-fi
-
-if [ -f "graphify-out/GRAPH_REPORT.md" ]; then
-    echo "  ✅ GRAPH_REPORT.md exists"
-else
-    echo "  ❌ GRAPH_REPORT.md missing"
+    echo "  ❌ rgctl index not available (run rgctl discover .)"
     ((ERRORS++))
 fi
 echo ""

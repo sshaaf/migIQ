@@ -23,11 +23,7 @@ This skill deploys containerized applications to OpenShift, intelligently managi
    ```
    If not logged in, inform the user to run `oc login <cluster-url>` first.
 
-3. **Graphify output recommended** - For intelligent endpoint testing:
-   ```bash
-   ls graphify-out/
-   # Should contain: graph.json, GRAPH_REPORT.md
-   ```
+3. **rgctl index recommended** - For smarter endpoint testing (run `rgctl discover .` first if needed)
    Not strictly required, but enables smarter health checks.
 
 ## When to Use This Skill
@@ -66,13 +62,13 @@ fi
 echo "✓ Found containerization artifacts"
 ```
 
-**Check for graphify output (optional but recommended):**
+**Check for rgctl index (optional but recommended):**
 ```bash
-if [ -d "graphify-out" ] && [ -f "graphify-out/graph.json" ]; then
-  echo "✓ Found graphify output - will use for endpoint testing"
+if rgctl -f json metrics --pagerank >/dev/null 2>&1; then
+  echo "✓ rgctl index ready - will use for endpoint testing"
   HAS_GRAPH=true
 else
-  echo "⚠ No graphify output found - endpoint testing will be limited"
+  echo "⚠ No rgctl index - endpoint testing will be limited"
   HAS_GRAPH=false
 fi
 ```
@@ -661,16 +657,16 @@ else
 fi
 ```
 
-#### 9.4: Test Important Endpoints (using graphify data)
+#### 9.4: Test Important Endpoints (using rgctl data)
 
-If graphify output is available, use it to identify and test important endpoints:
+If rgctl index is available, use it to identify and test important endpoints:
 
 ```bash
 if [ "$HAS_GRAPH" = "true" ]; then
-  echo "=== Endpoint Testing (from graphify analysis) ==="
+  echo "=== Endpoint Testing (from rgctl analysis) ==="
   
-  # Extract endpoints from graph
-  ENDPOINTS=$(jq -r '.nodes[] | select(.type == "ENDPOINT" or .type == "CONTROLLER" or .name | contains("Controller")) | .name' graphify-out/graph.json 2>/dev/null || echo "")
+  # Extract controllers from graph
+  ENDPOINTS=$(rgctl -f json gql "MATCH (n:Function) WHERE n.name LIKE '*Controller' RETURN n LIMIT 50" | jq -r '.rows[][].node // empty' || echo "")
   
   if [ -n "$ENDPOINTS" ]; then
     echo "Found endpoints from graph analysis:"
@@ -837,11 +833,11 @@ Don't just check if pods are running. Verify:
 - Pod readiness and health
 - Service accessibility
 - Route accessibility
-- Endpoint functionality (using graphify data when available)
+- Endpoint functionality (using rgctl data when available)
 - Dependency connectivity from application pods
 
 **Graph-Driven Testing:**
-Use graphify's knowledge graph to identify important endpoints (controllers, API routes) and test them specifically, rather than just generic health checks.
+Use rgctl's knowledge graph to identify important endpoints (controllers, API routes) and test them specifically, rather than just generic health checks.
 
 **Clear Reporting:**
 Provide detailed deployment reports with:

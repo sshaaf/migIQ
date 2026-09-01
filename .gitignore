@@ -73,6 +73,7 @@ yarn.lock
 
 # Migration output directories (created by skills during execution)
 graphify-out/
+.rgctl/
 
 # Session artifacts
 SESSION_SUMMARY.md

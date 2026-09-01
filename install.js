@@ -3,6 +3,89 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { execSync } = require('child_process');
+
+/**
+ * Check if a CLI command is on PATH
+ */
+function commandExists(cmd) {
+  try {
+    const check = process.platform === 'win32' ? `where ${cmd}` : `which ${cmd}`;
+    execSync(check, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const RGCTL_CANDIDATE_PATHS = [
+  'rgctl',
+  path.join(os.homedir(), '.local', 'bin', 'rgctl'),
+  '/opt/homebrew/bin/rgctl',
+  '/usr/local/bin/rgctl',
+];
+
+/**
+ * Resolve rgctl executable (npm postinstall often omits ~/.local/bin from PATH).
+ */
+function resolveRgctlPath() {
+  for (const candidate of RGCTL_CANDIDATE_PATHS) {
+    if (candidate === 'rgctl') {
+      if (commandExists('rgctl')) {
+        return 'rgctl';
+      }
+      continue;
+    }
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Install rgctl skill via `rgctl install --skill` (see https://github.com/sshaaf/rgctl/docs/installation.md).
+ * Throws if rgctl is missing or install --skill fails.
+ */
+function installRgctlSkill(isGlobal) {
+  const rgctl = resolveRgctlPath();
+  if (!rgctl) {
+    throw new Error(
+      'rgctl CLI is required but not found on PATH.\n' +
+      'Install from https://github.com/sshaaf/rgctl/releases\n' +
+      'Typical location: ~/.local/bin/rgctl\n' +
+      'Then re-run: npm install (or node install.js)'
+    );
+  }
+
+  const cwd = isGlobal ? os.homedir() : process.cwd();
+
+  try {
+    execSync(`"${rgctl}" install --skill`, { cwd, stdio: 'pipe', encoding: 'utf8', shell: true });
+  } catch (error) {
+    const detail = error.stderr?.trim() || error.stdout?.trim() || error.message;
+    throw new Error(
+      `rgctl install --skill failed.\n` +
+      (detail ? `${detail}\n` : '') +
+      'Ensure rgctl is working, then re-run: npm install (or node install.js)'
+    );
+  }
+
+  const skillPaths = [
+    path.join(cwd, '.claude', 'skills', 'rgctl', 'SKILL.md'),
+    path.join(cwd, '.cursor', 'skills', 'rgctl', 'SKILL.md'),
+  ];
+
+  if (!skillPaths.some((p) => fs.existsSync(p))) {
+    throw new Error(
+      'rgctl install --skill completed but rgctl skill was not found.\n' +
+      `Expected one of:\n  ${skillPaths.join('\n  ')}\n` +
+      'Re-run: rgctl install --skill'
+    );
+  }
+
+  console.log('  ✅ rgctl (via rgctl install --skill)');
+}
 
 /**
  * Copy directory recursively
@@ -36,14 +119,14 @@ function copyFile(src, dest) {
 }
 
 /**
- * Get the installation target directory
+ * Installation roots for Claude Code (.claude) and Cursor (.cursor).
  */
-function getTargetDir(isGlobal) {
-  if (isGlobal) {
-    return path.join(os.homedir(), '.claude');
-  } else {
-    return path.join(process.cwd(), '.claude');
-  }
+function getTargetDirs(isGlobal) {
+  const base = isGlobal ? os.homedir() : process.cwd();
+  return [
+    path.join(base, '.claude'),
+    path.join(base, '.cursor'),
+  ];
 }
 
 /**
@@ -51,7 +134,7 @@ function getTargetDir(isGlobal) {
  */
 async function installMigIQ(isGlobal = false) {
   const sourceDir = __dirname;
-  const targetDir = getTargetDir(isGlobal);
+  const targetDirs = getTargetDirs(isGlobal);
   const scope = isGlobal ? 'global' : 'local';
 
   console.log(`
@@ -61,16 +144,20 @@ async function installMigIQ(isGlobal = false) {
 `);
 
   console.log(`📦 Installation mode: ${scope.toUpperCase()}`);
-  console.log(`📂 Target directory: ${targetDir}\n`);
+  console.log('📂 Target directories:');
+  for (const dir of targetDirs) {
+    console.log(`   ${dir}`);
+  }
+  console.log();
 
   try {
-    // Create target directory if it doesn't exist
-    fs.mkdirSync(targetDir, { recursive: true });
+    // rgctl is required — fail before copying anything else
+    console.log('📚 Installing skills:');
+    installRgctlSkill(isGlobal);
 
     // Skills to install
     const skills = [
       'migiq',
-      'mig-graphify',
       'mig-plan',
       'mig-prompt-builder',
       'mig-execute',
@@ -79,62 +166,68 @@ async function installMigIQ(isGlobal = false) {
       'mig-deploy'
     ];
 
-    // Install skills
-    console.log('📚 Installing skills:');
-    const skillsDir = path.join(targetDir, 'skills');
-    fs.mkdirSync(skillsDir, { recursive: true });
+    for (const targetDir of targetDirs) {
+      fs.mkdirSync(targetDir, { recursive: true });
+      const skillsDir = path.join(targetDir, 'skills');
+      fs.mkdirSync(skillsDir, { recursive: true });
+
+      for (const skill of skills) {
+        const srcSkillDir = path.join(sourceDir, skill);
+        const destSkillDir = path.join(skillsDir, skill);
+
+        if (fs.existsSync(srcSkillDir)) {
+          copyDir(srcSkillDir, destSkillDir);
+        }
+      }
+    }
 
     for (const skill of skills) {
       const srcSkillDir = path.join(sourceDir, skill);
-      const destSkillDir = path.join(skillsDir, skill);
-
       if (fs.existsSync(srcSkillDir)) {
-        copyDir(srcSkillDir, destSkillDir);
         console.log(`  ✅ ${skill}`);
       } else {
         console.log(`  ⚠️  ${skill} (not found, skipping)`);
       }
     }
 
-    // Install agent
+    // Install agent (Claude Code; copied to both roots for consistency)
     console.log('\n🤖 Installing agent:');
-    const agentsDir = path.join(targetDir, 'agents');
-    fs.mkdirSync(agentsDir, { recursive: true });
+    const agentFiles = ['AGENT.md'];
+    const envExample = path.join(sourceDir, '.env.example');
 
-    const agentFiles = [
-      'AGENT.md'
-    ];
+    for (const targetDir of targetDirs) {
+      const agentsDir = path.join(targetDir, 'agents');
+      fs.mkdirSync(agentsDir, { recursive: true });
+      const migratorDir = path.join(agentsDir, 'migrator');
+      fs.mkdirSync(migratorDir, { recursive: true });
 
-    const migratorDir = path.join(agentsDir, 'migrator');
-    fs.mkdirSync(migratorDir, { recursive: true });
+      for (const file of agentFiles) {
+        const srcFile = path.join(sourceDir, file);
+        if (fs.existsSync(srcFile)) {
+          copyFile(srcFile, path.join(migratorDir, file));
+        }
+      }
 
-    for (const file of agentFiles) {
-      const srcFile = path.join(sourceDir, file);
-      const destFile = path.join(migratorDir, file);
-
-      if (fs.existsSync(srcFile)) {
-        copyFile(srcFile, destFile);
-        console.log(`  ✅ ${file}`);
+      if (fs.existsSync(envExample)) {
+        copyFile(envExample, path.join(migratorDir, '.env.example'));
       }
     }
 
-    // Copy .env.example if it exists
-    const envExample = path.join(sourceDir, '.env.example');
+    console.log('  ✅ AGENT.md');
     if (fs.existsSync(envExample)) {
-      copyFile(envExample, path.join(migratorDir, '.env.example'));
-      console.log(`  ✅ .env.example`);
+      console.log('  ✅ .env.example');
     }
 
-    // Create a README in the installation directory
+    // Create a README in each installation directory
     const installReadme = `# MigIQ Installation
 
-This directory contains the MigIQ migration platform for Claude Code.
+This directory contains the MigIQ migration platform for Cursor and Claude Code.
 
 ## Installed Components
 
-### Skills (use with /migiq in Claude Code)
+### Skills (use with /migiq in Cursor or Claude Code)
 - **migiq** - Main orchestration skill
-- **mig-graphify** - Code analysis and knowledge graph generation
+- **rgctl** - Code knowledge graph ([rgctl](https://github.com/sshaaf/rgctl) CLI)
 - **mig-prompt-builder** - Migration requirements builder
 - **mig-plan** - Migration planning
 - **mig-execute** - Migration execution
@@ -145,10 +238,15 @@ This directory contains the MigIQ migration platform for Claude Code.
 ### Agent (use with Agent tool in Claude Code)
 - **migrator** - Autonomous migration agent
 
+### Prerequisites
+- **rgctl** CLI from [rgctl](https://github.com/sshaaf/rgctl) (required at install; runs \`rgctl install --skill\`)
+- **Cursor** or **Claude Code** with skills
+- **Node.js** 14+
+
 ## Usage
 
 ### Interactive Mode
-In any Claude Code session:
+In Cursor or Claude Code (restart the IDE after install):
 \`\`\`
 /migiq
 "Migrate this Spring Boot app to Quarkus"
@@ -174,10 +272,12 @@ Installation type: ${scope}
 Installed on: ${new Date().toISOString()}
 `;
 
-    fs.writeFileSync(
-      path.join(targetDir, 'README.migiq.md'),
-      installReadme
-    );
+    for (const targetDir of targetDirs) {
+      fs.writeFileSync(path.join(targetDir, 'README.migiq.md'), installReadme);
+    }
+
+    const skillDirs = targetDirs.map((dir) => path.join(dir, 'skills'));
+    const agentDirs = targetDirs.map((dir) => path.join(dir, 'agents', 'migrator'));
 
     // Success summary
     console.log(`
@@ -185,12 +285,15 @@ Installed on: ${new Date().toISOString()}
 ║                   ✨ Installation Complete! ✨                        ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-✅ Installed 8 skills to: ${skillsDir}
-✅ Installed migrator agent to: ${agentsDir}/migrator
+✅ Installed ${skills.length} MigIQ skills to:
+${skillDirs.map((dir) => `   ${dir}`).join('\n')}
+✅ rgctl skill installed via rgctl CLI
+✅ Installed migrator agent to:
+${agentDirs.map((dir) => `   ${dir}`).join('\n')}
 
 NEXT STEPS:
 
-1. Open Claude Code in your project directory
+1. Restart your editor session (Claude Code: /exit then claude again; Cursor: restart the app)
 
 2. For interactive migration:
    /migiq
@@ -204,7 +307,7 @@ NEXT STEPS:
    })
 
 DOCUMENTATION:
-  • Quick start: ${targetDir}/README.migiq.md
+  • Quick start: ${targetDirs[0]}/README.migiq.md
   • Full docs: https://github.com/sshaaf/migIQ
 
 Happy migrating! 🚀
@@ -212,16 +315,23 @@ Happy migrating! 🚀
 
   } catch (error) {
     console.error('\n❌ Installation failed:', error.message);
-    throw error;
+    process.exit(1);
   }
 }
 
 // Export for use as module
-module.exports = { installMigIQ };
+module.exports = { installMigIQ, installRgctlSkill, resolveRgctlPath };
+
+function parseIsGlobal(argv) {
+  if (process.env.npm_config_global === 'true') {
+    return true;
+  }
+  return argv.includes('-g') || argv.includes('--global');
+}
 
 // Run if called directly (for postinstall hook)
 if (require.main === module) {
-  const isGlobal = process.env.npm_config_global === 'true';
+  const isGlobal = parseIsGlobal(process.argv.slice(2));
   installMigIQ(isGlobal).catch(error => {
     console.error('Installation failed:', error);
     process.exit(1);

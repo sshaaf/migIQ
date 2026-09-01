@@ -30,24 +30,24 @@ USAGE:
   npx @sshaaf/migiq [options]
 
 OPTIONS:
-  -g, --global    Install to global ~/.claude directory
-                  (default: install to local .claude directory)
+  -g, --global    Install to global ~/.claude and ~/.cursor directories
+                  (default: install to local .claude and .cursor)
 
   -h, --help      Show this help message
   -v, --version   Show version number
 
 EXAMPLES:
-  # Install to local project .claude directory
+  # Install to local project (.claude and .cursor)
   npx @sshaaf/migiq
 
-  # Install to global ~/.claude directory
+  # Install globally (~/.claude and ~/.cursor)
   npx @sshaaf/migiq -g
 
 WHAT GETS INSTALLED:
   • Migrator Agent (autonomous mode)
   • /migiq skill (interactive mode)
   • 7 core migration skills:
-    - mig-graphify (code analysis)
+    - rgctl (code knowledge graph, via rgctl install --skill)
     - mig-prompt-builder (requirements)
     - mig-plan (planning)
     - mig-execute (execution)
@@ -55,9 +55,16 @@ WHAT GETS INSTALLED:
     - mig-containerize (containers)
     - mig-deploy (deployment)
 
+PREREQUISITES:
+  • rgctl CLI — https://github.com/sshaaf/rgctl/releases
+  • Cursor or Claude Code with skills
+  • Node.js 14+
+
+  Install fails if rgctl is not on PATH.
+
 AFTER INSTALLATION:
-  In Claude Code, use:
-    /migiq                  - Interactive migration
+  Restart Cursor, then use:
+    /migiq                  - Interactive migration (lowercase)
 
 DOCUMENTATION:
   https://github.com/sshaaf/migIQ

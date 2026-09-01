@@ -58,36 +58,36 @@ jobs:
           fail-on-alert: false
         continue-on-error: true
 
-      # mig-graphify
-      - name: Publish mig-graphify pass rates
+      # rgctl
+      - name: Publish rgctl pass rates
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'customBiggerIsBetter'
-          output-file-path: benchmark-results/mig-graphify-pass-rate.json
+          output-file-path: benchmark-results/rgctl-pass-rate.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
         continue-on-error: true
-        if: hashFiles('benchmark-results/mig-graphify-pass-rate.json') != ''
+        if: hashFiles('benchmark-results/rgctl-pass-rate.json') != ''
 
-      - name: Publish mig-graphify duration
+      - name: Publish rgctl duration
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'customSmallerIsBetter'
-          output-file-path: benchmark-results/mig-graphify-duration.json
+          output-file-path: benchmark-results/rgctl-duration.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
         continue-on-error: true
-        if: hashFiles('benchmark-results/mig-graphify-duration.json') != ''
+        if: hashFiles('benchmark-results/rgctl-duration.json') != ''
 
-      - name: Publish mig-graphify tokens
+      - name: Publish rgctl tokens
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'customSmallerIsBetter'
-          output-file-path: benchmark-results/mig-graphify-tokens.json
+          output-file-path: benchmark-results/rgctl-tokens.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
         continue-on-error: true
-        if: hashFiles('benchmark-results/mig-graphify-tokens.json') != ''
+        if: hashFiles('benchmark-results/rgctl-tokens.json') != ''
 
       # mig-plan
       - name: Publish mig-plan pass rates
