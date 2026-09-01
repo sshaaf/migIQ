@@ -157,6 +157,7 @@ async function installMigIQ(isGlobal = false) {
 
     // Skills to install
     const skills = [
+      'mig-rgctl',
       'migiq',
       'mig-plan',
       'mig-prompt-builder',
@@ -227,7 +228,8 @@ This directory contains the MigIQ migration platform for Cursor and Claude Code.
 
 ### Skills (use with /migiq in Cursor or Claude Code)
 - **migiq** - Main orchestration skill
-- **rgctl** - Code knowledge graph ([rgctl](https://github.com/sshaaf/rgctl) CLI)
+- **mig-rgctl** - MigIQ-specific rgctl analysis (phase commands, artifact checks)
+- **rgctl** - Upstream code knowledge graph ([rgctl](https://github.com/sshaaf/rgctl) CLI, via \`rgctl install --skill\`)
 - **mig-prompt-builder** - Migration requirements builder
 - **mig-plan** - Migration planning
 - **mig-execute** - Migration execution

@@ -14,7 +14,7 @@ def chk(d, patterns):
 
 def grade_orchestrator(d):
     return [
-        {"name": "graphify_analysis", **dict(zip(['passed','evidence'], chk(d, ['graph', 'analysis', 'graphify'])))},
+        {"name": "rgctl_analysis", **dict(zip(['passed','evidence'], chk(d, ['graph', 'analysis', 'rgctl', 'pagerank', 'communities'])))},
         {"name": "migration_plan", **dict(zip(['passed','evidence'], chk(d, ['plan', 'tasks', 'user story'])))},
         {"name": "execution_evidence", **dict(zip(['passed','evidence'], chk(d, ['execution', 'completed', 'migrated'])))},
         {"name": "containerization", **dict(zip(['passed','evidence'], chk(d, ['dockerfile', 'container', 'image'])))},

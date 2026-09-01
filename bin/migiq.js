@@ -46,8 +46,9 @@ EXAMPLES:
 WHAT GETS INSTALLED:
   • Migrator Agent (autonomous mode)
   • /migiq skill (interactive mode)
-  • 7 core migration skills:
-    - rgctl (code knowledge graph, via rgctl install --skill)
+  • 8 core migration skills:
+    - mig-rgctl (MigIQ rgctl workflows — index, validate, query by phase)
+    - rgctl (upstream CLI skill, via rgctl install --skill)
     - mig-prompt-builder (requirements)
     - mig-plan (planning)
     - mig-execute (execution)

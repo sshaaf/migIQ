@@ -11,7 +11,7 @@ This skill helps users create comprehensive, standardized migration prompts for 
 
 When invoked, this skill:
 
-1. **Uses rgctl knowledge output** to understand the current application
+1. **Uses rgctl knowledge output** to understand the current application (via **mig-rgctl** — see [workflow](../mig-rgctl/references/workflow.md))
 2. **Gathers migration requirements** through targeted questions
 3. **Generates a standardized migration prompt** that includes:
    - Current application summary (technologies, architecture, key components)
@@ -40,16 +40,26 @@ Use this skill when:
 
 ### Phase 1: Analyze Current State
 
-First, ensure we have knowledge about the current application:
+First, ensure we have knowledge about the current application. Follow **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md) — section *mig-prompt-builder*).
 
-1. Ensure the codebase is indexed with rgctl (invoke **rgctl** skill if needed)
-2. If not indexed, run `/skill rgctl` and `rgctl discover .`
+1. Ensure the codebase is indexed (invoke **mig-rgctl** if needed)
+2. Validate the index:
+   ```bash
+   rgctl -f json metrics --pagerank
+   rgctl -f json communities list
+   ```
+   If either fails, run Phase 1 discover from mig-rgctl, then STOP.
 3. Query the knowledge graph to understand:
    - Programming languages and frameworks
    - Architecture patterns (monolith, microservices, layered, etc.)
    - Key dependencies and libraries
    - Data storage technologies
    - Integration points
+   - Subsystems (from `communities list`)
+   - Hotspots (from `metrics --pagerank`)
+   - Migration ordering hints (`migration_plan.json` when present)
+
+Full feature → command mapping: [mig-rgctl workflow](../mig-rgctl/references/workflow.md).
 
 ### Phase 2: Gather Migration Requirements
 

@@ -121,7 +121,7 @@ Follow AGENT.md. Migrate from Spring Boot to Quarkus...
                   │         │   Core Migration Skills      │                    │
                   │         ├──────────────────────────────┤                    │
                   │         │                              │                    │
-                  │         │  1. rgctl                │ ← Analysis         │
+                  │         │  1. mig-rgctl            │ ← Analysis         │
                   │         │  2. mig-prompt-builder       │ ← Requirements     │
                   │         │  3. mig-plan                 │ ← Planning         │
                   │         │  4. mig-execute              │ ← Execution        │
@@ -139,7 +139,7 @@ Follow AGENT.md. Migrate from Spring Boot to Quarkus...
 ```
 Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
                   ┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
-                  │ rgctl     │         │ mig-prompt-      │       │  mig-plan   │
+                  │ mig-rgctl │         │ mig-prompt-      │       │  mig-plan   │
                   │               │         │ builder          │       │             │
                   │ • Code graph  │ ────►   │                  │ ────► │ • tasks.md  │
                   │ • Dependencies│         │ • Source tech    │       │ • stories   │
@@ -243,8 +243,8 @@ the examples/spring-boot-to-quarkus.tar.gz has an example of a completed migrati
 - [migiq/TEST_PLAN.md](./migiq/TEST_PLAN.md) - Testing strategy
 
 ### Individual Skills
-- [rgctl docs](https://github.com/sshaaf/rgctl/blob/main/docs/installation.md) — install, daemon modes, agent skill
-- [rgctl skill](https://github.com/sshaaf/rgctl/blob/main/skills/rgctl/SKILL.md) - Code knowledge graph (installed via `rgctl install --skill`)
+- [mig-rgctl workflow](mig-rgctl/references/workflow.md) — MigIQ phase commands, artifact checks, discover flags
+- [rgctl docs](https://github.com/sshaaf/rgctl/blob/main/docs/installation.md) — install, daemon modes, upstream agent skill
 - [mig-prompt-builder/SKILL.md](./mig-prompt-builder/SKILL.md) - Requirements
 - [mig-plan/SKILL.md](./mig-plan/SKILL.md) - Planning
 - [mig-execute/SKILL.md](./mig-execute/SKILL.md) - Execution

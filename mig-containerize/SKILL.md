@@ -7,9 +7,25 @@ description: Containerize applications for OpenShift using Red Hat UBI images. U
 
 This skill containerizes applications for OpenShift using Red Hat Universal Base Images (UBI), with full security hardening and deployment manifest generation. It uses rgctl's knowledge graph to intelligently assess containerization readiness and identify platform-specific dependencies.
 
+**rgctl workflow for this skill:** [mig-rgctl/references/workflow.md](../mig-rgctl/references/workflow.md) — section *mig-containerize*
+
 ## Prerequisites
 
-**Prerequisite:** Codebase indexed with rgctl. If unsure, invoke the **rgctl** skill and run `rgctl discover .` from the repo root.
+**Prerequisite:** Codebase indexed with rgctl via **mig-rgctl**.
+
+1. **Verify index exists** (daemon or in-repo `.rgctl/`):
+   ```bash
+   rgctl -f json metrics --pagerank
+   ```
+   If this fails, invoke **mig-rgctl**, run discover with containerization flags (see workflow), then STOP.
+
+2. **Verify communities** (required for subsystem → container mapping):
+   ```bash
+   rgctl -f json communities list
+   ```
+   If empty, re-run discover with `--with-harmonic` (see mig-rgctl workflow), then STOP.
+
+3. **Artifact note:** With the default daemon, artifacts live under `~/.rgctl/cache/<reponame>/.rgctl/` — an in-repo `.rgctl/` folder is only guaranteed with `rgctl --no-daemon discover .`.
 
 ## When to Use This Skill
 
@@ -25,15 +41,28 @@ The graph-driven approach identifies platform dependencies, external services, a
 
 ## Workflow
 
-### Step 1: Ensure rgctl Index Exists
+### Step 1: Ensure rgctl Index and Communities Exist
 
-If `rgctl -f json metrics --pagerank` fails, invoke the **rgctl** skill and run `rgctl discover .`, then STOP.
+Follow [mig-rgctl workflow — mig-containerize](../mig-rgctl/references/workflow.md#mig-containerize--containerization-readiness).
+
+```bash
+rgctl -f json metrics --pagerank
+rgctl -f json communities list
+```
+
+If `metrics` fails → invoke **mig-rgctl**, run:
+```bash
+rgctl discover . --with-cfg --with-security --with-taint --with-harmonic
+```
+Then STOP until complete.
+
+If `communities list` is empty → re-discover with `--with-harmonic`, then STOP.
 
 ### Step 2: Analyze Graph for Containerization Readiness
 
-Query the graph to understand the application's language, dependencies, and platform-specific code.
+Query the graph per [mig-rgctl workflow](../mig-rgctl/references/workflow.md#mig-containerize--containerization-readiness).
 
-**Query graph via rgctl skill:**
+**Query graph via mig-rgctl** (features → commands in [workflow.md](../mig-rgctl/references/workflow.md)):
 ```bash
 # Language/framework inventory
 rgctl -f json gql "MATCH (n:Function) RETURN n LIMIT 20"

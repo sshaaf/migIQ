@@ -11,7 +11,7 @@ This skill provides end-to-end orchestration for application migration projects.
 
 When invoked, this skill orchestrates the complete migration workflow:
 
-1. **Analysis** (rgctl) - Indexes the codebase and builds a knowledge graph
+1. **Analysis** (mig-rgctl) - Indexes the codebase and builds a knowledge graph
 2. **Requirements** (mig-prompt-builder) - Gathers migration requirements and generates a standardized prompt
 3. **Planning** (mig-plan) - Creates a comprehensive migration plan with tasks and user stories
 4. **Execution** (mig-execute) - Implements the migration plan with automated task execution
@@ -35,7 +35,7 @@ Use this skill when the user wants to:
 - "Help me migrate from Rails to Node.js"
 
 **When NOT to use this skill:**
-- User only wants analysis (use rgctl directly)
+- User only wants analysis (use **mig-rgctl** or **rgctl** directly)
 - User only wants to create a plan (use mig-plan directly)
 - User only wants to execute an existing plan (use mig-execute directly)
 
@@ -234,15 +234,15 @@ Would you like to:
 
 If user chooses to re-analyze or if the index is missing, proceed with analysis.
 
-**Step 2: Invoke rgctl skill**
+**Step 2: Invoke mig-rgctl skill**
 
 Announce to user:
 ```
 🔍 Phase 1/4: Analyzing codebase structure...
-Running rgctl to build knowledge graph.
+Running mig-rgctl to build knowledge graph.
 ```
 
-Follow the **rgctl** skill. For migration workflows, from the **application repo root**:
+Follow **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md) — Phase 1). From the **application repo root**:
 
 ```bash
 # From migiq-workspace, return to the app root first

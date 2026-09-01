@@ -29,10 +29,10 @@ database access using Spring Data JPA. I need it running on OpenShift with all t
 containerization and deployment configs ready.
 ```
 
-**Test Codebase**: Available at `mig-graphify-workspace/iteration-1/eval-1-spring-to-quarkus/`
+**Test Codebase**: `examples/spring-boot-to-quarkus/` (or any Spring Boot sample app)
 
 **Expected Workflow**:
-1. **Phase 1 (Analysis)**: Graphify analyzes Spring Boot code, identifies controllers, repositories, entities
+1. **Phase 1 (Analysis)**: mig-rgctl indexes the Spring Boot code via rgctl, identifies controllers, repositories, entities
 2. **Phase 2 (Requirements)**: Captures target (Quarkus), platform (OpenShift), phased approach
 3. **Phase 3 (Planning)**: Creates migration plan to convert Spring annotations to Quarkus, update dependencies
 4. **Phase 4 (Execution)**: Implements code changes, generates tests, creates container images, produces OpenShift manifests
@@ -118,14 +118,14 @@ EJBs and needs to run on OpenShift eventually.
    ls -l /Users/sshaaf/git/konveyor/migIQ/mig-*/SKILL.md
    ```
 
-2. Verify graphify CLI is available:
+2. Verify rgctl CLI is available:
    ```bash
-   which graphify
-   graphify --version
+   which rgctl
+   rgctl --version
    ```
 
 3. Have permissions configured for:
-   - Running graphify commands
+   - Running rgctl discover and query commands
    - Reading/writing files in test workspace
    - Spawning sub-agents (for mig-execute)
 
@@ -138,8 +138,8 @@ EJBs and needs to run on OpenShift eventually.
    cd migiq-test-run
    
    # Copy Spring Boot test app
-   cp -r ../mig-graphify-workspace/iteration-1/eval-1-spring-to-quarkus/src .
-   cp ../mig-graphify-workspace/iteration-1/eval-1-spring-to-quarkus/pom.xml .
+   cp -r ../examples/spring-boot-to-quarkus/src .
+   cp ../examples/spring-boot-to-quarkus/pom.xml .
    
    # Verify clean state
    ls -la
@@ -161,7 +161,7 @@ EJBs and needs to run on OpenShift eventually.
    The skill will run all 5 phases automatically, pausing only if errors occur.
    
    Expected checkpoints:
-   - ✅ "Phase 1/4: Analyzing codebase..." → graphify runs
+   - ✅ "Phase 1/4: Analyzing codebase..." → mig-rgctl / rgctl discover runs
    - ✅ "Phase 2/4: Gathering requirements..." → may ask clarifying questions
    - ✅ "Phase 3/4: Creating migration plan..." → generates plan files
    - ✅ "Phase 4/4: Executing migration..." → implements changes
@@ -170,8 +170,8 @@ EJBs and needs to run on OpenShift eventually.
 4. **Validate outputs**:
    ```bash
    # Check all expected outputs exist
-   ls -la graphify-out/
-   # Should see: graph.json, GRAPH_REPORT.md, graph.html
+   rgctl -f json metrics --pagerank >/dev/null && echo "rgctl index OK"
+   rgctl -f json communities list | head -20
    
    ls -la mig-prompt-workspace/
    # Should see: migration-prompt.md
@@ -190,9 +190,10 @@ EJBs and needs to run on OpenShift eventually.
 5. **Manual validation checklist**:
    
    **Phase 1 - Codebase Analysis**:
-   - [ ] `graphify-out/graph.json` exists and is valid JSON
-   - [ ] `GRAPH_REPORT.md` mentions Spring Boot components (controllers, repositories)
-   - [ ] Graph statistics (nodes, edges, communities) are reasonable
+   - [ ] `rgctl -f json metrics --pagerank` succeeds
+   - [ ] `rgctl -f json communities list` returns communities
+   - [ ] Migration plan JSON present when `--export-migration-hints` was used (optional)
+   - [ ] Graph statistics (pagerank top nodes, communities) are reasonable
    
    **Phase 2 - Requirements**:
    - [ ] `migration-prompt.md` specifies source as "Spring Boot"
@@ -259,18 +260,18 @@ WARNINGS=0
 
 # Phase 1 outputs
 echo "Phase 1: Codebase Analysis"
-if [ -f "graphify-out/graph.json" ]; then
-    echo "  ✅ graph.json exists"
+if rgctl -f json metrics --pagerank >/dev/null 2>&1; then
+    echo "  ✅ rgctl index responds"
 else
-    echo "  ❌ graph.json missing"
+    echo "  ❌ rgctl index not available (run rgctl discover .)"
     ((ERRORS++))
 fi
 
-if [ -f "graphify-out/GRAPH_REPORT.md" ]; then
-    echo "  ✅ GRAPH_REPORT.md exists"
+if rgctl -f json communities list 2>/dev/null | grep -q community; then
+    echo "  ✅ communities list responds"
 else
-    echo "  ❌ GRAPH_REPORT.md missing"
-    ((ERRORS++))
+    echo "  ⚠️  communities list empty or unavailable"
+    ((WARNINGS++))
 fi
 echo ""
 
@@ -427,7 +428,7 @@ For each test run, capture:
 ## Known Limitations and Edge Cases
 
 ### Permission Prompts
-- **Issue**: The orchestration may pause for permission prompts (especially for graphify, file writes, sub-agents)
+- **Issue**: The orchestration may pause for permission prompts (especially for rgctl, file writes, sub-agents)
 - **Impact**: Interrupts automatic flow
 - **Mitigation**: Pre-configure permissions or run interactively
 
@@ -475,7 +476,7 @@ For each test run, capture:
 # 1. Set up test
 cd /Users/sshaaf/git/konveyor/migIQ
 mkdir -p migiq-test-run && cd migiq-test-run
-cp -r ../mig-graphify-workspace/iteration-1/eval-1-spring-to-quarkus/{src,pom.xml} .
+cp -r ../examples/spring-boot-to-quarkus/{src,pom.xml} .
 
 # 2. Run migiq skill in Claude Code
 # Type: /migiq

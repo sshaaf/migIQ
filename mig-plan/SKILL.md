@@ -35,7 +35,7 @@ Use this skill when the user:
 
 First, ensure you have the knowledge graph:
 
-1. Ensure the codebase is indexed with rgctl (invoke **rgctl** skill if needed)
+1. Ensure the codebase is indexed with rgctl (invoke **mig-rgctl** if needed — see [workflow](../mig-rgctl/references/workflow.md))
 2. Query the knowledge graph to understand:
    - Code structure and dependencies
    - Architectural patterns
@@ -273,8 +273,8 @@ Create `mig-plan-workspace/UserStory.md` that groups tasks into user stories.
 
 When this skill runs, follow these steps in order:
 
-1. **Invoke rgctl** if the repo is not indexed yet
-2. **Query knowledge graph** via rgctl skill
+1. **Invoke mig-rgctl** if the repo is not indexed yet ([workflow](../mig-rgctl/references/workflow.md))
+2. **Query knowledge graph** via mig-rgctl recipes
 3. **Read migration prompt** from mig-prompt-workspace/migration-prompt.md (should already exist from mig-prompt-builder)
    - If migration prompt doesn't exist, prompt the user to run mig-prompt-builder first or provide migration context
 4. **Generate tasks.md** breaking down the migration prompt into actionable work, using knowledge graph for specifics

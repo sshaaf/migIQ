@@ -26,7 +26,7 @@ def check_dir(directory, patterns):
 def grade_eval_1(d):
     r = Path(d)
     return [
-        {"name": "read_graph_outputs", **dict(zip(['passed', 'evidence'], check_dir(d, ['graph.json', 'GRAPH_REPORT', 'graphify'])))},
+        {"name": "queried_rgctl_graph", **dict(zip(['passed', 'evidence'], check_dir(d, ['rgctl', 'pagerank', 'communities', 'metrics', 'blast-radius'])))},
         {"name": "identified_god_nodes", **dict(zip(['passed', 'evidence'], check_dir(d, ['god node', 'high-degree', 'most connected'])))},
         {"name": "assigned_priority_tiers", **dict(zip(['passed', 'evidence'], check_dir(d, ['priority 1', 'priority 2', 'tier', 'high priority'])))},
         {"name": "set_coverage_targets", **dict(zip(['passed', 'evidence'], check_dir(d, ['coverage', '90%', '80%', 'target'])))},

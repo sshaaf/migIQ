@@ -23,7 +23,7 @@ This skill deploys containerized applications to OpenShift, intelligently managi
    ```
    If not logged in, inform the user to run `oc login <cluster-url>` first.
 
-3. **rgctl index recommended** - For smarter endpoint testing (run `rgctl discover .` first if needed)
+3. **rgctl index recommended** - Invoke **mig-rgctl** first ([workflow](../mig-rgctl/references/workflow.md))
    Not strictly required, but enables smarter health checks.
 
 ## When to Use This Skill

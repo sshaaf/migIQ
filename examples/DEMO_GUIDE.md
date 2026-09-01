@@ -133,7 +133,7 @@ cd examples/rails-upgrade
    ```bash
    /migiq "Migrate [from] to [target]"
    ```
-   - MigIQ analyzes with graphify
+   - MigIQ analyzes with mig-rgctl / rgctl
    - Generates migration plan
    - Shows task breakdown
 

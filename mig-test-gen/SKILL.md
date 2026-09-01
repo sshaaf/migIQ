@@ -9,7 +9,7 @@ This skill generates comprehensive test suites using rgctl's knowledge graph to 
 
 ## Prerequisites
 
-**Prerequisite:** Codebase indexed with rgctl. If unsure, invoke the **rgctl** skill and run `rgctl discover .` from the repo root.
+**Prerequisite:** Codebase indexed via **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md#mig-test-gen--mig-deploy)).
 
 ## When to Use This Skill
 
@@ -24,9 +24,14 @@ The graph-driven approach ensures you test what matters, not just hit arbitrary 
 
 ## Workflow
 
-### Step 1: Ensure rgctl Index Exists
+### Step 1: Ensure rgctl Index and Communities Exist
 
-If `rgctl -f json metrics --pagerank` fails, invoke the **rgctl** skill and run `rgctl discover .`, then STOP until indexing completes.
+```bash
+rgctl -f json metrics --pagerank
+rgctl -f json communities list
+```
+
+If either fails, invoke **mig-rgctl**, run discover per [workflow](../mig-rgctl/references/workflow.md), then STOP.
 
 ### Step 2: Analyze Graph to Identify Critical Code
 

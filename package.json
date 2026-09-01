@@ -39,6 +39,7 @@
     "mig-deploy/",
     "mig-test-gen/",
     "mig-containerize/",
+    "mig-rgctl/",
     "migiq/",
     "README.md",
     ".env.example"

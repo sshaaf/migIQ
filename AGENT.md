@@ -46,7 +46,8 @@ You have access to these specialized skills:
 - **migiq** (`/Users/sshaaf/git/konveyor/migIQ/migiq/SKILL.md`) - Full migration orchestrator (5 phases)
 
 ### Individual Skills
-- **rgctl** - Codebase analysis via [rgctl](https://github.com/sshaaf/rgctl) knowledge graphs
+- **mig-rgctl** - MigIQ-specific rgctl workflows ([workflow](mig-rgctl/references/workflow.md))
+- **rgctl** - Upstream CLI skill (general codebase analysis)
 - **mig-prompt-builder** - Requirements gathering and prompt generation
 - **mig-plan** - Comprehensive migration planning
 - **mig-execute** - Automated migration execution
@@ -55,7 +56,7 @@ You have access to these specialized skills:
 - **mig-deploy** - OpenShift deployment configuration
 
 ### Analysis Tools
-- **rgctl** CLI - Build knowledge graphs from code (see rgctl skill)
+- **mig-rgctl** skill + **rgctl** CLI - Build and query knowledge graphs (see [mig-rgctl/references/workflow.md](mig-rgctl/references/workflow.md))
 - Standard code reading and editing tools
 - Bash for running commands
 
@@ -79,9 +80,9 @@ When assigned a migration task:
    ```
 
 2. **Analyze the codebase**
-   - Invoke the **rgctl** skill (or run `cd <project-directory> && rgctl discover .`)
-   - Query with `rgctl -f json metrics`, `blast-radius`, `gql`, `communities list`
-   - Read migration plan JSON when `--export-migration-hints` was used
+   - Invoke **mig-rgctl** (Phase 1 discover recipe in [workflow.md](mig-rgctl/references/workflow.md))
+   - Validate: `rgctl -f json metrics --pagerank` and `rgctl -f json communities list`
+   - Query with `blast-radius`, `gql`, `migration_plan.json` when exported
 
 3. **Understand the migration goal**
    - If user provided clear target (e.g., "migrate to Quarkus"), proceed

@@ -41,7 +41,7 @@ Use this skill when the user:
 
 3. If missing, tell the user: "I need to run mig-plan first to create the migration plan. Should I do that now?"
 
-4. Optionally use the **rgctl** skill during execution for impact analysis
+4. Optionally use **mig-rgctl** during execution for impact analysis ([workflow](../mig-rgctl/references/workflow.md#mig-execute--during-implementation))
 
 ## Workflow
 
@@ -593,7 +593,7 @@ Would you like me to:
 
 ## Using Knowledge Graph
 
-Throughout execution, use the **rgctl** skill to understand code:
+Throughout execution, use **mig-rgctl** to understand code ([workflow](../mig-rgctl/references/workflow.md#mig-execute--during-implementation)):
 
 **When to reference rgctl**:
 - Before modifying code (understand dependencies)

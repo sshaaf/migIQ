@@ -3,27 +3,27 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I need to add test coverage to this Spring Boot application before migrating it to Quarkus. The codebase is in the current directory and I've already run graphify on it (graphify-out/ exists). Can you generate a prioritized test suite focusing on the most critical code first? I'm especially worried about the security and data layer since those are complex.",
-      "expected_output": "Graph-driven test suite with priority tiers. Should identify god nodes from graph, generate comprehensive tests for UserService/PostService (if they're god nodes), create integration tests following graph paths (e.g., Controller→Service→Repository), and provide coverage targets weighted by node degree. Tests should be in JUnit format with proper mocking.",
+      "prompt": "I need to add test coverage to this Spring Boot application before migrating it to Quarkus. The codebase is in the current directory and I've already indexed it with rgctl (rgctl -f json metrics --pagerank works). Can you generate a prioritized test suite focusing on the most critical code first? I'm especially worried about the security and data layer since those are complex.",
+      "expected_output": "Graph-driven test suite with priority tiers. Should identify hotspots from rgctl pagerank/communities, generate comprehensive tests for high-centrality services, create integration tests following call-graph paths (e.g., Controller→Service→Repository), and provide coverage targets weighted by graph metrics. Tests should be in JUnit format with proper mocking.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs (graph.json or GRAPH_REPORT.md)"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph (metrics, communities, gql, or blast-radius)"},
         {"name": "identified_god_nodes", "description": "Agent identified god nodes or high-degree nodes from the graph"},
         {"name": "assigned_priority_tiers", "description": "Agent categorized code into priority tiers (Priority 1/2/3 or similar)"},
         {"name": "set_coverage_targets", "description": "Agent set different coverage requirements based on priority (e.g., 90%+ for god nodes)"},
         {"name": "generated_test_code", "description": "Agent actually wrote test files (JUnit tests for Java code)"},
         {"name": "created_test_report", "description": "Agent created a test suite report or summary"},
-        {"name": "used_graph_metrics", "description": "Agent referenced specific graph metrics (degree, edges, connectivity, etc.)"},
+        {"name": "used_graph_metrics", "description": "Agent referenced specific graph metrics (pagerank, degree, edges, connectivity, etc.)"},
         {"name": "followed_graph_paths", "description": "Agent created integration tests following dependency paths from graph"}
       ]
     },
     {
       "id": 2,
-      "prompt": "We're breaking up our Django monolith and need tests to make sure we don't break anything during the split. I ran graphify already and it showed lots of circular dependencies. Generate tests for the highest-risk code - whatever the graph says is most connected. Focus on characterization tests that lock down current behavior even if it's buggy.",
-      "expected_output": "Characterization test suite prioritized by god nodes from graph analysis. Should identify circular dependency clusters, generate tests that preserve existing behavior (even bugs), create integration tests for coupled modules, and explain which tests to run before/after splitting each module. Tests in pytest format.",
+      "prompt": "We're breaking up our Django monolith and need tests to make sure we don't break anything during the split. I ran rgctl discover already and communities list shows lots of circular dependencies. Generate tests for the highest-risk code - whatever the graph says is most connected. Focus on characterization tests that lock down current behavior even if it's buggy.",
+      "expected_output": "Characterization test suite prioritized by rgctl hotspots. Should identify circular dependency clusters, generate tests that preserve existing behavior (even bugs), create integration tests for coupled modules, and explain which tests to run before/after splitting each module. Tests in pytest format.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs (graph.json or GRAPH_REPORT.md)"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph outputs"},
         {"name": "identified_god_nodes", "description": "Agent identified god nodes or highest-connected modules from graph"},
         {"name": "identified_circular_dependencies", "description": "Agent identified circular dependency clusters from the graph"},
         {"name": "assigned_priority_tiers", "description": "Agent categorized code into priority tiers based on connectivity"},
@@ -35,11 +35,11 @@
     },
     {
       "id": 3,
-      "prompt": "I'm containerizing this Node.js app for OpenShift and want to make sure critical paths are tested before we change anything. The graphify analysis is already done. Can you create tests for the API endpoints and the worker processes? I need to know the test coverage will catch any breaking changes during containerization.",
-      "expected_output": "API and integration test suite based on graph analysis. Should identify REST endpoints as public APIs (95%+ coverage target), generate request/response tests, create integration tests for worker processes, test MongoDB and Redis integration points based on graph dependencies, and provide coverage report showing API coverage meets 95% threshold.",
+      "prompt": "I'm containerizing this Node.js app for OpenShift and want to make sure critical paths are tested before we change anything. The rgctl analysis is already done. Can you create tests for the API endpoints and the worker processes? I need to know the test coverage will catch any breaking changes during containerization.",
+      "expected_output": "API and integration test suite based on rgctl graph analysis. Should identify REST endpoints as public APIs (95%+ coverage target), generate request/response tests, create integration tests for worker processes, test MongoDB and Redis integration points based on graph dependencies, and provide coverage report showing API coverage meets 95% threshold.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs (graph.json or GRAPH_REPORT.md)"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph (metrics, gql, communities)"},
         {"name": "identified_api_endpoints", "description": "Agent identified REST endpoints/controllers as public APIs from graph"},
         {"name": "identified_worker_processes", "description": "Agent identified worker processes from the graph analysis"},
         {"name": "assigned_priority_tiers", "description": "Agent categorized code into priority tiers (APIs as Priority 2, etc.)"},
