@@ -3,11 +3,11 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I need to containerize this Spring Boot application for deployment on OpenShift. It's currently running on a VM and connects to a PostgreSQL database, has file uploads that go to /var/app/uploads, and uses application.properties for configuration. The graph analysis is already done (graphify-out/ exists). Can you create a production-ready container setup with Red Hat UBI images, including the Dockerfile, OpenShift manifests, and security hardening? Make sure database credentials go into secrets and the upload directory becomes a persistent volume.",
+      "prompt": "I need to containerize this Spring Boot application for deployment on OpenShift. It's currently running on a VM and connects to a PostgreSQL database, has file uploads that go to /var/app/uploads, and uses application.properties for configuration. The codebase is already indexed with rgctl (rgctl -f json metrics --pagerank works). Can you create a production-ready container setup with Red Hat UBI images, including the Dockerfile, OpenShift manifests, and security hardening? Make sure database credentials go into secrets and the upload directory becomes a persistent volume.",
       "expected_output": "Complete containerization package: Dockerfile using UBI OpenJDK image, OpenShift manifests (Deployment, Service, Route, ConfigMap, Secret, PVC for uploads, StatefulSet for PostgreSQL), security hardening (non-root, read-only FS, vulnerability scan), podman-compose for local dev, and containerization report documenting graph findings and deployment instructions.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs (graph.json or GRAPH_REPORT.md)"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph (metrics, communities, gql)"},
         {"name": "selected_ubi_image", "description": "Agent selected appropriate Red Hat UBI base image (e.g., ubi9/openjdk-17)"},
         {"name": "generated_dockerfile", "description": "Agent created a Dockerfile"},
         {"name": "dockerfile_multistage", "description": "Dockerfile uses multi-stage build pattern"},
@@ -26,11 +26,11 @@
     },
     {
       "id": 2,
-      "prompt": "We're moving our Django application to OpenShift containers. It uses PostgreSQL for data, Redis for caching, and calls an external payment API. Currently everything is hardcoded in settings.py including the database URL and API keys. I've already run graphify so the analysis exists. Containerize this with Red Hat UBI Python images - I need the database and Redis running in OpenShift too, with all secrets properly secured. Also need a way to test locally with podman.",
+      "prompt": "We're moving our Django application to OpenShift containers. It uses PostgreSQL for data, Redis for caching, and calls an external payment API. Currently everything is hardcoded in settings.py including the database URL and API keys. I've already run rgctl discover so the analysis exists. Containerize this with Red Hat UBI Python images - I need the database and Redis running in OpenShift too, with all secrets properly secured. Also need a way to test locally with podman.",
       "expected_output": "Full containerization: Dockerfile with UBI Python image + gunicorn, OpenShift manifests including StatefulSet for PostgreSQL, Deployment for Redis, ConfigMap for app settings, Secret for database password and API keys, Service and Route for external access, podman-compose with all services for local testing, security scan results, and migration report.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph"},
         {"name": "selected_ubi_python", "description": "Agent selected Red Hat UBI Python image (e.g., ubi9/python-39 or ubi9/python-311)"},
         {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
         {"name": "uses_gunicorn", "description": "Dockerfile includes gunicorn for WSGI server"},
@@ -48,11 +48,11 @@
     },
     {
       "id": 3,
-      "prompt": "I have a Node.js Express API that we want to run on OpenShift. It connects to MongoDB and Redis, has worker processes that handle background jobs, and stores uploaded files locally. The graphify analysis is done. Create container images using Red Hat UBI Node.js, set up the full OpenShift deployment with the database and cache, externalize all the configuration, and make sure it follows security best practices. I need both the OpenShift YAML files and a podman-compose for development.",
+      "prompt": "I have a Node.js Express API that we want to run on OpenShift. It connects to MongoDB and Redis, has worker processes that handle background jobs, and stores uploaded files locally. The rgctl analysis is done. Create container images using Red Hat UBI Node.js, set up the full OpenShift deployment with the database and cache, externalize all the configuration, and make sure it follows security best practices. I need both the OpenShift YAML files and a podman-compose for development.",
       "expected_output": "Containerization artifacts: Dockerfile using UBI Node.js 20 image, OpenShift manifests (Deployment for API and workers, StatefulSet for MongoDB, Deployment for Redis, ConfigMap, Secret, Service, Route), PVC for file uploads, security context with non-root user and read-only filesystem, podman-compose.yml with all services, vulnerability scan report, and detailed deployment guide.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph"},
         {"name": "selected_ubi_nodejs", "description": "Agent selected Red Hat UBI Node.js image (e.g., ubi9/nodejs-18 or ubi9/nodejs-20)"},
         {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
         {"name": "generated_api_deployment", "description": "Agent created Deployment for Express API"},
@@ -71,11 +71,11 @@
     },
     {
       "id": 4,
-      "prompt": "Our legacy Java application on bare metal needs to move to OpenShift. It's a mess - hardcoded Oracle connection strings, writes logs to /opt/app/logs, has scheduled Quartz jobs, and loads properties from /etc/myapp/config.properties. The codebase has been analyzed with graphify already. Containerize it with Red Hat UBI, but we'll use an external managed Oracle database instead of running it in OpenShift. Handle all the platform-specific stuff, make it secure, and give me deployment instructions.",
+      "prompt": "Our legacy Java application on bare metal needs to move to OpenShift. It's a mess - hardcoded Oracle connection strings, writes logs to /opt/app/logs, has scheduled Quartz jobs, and loads properties from /etc/myapp/config.properties. The codebase has been analyzed with rgctl already. Containerize it with Red Hat UBI, but we'll use an external managed Oracle database instead of running it in OpenShift. Handle all the platform-specific stuff, make it secure, and give me deployment instructions.",
       "expected_output": "Containerization package addressing legacy issues: Dockerfile with UBI OpenJDK and multi-stage build, refactored configuration to use ENV variables and ConfigMap, logs redirected to stdout, Quartz jobs configured for container environment, OpenShift manifests with external database reference in Secret, emptyDir volumes for temp/cache, security hardening, podman build and test instructions, and migration report documenting all platform-specific code changes required.",
       "files": [],
       "assertions": [
-        {"name": "read_graph_outputs", "description": "Agent read graphify outputs to identify platform-specific code"},
+        {"name": "queried_rgctl_graph", "description": "Agent queried rgctl graph to identify platform-specific code"},
         {"name": "selected_ubi_openjdk", "description": "Agent selected Red Hat UBI OpenJDK image"},
         {"name": "generated_dockerfile", "description": "Agent created Dockerfile"},
         {"name": "dockerfile_multistage", "description": "Dockerfile uses multi-stage build"},

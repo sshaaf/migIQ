@@ -11,7 +11,7 @@ This skill creates comprehensive, actionable migration plans for application mod
 
 When invoked, this skill:
 
-1. **Analyzes the codebase** using mig-graphify to build a knowledge graph
+1. **Analyzes the codebase** using rgctl to build a knowledge graph
 2. **Uses migration prompt** from mig-prompt-builder as the planning foundation (contains specification and design)
 3. **Produces tasks.md** - granular task breakdown with subtasks
 4. **Generates UserStory.md** - user stories linking tasks to business value
@@ -35,9 +35,8 @@ Use this skill when the user:
 
 First, ensure you have the knowledge graph:
 
-1. Check if `graphify-out/` exists in the project
-2. If not, invoke the `graphify` skill to analyze the codebase
-3. Read the knowledge graph output to understand:
+1. Ensure the codebase is indexed with rgctl (invoke **mig-rgctl** if needed — see [workflow](../mig-rgctl/references/workflow.md))
+2. Query the knowledge graph to understand:
    - Code structure and dependencies
    - Architectural patterns
    - Technology stack
@@ -46,7 +45,7 @@ First, ensure you have the knowledge graph:
 ### Phase 2: Use Migration Prompt as Foundation
 
 The migration prompt from mig-prompt-builder already contains:
-- Current application summary (from graphify analysis)
+- Current application summary (from rgctl analysis)
 - Target platform and technologies
 - Migration approach and strategy
 - Required deliverables (containerization, OpenShift, test coverage)
@@ -274,8 +273,8 @@ Create `mig-plan-workspace/UserStory.md` that groups tasks into user stories.
 
 When this skill runs, follow these steps in order:
 
-1. **Invoke mig-graphify** if graphify-out/ doesn't exist
-2. **Read knowledge graph** from graphify-out/
+1. **Invoke mig-rgctl** if the repo is not indexed yet ([workflow](../mig-rgctl/references/workflow.md))
+2. **Query knowledge graph** via mig-rgctl recipes
 3. **Read migration prompt** from mig-prompt-workspace/migration-prompt.md (should already exist from mig-prompt-builder)
    - If migration prompt doesn't exist, prompt the user to run mig-prompt-builder first or provide migration context
 4. **Generate tasks.md** breaking down the migration prompt into actionable work, using knowledge graph for specifics
@@ -316,7 +315,7 @@ mig-plan-workspace/
 User: "I need to create a migration plan" (after running mig-prompt-builder)
 
 Skill flow:
-1. Check for graphify-out/ (invoke graphify if missing)
+1. Ensure rgctl index exists (invoke rgctl if needed)
 2. Read migration prompt from mig-prompt-workspace/migration-prompt.md
 3. Generate tasks.md with detailed migration tasks based on the prompt and knowledge graph
 4. For each task, invoke integration skills to generate tests, containers, and deployment configs
@@ -331,7 +330,7 @@ Skill flow:
 ## Tips for Success
 
 - **Start with mig-prompt-builder**: Ensure a comprehensive migration prompt exists before planning
-- **Use the knowledge graph**: Don't guess about code structure, read it from graphify output
+- **Use the knowledge graph**: Don't guess about code structure, query it via rgctl
 - **Reference the migration prompt**: All task details should align with the approach defined in the migration prompt
 - **Be specific**: Include actual class names, file paths, and code patterns from the codebase
 - **Consider dependencies**: Order tasks and stories based on technical dependencies

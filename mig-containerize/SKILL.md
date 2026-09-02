@@ -1,23 +1,31 @@
 ---
 name: mig-containerize
-description: Containerize applications for OpenShift using Red Hat UBI images. Use when the user wants to containerize code, deploy to OpenShift, create Dockerfiles, or migrate applications to containers. Triggers on phrases like "containerize this", "create Dockerfile", "deploy to OpenShift", "move to containers", "build container image", or any mention of Docker/Podman/OpenShift deployment. This skill REQUIRES graphify-out/ to exist first - run mig-graphify before using this skill.
+description: Containerize applications for OpenShift using Red Hat UBI images. Use when the user wants to containerize code, deploy to OpenShift, create Dockerfiles, or migrate applications to containers. Triggers on phrases like "containerize this", "create Dockerfile", "deploy to OpenShift", "move to containers", "build container image", or any mention of Docker/Podman/OpenShift deployment. Requires the codebase to be indexed with rgctl first.
 ---
 
 # Application Containerization with Red Hat UBI
 
-This skill containerizes applications for OpenShift using Red Hat Universal Base Images (UBI), with full security hardening and deployment manifest generation. It uses Graphify's knowledge graph to intelligently assess containerization readiness and identify platform-specific dependencies.
+This skill containerizes applications for OpenShift using Red Hat Universal Base Images (UBI), with full security hardening and deployment manifest generation. It uses rgctl's knowledge graph to intelligently assess containerization readiness and identify platform-specific dependencies.
+
+**rgctl workflow for this skill:** [mig-rgctl/references/workflow.md](../mig-rgctl/references/workflow.md) — section *mig-containerize*
 
 ## Prerequisites
 
-**CRITICAL REQUIREMENT:** This skill requires an existing Graphify knowledge graph.
+**Prerequisite:** Codebase indexed with rgctl via **mig-rgctl**.
 
-Before using this skill, ensure `graphify-out/` exists in the codebase directory:
-```bash
-ls graphify-out/
-# Should contain: graph.json, GRAPH_REPORT.md
-```
+1. **Verify index exists** (daemon or in-repo `.rgctl/`):
+   ```bash
+   rgctl -f json metrics --pagerank
+   ```
+   If this fails, invoke **mig-rgctl**, run discover with containerization flags (see workflow), then STOP.
 
-If the graph doesn't exist, run the mig-graphify skill first to build it.
+2. **Verify communities** (required for subsystem → container mapping):
+   ```bash
+   rgctl -f json communities list
+   ```
+   If empty, re-run discover with `--with-harmonic` (see mig-rgctl workflow), then STOP.
+
+3. **Artifact note:** With the default daemon, artifacts live under `~/.rgctl/cache/<reponame>/.rgctl/` — an in-repo `.rgctl/` folder is only guaranteed with `rgctl --no-daemon discover .`.
 
 ## When to Use This Skill
 
@@ -33,33 +41,35 @@ The graph-driven approach identifies platform dependencies, external services, a
 
 ## Workflow
 
-### Step 1: Verify Graphify Graph Exists
+### Step 1: Ensure rgctl Index and Communities Exist
 
-**FIRST STEP - DO NOT SKIP:**
+Follow [mig-rgctl workflow — mig-containerize](../mig-rgctl/references/workflow.md#mig-containerize--containerization-readiness).
 
-Check for the knowledge graph:
 ```bash
-if [ ! -d "graphify-out" ]; then
-  echo "ERROR: graphify-out/ not found. Run mig-graphify skill first."
-  exit 1
-fi
-
-if [ ! -f "graphify-out/GRAPH_REPORT.md" ]; then
-  echo "ERROR: GRAPH_REPORT.md not found. Graph may be incomplete."
-  exit 1
-fi
+rgctl -f json metrics --pagerank
+rgctl -f json communities list
 ```
 
-If the graph doesn't exist, inform the user they need to run graphify first, then STOP. Do not proceed without the graph.
+If `metrics` fails → invoke **mig-rgctl**, run:
+```bash
+rgctl discover . --with-cfg --with-security --with-taint --with-harmonic
+```
+Then STOP until complete.
+
+If `communities list` is empty → re-discover with `--with-harmonic`, then STOP.
 
 ### Step 2: Analyze Graph for Containerization Readiness
 
-Read the graph to understand the application's language, dependencies, and platform-specific code.
+Query the graph per [mig-rgctl workflow](../mig-rgctl/references/workflow.md#mig-containerize--containerization-readiness).
 
-**Read graph outputs:**
+**Query graph via mig-rgctl** (features → commands in [workflow.md](../mig-rgctl/references/workflow.md)):
 ```bash
-cat graphify-out/GRAPH_REPORT.md
-cat graphify-out/graph.json
+# Language/framework inventory
+rgctl -f json gql "MATCH (n:Function) RETURN n LIMIT 20"
+
+# Hotspots and communities
+rgctl -f json metrics --pagerank --communities
+rgctl -f json communities list
 ```
 
 **Analyze for containerization concerns:**
@@ -77,7 +87,7 @@ This determines which Red Hat UBI base image to use.
 
 Query the graph for external service dependencies:
 ```bash
-jq '.edges[] | select(.type == "USES" or .type == "CONNECTS_TO") | {source: .source, target: .target}' graphify-out/graph.json
+rgctl -f json gql "MATCH (a)-[r:USES|DEPENDSON]->(b) RETURN a,b LIMIT 50"
 ```
 
 Common patterns to look for:
@@ -96,9 +106,9 @@ For each dependency, decide:
 
 Search for containerization blockers:
 
-**File system dependencies:**
+**File system dependencies** — use semantic search or source grep for hardcoded paths:
 ```bash
-jq '.nodes[] | select(.type == "FILE_OPERATION" or .name | contains("File") or .name | contains("Path"))' graphify-out/graph.json
+rgctl -f json semantic query "file path upload storage" --limit 10
 ```
 
 Look for:

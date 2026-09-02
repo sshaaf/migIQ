@@ -1,6 +1,6 @@
 ---
 name: mig-prompt-builder
-description: Builds comprehensive, standardized migration prompts for application modernization projects. Use this skill whenever a user mentions wanting to migrate, modernize, or upgrade an application but their request is vague, incomplete, or missing key details. Also trigger when users ask "how do I describe my migration?", "help me plan a migration", or provide minimal migration context. This skill uses mig-graphify knowledge output, gathers requirements, and generates a complete migration prompt ready for mig-plan or other migration tools.
+description: Builds comprehensive, standardized migration prompts for application modernization projects. Use this skill whenever a user mentions wanting to migrate, modernize, or upgrade an application but their request is vague, incomplete, or missing key details. Also trigger when users ask "how do I describe my migration?", "help me plan a migration", or provide minimal migration context. This skill uses rgctl knowledge output, gathers requirements, and generates a complete migration prompt ready for mig-plan or other migration tools.
 ---
 
 # Migration Prompt Builder
@@ -11,7 +11,7 @@ This skill helps users create comprehensive, standardized migration prompts for 
 
 When invoked, this skill:
 
-1. **Uses mig-graphify knowledge output** to understand the current application
+1. **Uses rgctl knowledge output** to understand the current application (via **mig-rgctl** — see [workflow](../mig-rgctl/references/workflow.md))
 2. **Gathers migration requirements** through targeted questions
 3. **Generates a standardized migration prompt** that includes:
    - Current application summary (technologies, architecture, key components)
@@ -40,19 +40,26 @@ Use this skill when:
 
 ### Phase 1: Analyze Current State
 
-First, ensure we have knowledge about the current application:
+First, ensure we have knowledge about the current application. Follow **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md) — section *mig-prompt-builder*).
 
-1. Check if `graphify-out/` exists in the project directory
-2. If not, invoke the `mig-graphify` skill to analyze the codebase:
+1. Ensure the codebase is indexed (invoke **mig-rgctl** if needed)
+2. Validate the index:
+   ```bash
+   rgctl -f json metrics --pagerank
+   rgctl -f json communities list
    ```
-   /skill mig-graphify
-   ```
-3. Once mig-graphify completes (or if graphify-out/ already exists), read the knowledge graph output to understand:
+   If either fails, run Phase 1 discover from mig-rgctl, then STOP.
+3. Query the knowledge graph to understand:
    - Programming languages and frameworks
    - Architecture patterns (monolith, microservices, layered, etc.)
    - Key dependencies and libraries
    - Data storage technologies
    - Integration points
+   - Subsystems (from `communities list`)
+   - Hotspots (from `metrics --pagerank`)
+   - Migration ordering hints (`migration_plan.json` when present)
+
+Full feature → command mapping: [mig-rgctl workflow](../mig-rgctl/references/workflow.md).
 
 ### Phase 2: Gather Migration Requirements
 
@@ -61,7 +68,7 @@ Ask the user targeted questions to understand their migration goals. Don't ask a
 **Essential questions:**
 
 1. **Source Technology**: What are you migrating FROM?
-   - If graphify analysis is clear, confirm: "I see you're using [technology]. Is this what you want to migrate?"
+   - If rgctl analysis is clear, confirm: "I see you're using [technology]. Is this what you want to migrate?"
    - If unclear, ask: "What technology stack are you currently using?"
 
 2. **Target Technology**: What are you migrating TO?
@@ -101,7 +108,7 @@ Create a comprehensive migration prompt following this structure:
 
 ## Current Application Summary
 
-[2-3 paragraph high-level overview based on graphify analysis]
+[2-3 paragraph high-level overview based on rgctl analysis]
 
 **Technology Stack:**
 - [Language/Framework with versions]
@@ -114,7 +121,7 @@ Create a comprehensive migration prompt following this structure:
 - [Integration points]
 
 **Scale:**
-- [Lines of code or component count from graphify]
+- [Lines of code or component count from rgctl]
 - [Number of services/modules]
 - [Team size if known]
 
@@ -198,7 +205,7 @@ Create a comprehensive migration prompt following this structure:
 - [Team skill constraints]
 
 **Risks:**
-- [Technical risks from graphify analysis]
+- [Technical risks from rgctl analysis]
 - [Business risks]
 - [Mitigation strategies]
 
@@ -290,7 +297,7 @@ All migration prompts must request:
 
 ### Large Monolith → Microservices
 
-When graphify shows a large monolith (>50K LOC), emphasize:
+When rgctl shows a large monolith (>50K LOC), emphasize:
 - Phased strangler fig approach
 - Service boundary identification
 - Data decomposition strategy
@@ -406,12 +413,12 @@ The application is a Java EE 7 monolith currently deployed on Oracle WebLogic. A
 
 ## Tips for Success
 
-**Use the knowledge graph**: Don't guess about the current application. Read the mig-graphify output carefully and reflect actual code structure, dependencies, and patterns in the prompt.
+**Use the knowledge graph**: Don't guess about the current application. Query via the rgctl skill and reflect actual code structure, dependencies, and patterns in the prompt.
 
 **Ask clarifying questions**: If the user's input is vague ("migrate my app"), ask specific questions before generating the prompt. Better questions = better prompts = better migration plans.
 
 **Adapt to context**: A startup's migration is different from an enterprise's. Adjust tone and emphasis based on what you learn about the team and organization.
 
-**Be realistic**: If graphify shows a massive codebase and the user says "migrate in 2 weeks", the prompt should acknowledge the timeline is aggressive and recommend a more realistic scope.
+**Be realistic**: If rgctl shows a massive codebase and the user says "migrate in 2 weeks", the prompt should acknowledge the timeline is aggressive and recommend a more realistic scope.
 
 **Preserve user intent**: While standardizing to OpenShift, containerization, and testing, preserve the user's core goals (business drivers, technology preferences, risk tolerance).

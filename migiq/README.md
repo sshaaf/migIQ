@@ -12,7 +12,7 @@ MigIQ is an end-to-end orchestration skill that automates complete application m
 
 When you say **"migrate this app to Quarkus"** (or any target technology), MigIQ automatically:
 
-1. **Analyzes** your codebase using graphify knowledge graphs
+1. **Analyzes** your codebase using [rgctl](https://github.com/sshaaf/rgctl) knowledge graphs
 2. **Gathers** migration requirements through interactive prompts
 3. **Plans** the migration with detailed tasks and user stories
 4. **Executes** the migration plan with automated implementation
@@ -50,9 +50,9 @@ After the orchestration completes, you'll have:
 
 ```
 your-project/
-├── graphify-out/              # Codebase analysis
+├── rgctl index                # Phase 1: Analysis
 │   ├── graph.json
-│   ├── GRAPH_REPORT.md
+│   ├── rgctl metrics / migration plan
 │   └── graph.html
 │
 ├── mig-prompt-workspace/      # Migration requirements
@@ -129,16 +129,16 @@ Duration depends on codebase complexity, migration scope, and target technology.
 
 ## Dependencies
 
-MigIQ orchestrates these skills (must be available):
+**Required:**
+- **rgctl** CLI + skill ([rgctl](https://github.com/sshaaf/rgctl)) — codebase analysis
+- **Cursor** or **Claude Code** with skills
 
-- **mig-graphify** - Codebase analysis and knowledge graph creation
+**Installed by MigIQ:**
 - **mig-prompt-builder** - Migration requirements gathering
 - **mig-plan** - Comprehensive migration planning
 - **mig-execute** - Automated migration execution
 
-Additionally requires:
-- `graphify` CLI tool (for code analysis)
-- Permissions to run bash commands and spawn sub-agents
+**Optional (later phases):** OpenShift CLI (`oc`), Podman/Docker for containerize/deploy.
 
 ## Limitations
 
@@ -150,7 +150,7 @@ Additionally requires:
 ## When NOT to Use This Skill
 
 Use individual skills instead if you:
-- Only want code analysis → use **mig-graphify** directly
+- Only want code analysis → use **rgctl** directly
 - Only want to create a plan → use **mig-plan** directly
 - Only want to execute an existing plan → use **mig-execute** directly
 - Want to explore migration options → use **mig-prompt-builder** directly

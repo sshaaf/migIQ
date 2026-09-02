@@ -1,23 +1,15 @@
 ---
 name: mig-test-gen
-description: Generate prioritized test suites based on Graphify knowledge graph analysis. Use when the user needs to add tests to an existing codebase, especially during migrations or when improving test coverage. Triggers on phrases like "generate tests", "add test coverage", "need tests for migration", "create unit tests", or when preparing a codebase for refactoring/migration. This skill REQUIRES graphify-out/ to exist first.
+description: Generate prioritized test suites based on rgctl knowledge graph analysis. Use when the user needs to add tests to an existing codebase, especially during migrations or when improving test coverage. Triggers on phrases like "generate tests", "add test coverage", "need tests for migration", "create unit tests", or when preparing a codebase for refactoring/migration. Requires the codebase to be indexed with rgctl first.
 ---
 
 # Graph-Driven Test Generation
 
-This skill generates comprehensive test suites using Graphify's knowledge graph to intelligently prioritize which code needs the most testing. By analyzing node degree (connectivity), it focuses testing effort where it matters most: god nodes, public APIs, and critical integration points.
+This skill generates comprehensive test suites using rgctl's knowledge graph to intelligently prioritize which code needs the most testing. By analyzing PageRank, blast-radius, and call-graph connectivity, it focuses testing effort where it matters most: architectural hotspots, public APIs, and critical integration points.
 
 ## Prerequisites
 
-**CRITICAL REQUIREMENT:** This skill requires an existing Graphify knowledge graph.
-
-Before using this skill, ensure `graphify-out/` exists in the codebase directory:
-```bash
-ls graphify-out/
-# Should contain: graph.json, GRAPH_REPORT.md, graph.html
-```
-
-If the graph doesn't exist, you MUST run the mig-graphify skill first to build it.
+**Prerequisite:** Codebase indexed via **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md#mig-test-gen--mig-deploy)).
 
 ## When to Use This Skill
 
@@ -32,47 +24,35 @@ The graph-driven approach ensures you test what matters, not just hit arbitrary 
 
 ## Workflow
 
-### Step 1: Verify Graphify Graph Exists
+### Step 1: Ensure rgctl Index and Communities Exist
 
-**FIRST STEP - DO NOT SKIP:**
-
-Check for the knowledge graph:
 ```bash
-if [ ! -d "graphify-out" ]; then
-  echo "ERROR: graphify-out/ not found. Run mig-graphify skill first."
-  exit 1
-fi
-
-if [ ! -f "graphify-out/GRAPH_REPORT.md" ]; then
-  echo "ERROR: GRAPH_REPORT.md not found. Graph may be incomplete."
-  exit 1
-fi
+rgctl -f json metrics --pagerank
+rgctl -f json communities list
 ```
 
-If the graph doesn't exist, inform the user they need to run graphify first, then STOP. Do not proceed without the graph.
+If either fails, invoke **mig-rgctl**, run discover per [workflow](../mig-rgctl/references/workflow.md), then STOP.
 
 ### Step 2: Analyze Graph to Identify Critical Code
 
-Read the graph summary to understand what needs testing:
+Query the graph to understand what needs testing:
 
 ```bash
-cat graphify-out/GRAPH_REPORT.md
+# Architectural hotspots (Priority 1 test targets)
+rgctl -f json metrics --pagerank --communities
+
+# Community boundaries for integration tests
+rgctl -f json communities list
 ```
 
 Look for:
-- **God Nodes** section - These are your Priority 1 test targets
-- **Communities** section - Helps identify integration test boundaries
-- **Surprising Connections** section - Edge cases that need coverage
+- **PageRank top symbols** — These are your Priority 1 test targets (high connectivity)
+- **Communities** — Helps identify integration test boundaries
+- **High blast-radius symbols** — Edge cases and ripple-effect paths that need coverage
 
-Then read the full graph data:
+Extract callers/callees for a symbol:
 ```bash
-cat graphify-out/graph.json
-```
-
-Extract key metrics:
-```bash
-jq '.nodes[] | select(.degree >= 10) | {name: .name, degree: .degree, type: .type}' graphify-out/graph.json | head -20
-# God nodes - need comprehensive tests
+rgctl -f json gql "MATCH (a:Function)-[:CALLS]->(b:Function) WHERE b.name = 'ClassName' RETURN a,b LIMIT 20"
 ```
 
 ### Step 3: Categorize Code by Test Priority
@@ -119,7 +99,7 @@ Work through the priority tiers from highest to lowest.
 
 1. **Determine dependencies from graph:**
    ```bash
-   jq '.edges[] | select(.source == "ClassName") | {target: .target, type: .type}' graphify-out/graph.json
+   rgctl -f json gql "MATCH (a:Function)-[:CALLS]->(b:Function) WHERE a.name = 'ClassName' RETURN a,b LIMIT 20"
    # Know what to mock
    ```
 
@@ -165,14 +145,14 @@ Work through the priority tiers from highest to lowest.
 For integration tests, use the graph to understand end-to-end flows:
 
 ```bash
-jq '.nodes[] | select(.type == "Controller")' graphify-out/graph.json
+rgctl -f json gql "MATCH (n:Function) WHERE n.name LIKE '*Controller' RETURN n LIMIT 50"
 # Find all controllers (entry points)
 ```
 
 For each controller, trace the dependency path:
 ```bash
-# Manually trace from graph.json or GRAPH_REPORT.md
-# Example: UserController → UserService → UserRepository → Database
+rgctl -f json gql "MATCH (a:Function)-[:CALLS*1..3]->(b:Function) WHERE a.name = 'UserController' RETURN a,b LIMIT 50"
+# Example: UserController → UserService → UserRepository
 ```
 
 Generate integration tests that follow these paths:

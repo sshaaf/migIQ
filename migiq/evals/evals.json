@@ -7,7 +7,7 @@
       "prompt": "Migrate this Spring Boot application to Quarkus. The app is a simple REST API with database access using Spring Data JPA. I need it running on OpenShift with all the containerization and deployment configs ready.",
       "expected_output": "Complete migration from Spring Boot to Quarkus including: analysis report, migration plan with tasks, executed migration with code changes, containerization, deployment manifests for OpenShift, and final comprehensive migration report.",
       "files": [],
-      "codebase_path": "../mig-graphify-workspace/iteration-1/eval-1-spring-to-quarkus",
+      "codebase_path": "../examples/spring-boot-to-quarkus",
       "assertions": []
     },
     {
@@ -23,7 +23,7 @@
       "id": 3,
       "name": "java-ee-to-spring-boot",
       "prompt": "Migrate this Java EE application to Spring Boot. It's a legacy monolith with EJBs and needs to run on OpenShift eventually.",
-      "expected_output": "Full migration orchestration from Java EE to Spring Boot including: graphify analysis of EJB structure, requirements gathering, comprehensive migration plan handling EJB to Spring conversion, execution of migration tasks, containerization, OpenShift deployment, and final report.",
+      "expected_output": "Full migration orchestration from Java EE to Spring Boot including: rgctl/mig-rgctl analysis of EJB structure, requirements gathering, comprehensive migration plan handling EJB to Spring conversion, execution of migration tasks, containerization, OpenShift deployment, and final report.",
       "files": [],
       "codebase_path": null,
       "assertions": []

@@ -1,6 +1,6 @@
 ---
 name: migiq
-description: Complete end-to-end application migration orchestrator. Use this skill whenever the user wants to migrate, modernize, or port their entire application from one technology stack to another. This skill automatically orchestrates the full migration workflow from analysis to execution. Trigger when users say "migrate this app", "migrate to [technology]", "modernize this application", "port to [framework]", or simply "migrate". This is the primary entry point for any complete migration - it runs mig-graphify for analysis, mig-prompt-builder for requirements, mig-plan for planning, mig-execute for implementation, and generates a comprehensive final report.
+description: Complete end-to-end application migration orchestrator. Use this skill whenever the user wants to migrate, modernize, or port their entire application from one technology stack to another. This skill automatically orchestrates the full migration workflow from analysis to execution. Trigger when users say "migrate this app", "migrate to [technology]", "modernize this application", "port to [framework]", or simply "migrate". This is the primary entry point for any complete migration - it runs rgctl for analysis, mig-prompt-builder for requirements, mig-plan for planning, mig-execute for implementation, and generates a comprehensive final report.
 ---
 
 # MigIQ: Complete Migration Orchestrator
@@ -11,7 +11,7 @@ This skill provides end-to-end orchestration for application migration projects.
 
 When invoked, this skill orchestrates the complete migration workflow:
 
-1. **Analysis** (mig-graphify) - Analyzes the codebase and builds a knowledge graph
+1. **Analysis** (mig-rgctl) - Indexes the codebase and builds a knowledge graph
 2. **Requirements** (mig-prompt-builder) - Gathers migration requirements and generates a standardized prompt
 3. **Planning** (mig-plan) - Creates a comprehensive migration plan with tasks and user stories
 4. **Execution** (mig-execute) - Implements the migration plan with automated task execution
@@ -35,7 +35,7 @@ Use this skill when the user wants to:
 - "Help me migrate from Rails to Node.js"
 
 **When NOT to use this skill:**
-- User only wants analysis (use mig-graphify directly)
+- User only wants analysis (use **mig-rgctl** or **rgctl** directly)
 - User only wants to create a plan (use mig-plan directly)
 - User only wants to execute an existing plan (use mig-execute directly)
 
@@ -115,7 +115,7 @@ Agent({
   - Approach: [phased/big bang based on user input or analysis]
   
   Follow the migiq skill workflow (5 phases):
-  1. Run mig-graphify for codebase analysis
+  1. Run rgctl for codebase analysis
   2. Use mig-prompt-builder for requirements (use the requirements above)
   3. Run mig-plan to create migration plan
   4. Execute via mig-execute
@@ -153,7 +153,7 @@ working on other things - the agent will update you on major milestones.
 - A codebase to migrate (current working directory should be the project root)
 
 **Optional:**
-- Existing graphify-out/ directory (if not present, will be created)
+- Existing rgctl index for the repo (invoke **rgctl** skill / `rgctl discover .` if not indexed)
 - Existing migration plan (if present, will ask user if they want to use it or create new)
 
 ## Workflow
@@ -170,7 +170,6 @@ pwd
 ls -la
 
 # Check for existing migration artifacts
-[ -d graphify-out ] && echo "graphify-out exists" || echo "graphify-out missing"
 [ -d mig-plan-workspace ] && echo "mig-plan-workspace exists" || echo "mig-plan-workspace missing"
 [ -d mig-execute-workspace ] && echo "mig-execute-workspace exists" || echo "mig-execute-workspace missing"
 ```
@@ -211,22 +210,21 @@ If not, you'll need to ask during the mig-prompt-builder phase.
 ---
 ```
 
-### Phase 1: Codebase Analysis (mig-graphify)
+### Phase 1: Codebase Analysis (rgctl)
 
 **Goal**: Build a comprehensive knowledge graph of the current codebase.
 
-**Step 1: Check for existing graphify output**
+**Step 1: Check for existing rgctl index**
+
+Run from the **application repo root** (where source code lives):
 
 ```bash
-if [ -d ../graphify-out ]; then
-    echo "Found existing graphify-out/"
-    echo "Last modified: $(stat -f %Sm ../graphify-out)"
-else
-    echo "No existing graphify output found"
-fi
+rgctl -f json metrics --pagerank
 ```
 
-If graphify-out exists and is recent (< 1 day old), ask user:
+If that fails, the repo is not indexed yet. With the default daemon, artifacts live under `~/.rgctl/cache/` — an in-repo `.rgctl/` folder is normal only with `--no-daemon`.
+
+If an index exists and is recent (< 1 day old), ask user:
 ```
 I found existing codebase analysis from [timestamp]. 
 Would you like to:
@@ -234,35 +232,38 @@ Would you like to:
 2. Re-analyze codebase (recommended if code changed)
 ```
 
-If user chooses to re-analyze or if graphify-out doesn't exist, proceed with analysis.
+If user chooses to re-analyze or if the index is missing, proceed with analysis.
 
-**Step 2: Invoke mig-graphify**
+**Step 2: Invoke mig-rgctl skill**
 
 Announce to user:
 ```
 🔍 Phase 1/4: Analyzing codebase structure...
-Running mig-graphify to build knowledge graph.
+Running mig-rgctl to build knowledge graph.
 ```
 
-Run the graphify skill:
-```bash
-cd ..  # Return to project root
-graphify update .
-```
-
-Wait for completion. Graphify runs offline with no API calls.
-
-**Step 3: Validate graphify output**
+Follow **mig-rgctl** ([workflow](../mig-rgctl/references/workflow.md) — Phase 1). From the **application repo root**:
 
 ```bash
-# Verify outputs were created
-[ -f graphify-out/graph.json ] && echo "✅ graph.json created" || echo "❌ graph.json missing"
-[ -f graphify-out/GRAPH_REPORT.md ] && echo "✅ GRAPH_REPORT.md created" || echo "❌ GRAPH_REPORT.md missing"
+# From migiq-workspace, return to the app root first
+cd ..
 
-# Get basic stats
-echo "Graph Statistics:"
-cat graphify-out/GRAPH_REPORT.md | grep -E "Total (Nodes|Edges|Communities)"
+rgctl discover . --with-cfg --with-security --with-taint \
+  --with-dashboard --with-harmonic --export-migration-hints
 ```
+
+Do **not** use `rgctl -r PATH discover .` — the `.` ignores `-r` and indexes the wrong directory.
+
+Wait for completion. rgctl runs offline with no API calls.
+
+**Step 3: Validate rgctl output**
+
+```bash
+rgctl -f json metrics --pagerank --communities | jq '.pagerank.top[:5], .communities // empty'
+rgctl -f json gql --macro-name all_communities unused
+```
+
+Migration plan (when exported): under the rgctl artifact root — `migration_plan.json` or `dashboard/migration_plan.json` (daemon cache: `~/.rgctl/cache/<reponame>/.rgctl/`).
 
 **Step 4: Log completion**
 
@@ -271,25 +272,24 @@ Update orchestration-log.md:
 ### Phase 1: Codebase Analysis - COMPLETED
 **Duration**: [time]
 **Outputs**:
-- graphify-out/graph.json
-- graphify-out/GRAPH_REPORT.md
-- graphify-out/graph.html
+- rgctl graph index (daemon cache or `.rgctl/` with `--no-daemon`)
+- migration plan JSON when `--export-migration-hints` was used
 
 **Statistics**:
-- Nodes: [count]
-- Edges: [count]
-- Communities: [count]
+- Files indexed: [from discover metrics]
+- Nodes/Edges: [from discover metrics]
+- Communities: [from communities list]
 
 ---
 ```
 
 Announce to user:
 ```
-✅ Phase 1 complete: Analyzed [X] files, [Y] dependencies, [Z] communities
+✅ Phase 1 complete: Indexed [X] files, [Y] edges, [Z] communities
 ```
 
 **On Failure:**
-If graphify fails, stop orchestration and report:
+If rgctl discover fails, stop orchestration and report:
 ```
 ❌ Phase 1 failed: Codebase analysis error
 
@@ -317,7 +317,7 @@ Running mig-prompt-builder to create comprehensive migration prompt.
 **Step 2: Invoke mig-prompt-builder**
 
 The mig-prompt-builder skill will:
-- Read the graphify-out/ analysis
+- Read rgctl analysis (via **rgctl** skill queries)
 - Ask the user about target technology (if not already known)
 - Gather migration approach, timeline, team context, risk tolerance
 - Generate a standardized migration prompt
@@ -421,7 +421,7 @@ MIGRATION_PROMPT=$(cat mig-prompt-workspace/migration-prompt.md)
 ```
 
 The mig-plan skill will:
-- Use the graphify analysis from Phase 1
+- Use the rgctl analysis from Phase 1
 - Use the migration prompt from Phase 2
 - Generate comprehensive planning documents
 - Invoke integration skills (mig-test-gen, mig-containerize, mig-deploy) as needed
@@ -617,7 +617,7 @@ Synthesizing results from all phases.
 **Step 2: Collect data from all phases**
 
 Read outputs from all phases:
-- graphify-out/GRAPH_REPORT.md
+- rgctl metrics and migration plan
 - mig-prompt-workspace/migration-prompt.md
 - mig-plan-workspace/*.md
 - mig-execute-workspace/EXECUTION_REPORT.md
@@ -665,13 +665,13 @@ Create `migiq-workspace/MIGRATION_REPORT.md`:
 **Duration**: [time]
 
 Analyzed the existing codebase to understand structure and dependencies:
-- **Files Analyzed**: [count from graphify]
-- **Dependencies Mapped**: [count from graphify]
-- **Communities Identified**: [count from graphify]
-- **God Nodes Detected**: [count from graphify - critical dependencies]
+- **Files Analyzed**: [count from rgctl discover metrics]
+- **Dependencies Mapped**: [edge count from discover metrics]
+- **Communities Identified**: [count from communities list]
+- **Hotspots Detected**: [count from PageRank top — critical dependencies]
 
 Key insights from analysis:
-- [Insight 1 from GRAPH_REPORT.md]
+- [Insight 1 from rgctl metrics / migration plan]
 - [Insight 2]
 
 ### Phase 2: Requirements Gathering
@@ -733,8 +733,8 @@ Executed the migration plan with automated task orchestration:
 [List from migration-prompt.md]
 
 **Code Metrics**:
-- Lines of Code: [from graphify if available]
-- Primary Language: [from graphify]
+- Lines of Code: [from rgctl if available]
+- Primary Language: [from rgctl if available]
 - Frameworks: [from migration-prompt.md]
 
 ### Target Application Design
@@ -810,9 +810,9 @@ All migration artifacts are organized in the following structure:
 
 ```
 project-root/
-├── graphify-out/              # Codebase analysis
+├── rgctl index                # Phase 1: Analysis
 │   ├── graph.json
-│   ├── GRAPH_REPORT.md
+│   ├── rgctl index (metrics, migration plan)
 │   └── graph.html
 │
 ├── mig-prompt-workspace/      # Requirements
@@ -841,7 +841,7 @@ project-root/
 2. **Execution Report**: mig-execute-workspace/EXECUTION_REPORT.md
 3. **Migration Prompt (spec + design)**: mig-prompt-workspace/migration-prompt.md
 4. **User Stories**: mig-plan-workspace/UserStory.md
-5. **Codebase Analysis**: graphify-out/GRAPH_REPORT.md
+5. **Codebase Analysis**: rgctl metrics / migration plan
 6. **Orchestration Log**: migiq-workspace/orchestration-log.md
 
 ---
@@ -961,9 +961,9 @@ Would you like me to:
 
 ```
 project-root/
-├── graphify-out/              # Phase 1: Analysis
+├── rgctl index                # Phase 1: Analysis
 │   ├── graph.json
-│   ├── GRAPH_REPORT.md
+│   ├── rgctl index (metrics, migration plan)
 │   └── graph.html
 │
 ├── mig-prompt-workspace/      # Phase 2: Requirements
@@ -1024,7 +1024,7 @@ This skill follows a "stop and report" error handling strategy:
 
 **Preserve all artifacts**: Never delete intermediate outputs. They're valuable for debugging, learning, and future iterations.
 
-**Use existing work**: If graphify-out/ or mig-plan-workspace/ exist, ask before regenerating. Reusing recent analysis saves time.
+**Use existing work**: If rgctl is already indexed for this repo, or `mig-plan-workspace/` exists, ask before regenerating.
 
 **Communicate clearly**: At each phase transition, announce what's happening and what's coming next.
 
@@ -1038,7 +1038,7 @@ User: "Migrate this app to Quarkus"
 
 Skill flow:
 1. **Phase 0**: Initialize migiq-workspace, validate environment
-2. **Phase 1**: Run graphify to analyze Java EE codebase
+2. **Phase 1**: Run rgctl to analyze Java EE codebase
 3. **Phase 2**: Invoke mig-prompt-builder, gather Quarkus migration requirements
 4. **Phase 3**: Invoke mig-plan to create migration plan from EE to Quarkus
 5. **Phase 4**: Invoke mig-execute to implement all tasks

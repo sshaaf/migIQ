@@ -15,7 +15,7 @@ def chk(d, patterns):
 
 def grade_1(d):
     return [
-        {"name": "read_graph_outputs", **dict(zip(['passed','evidence'], chk(d, ['graph', 'graphify'])))},
+        {"name": "queried_rgctl_graph", **dict(zip(['passed','evidence'], chk(d, ['rgctl', 'pagerank', 'communities', 'metrics'])))},
         {"name": "selected_ubi_image", **dict(zip(['passed','evidence'], chk(d, ['ubi', 'red hat', 'openjdk'])))},
         {"name": "generated_dockerfile", **dict(zip(['passed','evidence'], chk(d, ['dockerfile', 'FROM'])))},
         {"name": "dockerfile_multistage", **dict(zip(['passed','evidence'], chk(d, ['multi-stage', 'FROM.*AS'])))},

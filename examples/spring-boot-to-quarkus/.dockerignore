@@ -61,7 +61,7 @@ temp/
 *.bak
 
 # Migration artifacts (not needed in container)
-graphify-out/
+.rgctl/
 mig-plan-workspace/
 mig-execute-workspace/
 mig-prompt-workspace/

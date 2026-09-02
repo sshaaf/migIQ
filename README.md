@@ -9,19 +9,39 @@
 
 ---
 
-## 🚀 Quick Start
+## Requirements
 
-Install MigIQ for Claude Code with a single command:
+Minimum to install and run a migration:
+
+1. **[rgctl](https://github.com/sshaaf/rgctl/releases)** — MigIQ install runs `rgctl install --skill` and exits if the CLI is missing (`~/.local/bin/rgctl` is checked even when not on PATH)
+2. **Claude Code** with agent skills enabled
+3. **Node.js** 14+ (for `npx @sshaaf/migiq`)
+
+For Phase 1 analysis, run from your **app repo root** (not the migiq workspace):
 
 ```bash
-# Install to local project .claude directory (recommended)
-npx @sshaaf/migiq
-
-# Or install globally to ~/.claude
-npx @sshaaf/migiq -g
+cd /path/to/your-app
+rgctl discover .   # indexes via default daemon → ~/.rgctl/cache/
 ```
 
-Then in Claude Code:
+Use `rgctl --no-daemon discover .` only if you need artifacts in `{repo}/.rgctl/` (CI, reproducible builds). Do **not** run `rgctl -r PATH discover .` — the trailing `.` ignores `-r`.
+
+OpenShift, Podman, and other tools are only needed when you reach containerize/deploy phases.
+
+## 🚀 Quick Start
+
+Install MigIQ:
+
+```bash
+# Global (recommended for Claude Code — all projects)
+npx @sshaaf/migiq -g
+
+# Or local to one repo (.claude/skills in that project)
+npx @sshaaf/migiq
+```
+
+Then in **Claude Code** — start a **new session** (`/exit`, then `claude` again) so skills reload:
+
 ```
 /migiq
 "Migrate this Spring Boot app to Quarkus"
@@ -101,7 +121,7 @@ Follow AGENT.md. Migrate from Spring Boot to Quarkus...
                   │         │   Core Migration Skills      │                    │
                   │         ├──────────────────────────────┤                    │
                   │         │                              │                    │
-                  │         │  1. mig-graphify             │ ← Analysis         │
+                  │         │  1. mig-rgctl            │ ← Analysis         │
                   │         │  2. mig-prompt-builder       │ ← Requirements     │
                   │         │  3. mig-plan                 │ ← Planning         │
                   │         │  4. mig-execute              │ ← Execution        │
@@ -119,7 +139,7 @@ Follow AGENT.md. Migrate from Spring Boot to Quarkus...
 ```
 Phase 1: Analysis          Phase 2: Requirements      Phase 3: Planning
                   ┌──────────────-┐         ┌──────────────────┐       ┌─────────────┐
-                  │ mig-graphify  │         │ mig-prompt-      │       │  mig-plan   │
+                  │ mig-rgctl │         │ mig-prompt-      │       │  mig-plan   │
                   │               │         │ builder          │       │             │
                   │ • Code graph  │ ────►   │                  │ ────► │ • tasks.md  │
                   │ • Dependencies│         │ • Source tech    │       │ • stories   │
@@ -184,9 +204,9 @@ After a migration, you'll have:
 
 ```
 your-project/
-├── graphify-out/              # Phase 1: Analysis
+├── rgctl index (daemon cache) # Phase 1: Analysis
 │   ├── graph.json            # Knowledge graph
-│   ├── GRAPH_REPORT.md       # Analysis report
+│   ├── rgctl metrics / migration plan
 │   └── graph.html            # Interactive visualization
 │
 ├── mig-prompt-workspace/      # Phase 2: Requirements
@@ -223,7 +243,8 @@ the examples/spring-boot-to-quarkus.tar.gz has an example of a completed migrati
 - [migiq/TEST_PLAN.md](./migiq/TEST_PLAN.md) - Testing strategy
 
 ### Individual Skills
-- [mig-graphify/SKILL.md](./mig-graphify/SKILL.md) - Code analysis
+- [mig-rgctl workflow](mig-rgctl/references/workflow.md) — MigIQ phase commands, artifact checks, discover flags
+- [rgctl docs](https://github.com/sshaaf/rgctl/blob/main/docs/installation.md) — install, daemon modes, upstream agent skill
 - [mig-prompt-builder/SKILL.md](./mig-prompt-builder/SKILL.md) - Requirements
 - [mig-plan/SKILL.md](./mig-plan/SKILL.md) - Planning
 - [mig-execute/SKILL.md](./mig-execute/SKILL.md) - Execution

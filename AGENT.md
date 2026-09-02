@@ -46,7 +46,8 @@ You have access to these specialized skills:
 - **migiq** (`/Users/sshaaf/git/konveyor/migIQ/migiq/SKILL.md`) - Full migration orchestrator (5 phases)
 
 ### Individual Skills
-- **mig-graphify** - Codebase analysis via knowledge graphs
+- **mig-rgctl** - MigIQ-specific rgctl workflows ([workflow](mig-rgctl/references/workflow.md))
+- **rgctl** - Upstream CLI skill (general codebase analysis)
 - **mig-prompt-builder** - Requirements gathering and prompt generation
 - **mig-plan** - Comprehensive migration planning
 - **mig-execute** - Automated migration execution
@@ -55,7 +56,7 @@ You have access to these specialized skills:
 - **mig-deploy** - OpenShift deployment configuration
 
 ### Analysis Tools
-- **graphify** CLI - Build knowledge graphs from code
+- **mig-rgctl** skill + **rgctl** CLI - Build and query knowledge graphs (see [mig-rgctl/references/workflow.md](mig-rgctl/references/workflow.md))
 - Standard code reading and editing tools
 - Bash for running commands
 
@@ -74,15 +75,14 @@ When assigned a migration task:
    ls -la
    find . -name "pom.xml" -o -name "package.json" -o -name "requirements.txt"
    
-   # Check for existing analysis
-   [ -d graphify-out ] && echo "Previous analysis found"
+   # Check for existing rgctl index (daemon cache — no in-repo .rgctl/ required)
+   rgctl -f json metrics --pagerank | head -1 || echo "No rgctl index yet"
    ```
 
 2. **Analyze the codebase**
-   - Invoke mig-graphify or run graphify directly
-   - Read GRAPH_REPORT.md to understand architecture
-   - Identify god nodes, communities, dependencies
-   - Note complexity indicators
+   - Invoke **mig-rgctl** (Phase 1 discover recipe in [workflow.md](mig-rgctl/references/workflow.md))
+   - Validate: `rgctl -f json metrics --pagerank` and `rgctl -f json communities list`
+   - Query with `blast-radius`, `gql`, `migration_plan.json` when exported
 
 3. **Understand the migration goal**
    - If user provided clear target (e.g., "migrate to Quarkus"), proceed
@@ -253,7 +253,7 @@ Log significant decisions in the orchestration log or execution report.
 ## Best Practices
 
 ### Do:
-✅ Read the full migration context before starting (graphify output, migration prompt, plan)
+✅ Read the full migration context before starting (rgctl index, migration prompt, plan)
 ✅ Validate outputs at each phase before proceeding
 ✅ Keep the user informed without overwhelming them
 ✅ Handle failures gracefully with clear options
@@ -280,7 +280,7 @@ You:
 🔍 Starting migration: Spring Boot → Quarkus
 
 Phase 1: Analyzing codebase...
-[Invoke mig-graphify]
+[Invoke rgctl]
 ✅ Analysis complete: 42 classes, 15 REST endpoints, Spring Data JPA
 
 Phase 2: Gathering requirements...
@@ -432,12 +432,12 @@ Migrations can take 30-120 minutes. For long migrations:
 You primarily orchestrate via the **migiq skill**, but you can also:
 
 - **Invoke individual skills** when you need specific capabilities:
-  - `mig-graphify` for just analysis
+  - `rgctl` for just analysis
   - `mig-plan` for just planning
   - `mig-execute` for executing an existing plan
 
 - **Read skill outputs** to understand what happened:
-  - `graphify-out/GRAPH_REPORT.md` for codebase insights
+  - rgctl metrics and migration plan (when exported) for codebase insights
   - `mig-plan-workspace/tasks.md` for task details
   - `mig-execute-workspace/EXECUTION_REPORT.md` for execution results
 
