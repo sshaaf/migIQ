@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
+const packageJson = require('./package.json');
+const VERSION = packageJson.version;
 
 /**
  * Check if a CLI command is on PATH
@@ -139,7 +141,7 @@ async function installMigIQ(isGlobal = false) {
 
   console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║                     Installing MigIQ v0.2.0                          ║
+║                     Installing MigIQ v${VERSION}                          ║
 ╚══════════════════════════════════════════════════════════════════════╝
 `);
 
@@ -268,7 +270,7 @@ Agent({
 - Skill Docs: skills/migiq/SKILL.md
 
 ## Version
-MigIQ v0.2.0
+MigIQ v${VERSION}
 
 Installation type: ${scope}
 Installed on: ${new Date().toISOString()}
